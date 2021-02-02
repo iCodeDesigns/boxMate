@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'home',
     'issuer',
     'taxManagement',
+    'import_export',
+
 ]
 
 MIDDLEWARE = [
