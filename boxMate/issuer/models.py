@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
+from codes.models import CountryCode
 
 
 # Create your models here.
 class Issuer(models.Model):
     type = models.CharField(max_length=8,
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
-    id = models.CharField(max_length=8, verbose_name='reg_number')
+    reg_num = models.CharField(max_length=8, verbose_name='reg_number')
     name = models.CharField(max_length=50, verbose_name='issuer name', blank=True, null=True)
     client_id = models.CharField(max_length=50, )
     clientSecret1 = models.CharField(max_length=50)
@@ -24,7 +25,7 @@ class Issuer(models.Model):
 class Address(models.Model):
     branch_id = models.CharField(max_length=10)
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, )
-    # country=
+    country = models.ForeignKey(CountryCode, on_delete=models.CASCADE, blank=True, null=True)
     governate = models.CharField(max_length=50, blank=True, null=True)
     regionCity = models.CharField(max_length=50, blank=True, null=True)
     street = models.CharField(max_length=120, blank=True, null=True)
