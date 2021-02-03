@@ -23,7 +23,6 @@ class IssuerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         address_data = validated_data.pop('issuer_addresses')
-        print("******", validated_data)
         issuer = Issuer.objects.create(**validated_data)
         for address in address_data:
             Address.objects.create(issuer=issuer, **address)

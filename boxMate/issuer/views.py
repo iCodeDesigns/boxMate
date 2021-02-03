@@ -1,6 +1,7 @@
 from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -30,8 +31,9 @@ def add_issuer(request):
 
 class IssuerListView(ListAPIView):
     serializer_class = IssuerSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     filter_fields = ('id', 'reg_num',)
+    ordering_fields = ('id',)
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
