@@ -53,10 +53,11 @@ class TaxTypeAdmin(ImportExportModelAdmin):
     resource_class = TaxTypeResource
     fields = (
          'code',
-         'Desc_en',
+         'desc_en',
          'desc_ar',
+         'is_taxable',
     )
-    list_display = ('code', 'desc_en', 'desc_ar',)
+    list_display = ('code', 'desc_en', 'desc_ar','is_taxable',)
 
 
 
@@ -66,7 +67,7 @@ class TaxSubtypeAdmin(ImportExportModelAdmin):
     resource_class = TaxSubtypeResource
     fields = (
          'code',
-         'Desc_en',
+         'desc_en',
          'desc_ar',
          'taxtype_reference',
     )

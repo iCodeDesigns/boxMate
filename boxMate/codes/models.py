@@ -35,7 +35,7 @@ class TaxTypes(models.Model):
     code = models.CharField(max_length=4,primary_key=True)
     desc_en = models.CharField(max_length=50)
     desc_ar = models.CharField(max_length=50)
-    is_taxable = models.BooleanField()
+    is_taxable = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
          return self.code
