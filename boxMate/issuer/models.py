@@ -22,9 +22,25 @@ class Issuer(models.Model):
         return self.name
 
 
+class Reciever(models.Model):
+    type = models.CharField(max_length=8,
+                            choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
+    reg_num = models.CharField(max_length=8, verbose_name='reg_number')
+    name = models.CharField(max_length=50, verbose_name='reciever name', blank=True, null=True)
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                   related_name="Reciever_created_by")
+    last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+    
+
 class Address(models.Model):
     branch_id = models.CharField(max_length=10)
-    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, )
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE,null=True,blank=True )
+    reciever = models.ForeignKey(Reciever, on_delete=models.CASCADE,null=True ,blank=True )
     country = models.ForeignKey(CountryCode, on_delete=models.CASCADE, blank=True, null=True)
     governate = models.CharField(max_length=50, blank=True, null=True)
     regionCity = models.CharField(max_length=50, blank=True, null=True)
