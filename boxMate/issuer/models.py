@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
+from datetime import datetime, date
 from django.db import models
-from codes.models import CountryCode
+from codes.models import CountryCode, TaxTypes
 
 
 # Create your models here.
@@ -51,6 +52,24 @@ class Address(models.Model):
     room = models.CharField(max_length=10, blank=True, null=True)
     landmark = models.CharField(max_length=120, blank=True, null=True)
     additionalInformation = models.CharField(max_length=250, blank=True, null=True)
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                   related_name="address_created_by")
+    last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.issuer.name + ' ' + self.branch_id
+
+
+
+class IssuerTax(models.Model):
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax')
+    tax_type = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
+    start_date = models.DateField(default=date.now(), null=True, blank=True)
+    end_date = models.DateField(auto_now_add=True, null=True, blank=True)
+    is_enabled = models.BooleanField()
+
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
