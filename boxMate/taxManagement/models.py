@@ -5,31 +5,35 @@ from codes.models import ActivityType
 
 # Create your models here.
 from codes.models import TaxSubtypes, TaxTypes
+from django.utils import timezone
 
 
 class InvoiceHeader(models.Model):
-    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE ,null=True,blank=True)
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE,null=True,blank=True)
     document_type = models.CharField(max_length=2,
-                                     choices=[('i', 'invoice')], default='i')
+                                     choices=[('i', 'invoice')], default='i',null=True,blank=True)
     document_type_version = models.CharField(max_length=8,
-                                             choices=[('1.0', '1.0')], default='1.0')
+                                             choices=[('1.0', '1.0')], default='1.0',null=True,blank=True)
 
-    date_time_issued = models.DateTimeField(auto_now_add=True)
-    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE)
-    internal_id = models.CharField(max_length=50)
-    purchase_order_reference = models.CharField(max_length=50)
-    purchase_order_description = models.CharField(max_length=100)
-    sales_order_reference = models.CharField(max_length=50)
-    sales_order_description = models.CharField(max_length=100)
-    proforma_invoice_number = models.CharField(max_length=50)
-    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    net_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    total_amount = models.DecimalField(decimal_places=5, max_digits=20)
-    signature = models.TextField()
+    date_time_issued = models.DateTimeField(default=timezone.now,null=True,blank=True)
+    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE,null=True,blank=True)
+    internal_id = models.CharField(max_length=50,null=True,blank=True)
+    purchase_order_reference = models.CharField(max_length=50,null=True,blank=True)
+    purchase_order_description = models.CharField(max_length=100,null=True,blank=True)
+    sales_order_reference = models.CharField(max_length=50,null=True,blank=True)
+    sales_order_description = models.CharField(max_length=100,null=True,blank=True)
+    proforma_invoice_number = models.CharField(max_length=50,null=True,blank=True)
+    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    net_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    total_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    signature = models.TextField(null=True,blank=True)
+
+    def __str__(self):
+        return self.issuer + ' ' + self.receiver + ' ' + self.date_time_issued
 
 
 class InvoiceLine(models.Model):
