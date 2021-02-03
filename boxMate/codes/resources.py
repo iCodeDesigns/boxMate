@@ -26,7 +26,9 @@ class ActivityTypeResource(resources.ModelResource):
 class CountryCodeResource(resources.ModelResource):
     class Meta:
         model = CountryCode
-        fields = ('code', 'desc_en', 'desc_ar')
+        exclude = ('id',)
+        import_id_fields = ('code', 'desc_en', 'desc_ar')
+        
 
     desc_en = fields.Field(
         column_name='Desc_en',
@@ -41,7 +43,9 @@ class CountryCodeResource(resources.ModelResource):
 class UnitTypeResource(resources.ModelResource):
     class Meta:
         model = UnitType
-        fields = ('code', 'desc_en', 'desc_ar')
+        exclude = ('id',)
+        import_id_fields = ('code', 'desc_en', 'desc_ar')
+        
 
     desc_en = fields.Field(
         column_name='desc_en',
@@ -56,7 +60,9 @@ class UnitTypeResource(resources.ModelResource):
 class TaxTypeResource(resources.ModelResource):
     class Meta:
         model = TaxTypes
-        fields = ('code', 'desc_en', 'desc_ar')
+        exclude = ('id',)
+        import_id_fields = ('code', 'desc_en', 'desc_ar')
+        
 
     desc_en = fields.Field(
         column_name='Desc_en',
@@ -71,7 +77,9 @@ class TaxTypeResource(resources.ModelResource):
 class TaxSubtypeResource(resources.ModelResource):
     class Meta:
         model = TaxSubtypes
-        fields = ('code', 'desc_en', 'desc_ar', 'taxtype_reference')
+        exclude = ('id',)
+        import_id_fields = ('code', 'desc_en', 'desc_ar', 'taxtype_reference')
+        
 
     desc_en = fields.Field(
         column_name='Desc_en',
