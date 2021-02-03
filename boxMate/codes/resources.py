@@ -7,11 +7,10 @@ class ActivityTypeResource(resources.ModelResource):
     # this class describes how the model will be imported
     class Meta:
         model = ActivityType
-        # fields = ('code', 'desc_en', 'desc_ar')
-        exclude = ('id',)
-        import_id_fields = ('code', 'desc_en', 'desc_ar')
-          # defines which model fields will be imported
         # id is required here to save attendance object
+        import_id_fields = ('code',)# which fields are used as the id when importing
+        # defines which model fields will be imported
+        fields = ('code', 'desc_en', 'desc_ar')
 
     desc_en = fields.Field(
         column_name='Desc_en',  # this is the name of imported column
@@ -26,10 +25,10 @@ class ActivityTypeResource(resources.ModelResource):
 class CountryCodeResource(resources.ModelResource):
     class Meta:
         model = CountryCode
-        exclude = ('id',)
-        import_id_fields = ('code', 'desc_en', 'desc_ar')
-        
+        import_id_fields = ('code',)
+        fields = ('code', 'desc_en', 'desc_ar')
 
+   
     desc_en = fields.Field(
         column_name='Desc_en',
         attribute='desc_en',)
@@ -43,9 +42,11 @@ class CountryCodeResource(resources.ModelResource):
 class UnitTypeResource(resources.ModelResource):
     class Meta:
         model = UnitType
-        exclude = ('id',)
-        import_id_fields = ('code', 'desc_en', 'desc_ar')
-        
+        import_id_fields = ('code',)
+        fields = ('code', 'desc_en', 'desc_ar')
+    
+
+  
 
     desc_en = fields.Field(
         column_name='desc_en',
@@ -60,9 +61,14 @@ class UnitTypeResource(resources.ModelResource):
 class TaxTypeResource(resources.ModelResource):
     class Meta:
         model = TaxTypes
-        exclude = ('id',)
-        import_id_fields = ('code', 'desc_en', 'desc_ar')
-        
+        import_id_fields = ('code',)
+        fields = ('code', 'desc_en', 'desc_ar', 'is_taxable')
+
+
+
+    code = fields.Field(
+        column_name='Code',
+        attribute='code',)
 
     desc_en = fields.Field(
         column_name='Desc_en',
@@ -77,9 +83,12 @@ class TaxTypeResource(resources.ModelResource):
 class TaxSubtypeResource(resources.ModelResource):
     class Meta:
         model = TaxSubtypes
-        exclude = ('id',)
-        import_id_fields = ('code', 'desc_en', 'desc_ar', 'taxtype_reference')
+        import_id_fields = ('code',)
+        fields = ('code', 'desc_en', 'desc_ar', 'taxtype_reference')
         
+    code = fields.Field(
+        column_name='Code',
+        attribute='code',)
 
     desc_en = fields.Field(
         column_name='Desc_en',
