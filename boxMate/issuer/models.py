@@ -9,9 +9,9 @@ class Issuer(models.Model):
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
     reg_num = models.CharField(max_length=8, verbose_name='reg_number')
     name = models.CharField(max_length=50, verbose_name='issuer name', blank=True, null=True)
-    client_id = models.CharField(max_length=50, )
-    clientSecret1 = models.CharField(max_length=50)
-    clientSecret2 = models.CharField(max_length=50)
+    client_id = models.CharField(max_length=50,blank=True, null=True )
+    clientSecret1 = models.CharField(max_length=50,blank=True, null=True)
+    clientSecret2 = models.CharField(max_length=50,blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
