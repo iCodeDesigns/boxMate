@@ -1,13 +1,39 @@
 from django.contrib.auth.models import User
 from django.db import models
-from issuer.models import Issuer,Reciever
+from issuer.models import Issuer, Receiver
 from codes.models import ActivityType
 
 # Create your models here.
 from codes.models import TaxSubtypes, TaxTypes
 
 
+class InvoiceHeader(models.Model):
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
+    document_type = models.CharField(max_length=2,
+                                     choices=[('i', 'invoice')], default='i')
+    document_type_version = models.CharField(max_length=8,
+                                             choices=[('1.0', '1.0')], default='1.0')
+
+    date_time_issued = models.DateTimeField(auto_now_add=True)
+    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE)
+    internal_id = models.CharField(max_length=50)
+    purchase_order_reference = models.CharField(max_length=50)
+    purchase_order_description = models.CharField(max_length=100)
+    sales_order_reference = models.CharField(max_length=50)
+    sales_order_description = models.CharField(max_length=100)
+    proforma_invoice_number = models.CharField(max_length=50)
+    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    net_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    total_amount = models.DecimalField(decimal_places=5, max_digits=20)
+    signature = models.TextField()
+
+
 class InvoiceLine(models.Model):
+    invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, )
     description = models.CharField(max_length=250, blank=True, null=True)
     itemType = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GPC format')
     itemCode = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GS1 code')
@@ -54,15 +80,13 @@ class InvoiceLine(models.Model):
                                    related_name="line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    # invoice_header = models.ForeignKey(Issuer, on_delete=models.CASCADE, )
-
     def __str__(self):
         return self.itemCode + ' ' + self.total
 
 
 class TaxLine(models.Model):
     invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.CASCADE, related_name='tax_lines')
-    taxType = models.ForeignKey(TaxTypes, on_delete=models.CASCADE,null=True, blank=True )
+    taxType = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
     subType = models.ForeignKey(TaxSubtypes, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
     rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -72,26 +96,5 @@ class TaxLine(models.Model):
                                    related_name="tax_line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-class InvoiceHeader(models.Model):
-    issuer = models.ForeignKey(Issuer , on_delete=models.CASCADE)
-    reciever = models.ForeignKey(Reciever , on_delete=models.CASCADE)
-    document_type = models.CharField(max_length=2 ,
-                                    choices=[('i','invoice')] , default='i')
-    document_type_version = models.CharField(max_length=8,
-                                        choices=[('1.0','1.0')],default='1.0')
-
-    date_time_issued = models.DateTimeField(auto_now_add=True)
-    taxpayer_activity_code = models.ForeignKey(ActivityType , on_delete=models.CASCADE)
-    internal_id = models.CharField(max_length=50)
-    purchase_order_reference = models.CharField(max_length=50)
-    purchase_order_description = models.CharField(max_length=100)
-    sales_order_reference = models.CharField(max_length=50)
-    sales_order_description = models.CharField(max_length=100)
-    proforma_invoice_number = models.CharField(max_length=50)
-    total_sales_amount = models.DecimalField(decimal_places=5,max_digits=20)
-    total_discount_amount = models.DecimalField(decimal_places=5,max_digits=20)
-    net_amount = models.DecimalField(decimal_places=5,max_digits=20)
-    extra_discount_amount = models.DecimalField(decimal_places=5,max_digits=20)
-    total_items_discount_amount	= models.DecimalField(decimal_places=5,max_digits=20)
-    total_amount = models.DecimalField(decimal_places=5,max_digits=20)
-    signature = models.TextField()
+    def __str__(self):
+        return self.invoice_line.itemCode + ' ' + self.taxType
