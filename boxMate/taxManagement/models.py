@@ -13,7 +13,7 @@ class MainTable(models.Model):
 #Core
     document_type = models.CharField(max_length=20, blank=True, null=True)
     document_type_version = models.CharField(max_length=20,  blank=True, null=True)
-    date_time_issued = models.DateTimeField()
+    date_time_issued = models.DateTimeField( blank=True, null=True)
     taxpayer_activity_code = models.CharField(max_length=20,  blank=True, null=True)
     internal_id = models.CharField(max_length=20,  blank=True, null=True)
     purchase_order_reference = models.CharField(max_length=55 ,  blank=True, null=True)
@@ -76,8 +76,8 @@ class MainTable(models.Model):
     date_validity = models.DateTimeField( blank=True, null=True)
     export_port = models.CharField(max_length=55,  blank=True, null=True)
     country_of_origin = models.CharField(max_length=55,  blank=True, null=True)
-    gross_weight = models.DecimalField(max_digits=7,  decimal_places=6,  blank=True, null=True)
-    net_weight = models.DecimalField(max_digits=7,  decimal_places=6,  blank=True, null=True)
+    gross_weight = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
+    net_weight = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
     delivery_terms = models.CharField(max_length=55,  blank=True, null=True)
 
     #Tax Total
@@ -86,7 +86,7 @@ class MainTable(models.Model):
     
     #Signature
     signature_type = models.CharField(max_length=55,  blank=True, null=True)
-    signature_value = models.CharField(max_length=200,  blank=True, null=True)
+    #signature_value = models.CharField(max_length=200,  blank=True, null=True)
 
     #Invoice Line
     description = models.CharField(max_length=55,  blank=True, null=True)
@@ -101,7 +101,6 @@ class MainTable(models.Model):
     total_taxable_fees= models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
     value_difference = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
     total = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    value_difference = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
         #Value
     currency_sold = models.CharField(max_length=20,  blank=True, null=True)
     amount_sold =  models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
