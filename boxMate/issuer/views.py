@@ -59,7 +59,7 @@ class IssuerListView(ListAPIView):
 
 
 
-def get_issuer_data(request):
+def get_issuer_data():
     issuer = MainTable.objects.values('issuer_registration_num').annotate(Count('issuer_registration_num'))
     issuer_code = issuer[0]['issuer_registration_num']
     try:
@@ -68,7 +68,18 @@ def get_issuer_data(request):
         issuer_data = MainTable.objects.values(
         'issuer_type',
         'issuer_registration_num',
-        'issuer_name').annotate(Count('issuer_registration_num'))
+        'issuer_name',
+        'issuer_building_num',
+        'issuer_room',
+        'issuer_floor',
+        'issuer_street',
+        'issuer_land_mark',
+        'issuer_additional_information',
+        'issuer_governate',
+        'issuer_region_city',
+        'issuer_postal_code',
+        'issuer_country',
+        'issuer_branch_id').annotate(Count('issuer_registration_num'))
         for x in issuer_data:
             issuer_obj = Issuer(
                 type = x['issuer_type'],
@@ -76,29 +87,15 @@ def get_issuer_data(request):
                 name = x['issuer_name']
             )
             issuer_obj.save()
-            issuer_addresses = MainTable.objects.values(
-            'issuer_building_num',
-            'issuer_room',
-            'issuer_floor',
-            'issuer_street',
-            'issuer_land_mark',
-            'issuer_additional_information',
-            'issuer_governate',
-            'issuer_region_city',
-            'issuer_postal_code',
-            'issuer_country',
-            'issuer_branch_id').annotate(Count('issuer_building_num'))
             issuer_id = issuer_obj
-            country = MainTable.objects.values('issuer_country').first()
-            country_code = country.get("issuer_country")
+            country_code = x['issuer_country']
             code_obj = CountryCode.objects.get(pk=country_code)
-            for x in issuer_addresses:
-                address_obj = Address(
+            address_obj = Address(
                     issuer = issuer_id,
                     branch_id = x['issuer_branch_id'],
                     country = code_obj,
                     governate = x['issuer_governate'],
-                    regionCity = x['issuer_governate'],
+                    regionCity = x['issuer_region_city'],
                     street = x['issuer_street'],
                     buildingNumber = x['issuer_building_num'],
                     postalCode = x['issuer_postal_code'],
@@ -107,9 +104,54 @@ def get_issuer_data(request):
                     landmark = x['issuer_land_mark'],
                     additionalInformation = x['issuer_additional_information']
                 )
-                address_obj.save()
+        address_obj.save()
+
         
 
-
-
+def get_receiver_data():
+    receiver = MainTable.objects.values('receiver_registration_num').annotate(Count('issuer_registration_num'))
+    receiver_code = receiver[0]['receiver_registration_num']
+    try:
+        receiver_id = Receiver.objects.get(reg_num=receiver_code)
+    except Receiver.DoesNotExist as e:
+        receiver_data = MainTable.objects.values(
+        'receiver_type',
+        'receiver_registration_num',
+        'receiver_name',
+        'receiver_building_num',
+        'receiver_room',
+        'receiver_floor',
+        'receiver_street',
+        'receiver_land_mark',
+        'receiver_additional_information',
+        'receiver_governate',
+        'receiver_region_city',
+        'receiver_postal_code',
+        'receiver_country').annotate(Count('receiver_registration_num'))
+        for x in receiver_data:
+            receiver_obj = Receiver(
+                type = x['receiver_type'],
+                reg_num = x['receiver_registration_num'],
+                name = x['receiver_name']
+            )
+            receiver_obj.save()
+            receiver_id = receiver_obj
+            country = MainTable.objects.values('issuer_country').first()
+            country_code = x['receiver_country']
+            code_obj = CountryCode.objects.get(pk=country_code)
+            address_obj = Address(
+                    receiver = receiver_id,
+                    country = code_obj,
+                    governate = x['receiver_governate'],
+                    regionCity = x['receiver_region_city'],
+                    street = x['receiver_street'],
+                    buildingNumber = x['receiver_building_num'],
+                    postalCode = x['receiver_postal_code'],
+                    floor = x['receiver_floor'],
+                    room = x['receiver_room'],
+                    landmark = x['receiver_land_mark'],
+                    additionalInformation = x['receiver_additional_information']
+                )
+            address_obj.save()
+        
 
