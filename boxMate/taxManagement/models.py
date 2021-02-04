@@ -86,7 +86,7 @@ class MainTable(models.Model):
     
     #Signature
     signature_type = models.CharField(max_length=55,  blank=True, null=True)
-    #signature_value = models.CharField(max_length=200,  blank=True, null=True)
+    signature_value = models.CharField(max_length=200,  blank=True, null=True)
 
     #Invoice Line
     description = models.CharField(max_length=55,  blank=True, null=True)
