@@ -12,9 +12,9 @@ class MainTableResource(resources.ModelResource):
         column_name='type', 
         attribute='issuer_type',)  
   
-    # issuer_registration_num = fields.Field(
-    #     column_name='id', 
-    #     attribute='issuer_registration_num',) 
+    issuer_registration_num = fields.Field(
+         column_name='issuer_registration_num', 
+         attribute='issuer_registration_num',) 
 
     issuer_name = fields.Field(
         column_name='name', 
