@@ -2,12 +2,10 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import InvoiceLine, InvoiceHeader
+from .models import InvoiceLine, InvoiceHeader, MainTable
 
 
 # Register your models here.
-
-
 class InvoiceInline(admin.TabularInline):
     model = InvoiceLine
 
@@ -18,3 +16,6 @@ class InvoiceHeaderAdmin(admin.ModelAdmin):
         InvoiceInline,
 
     ]
+
+
+admin.site.register(MainTable)
