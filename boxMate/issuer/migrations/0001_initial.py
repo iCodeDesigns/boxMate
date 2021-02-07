@@ -52,9 +52,13 @@ class Migration(migrations.Migration):
             name='IssuerTax',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+<<<<<<< HEAD
+                ('start_date', models.DateField(blank=True, default=datetime.datetime(2021, 2, 7, 10, 11, 51, 14605, tzinfo=utc), null=True)),
+=======
 
                 ('start_date', models.DateField(blank=True, default=datetime.datetime(2021, 2, 4, 10, 50, 48, 103569, tzinfo=utc), null=True)),
 
+>>>>>>> 585c2a4f9b4f125947c4bc54570447ff1c89938b
                 ('end_date', models.DateField(auto_now_add=True, null=True)),
                 ('is_enabled', models.BooleanField()),
                 ('created_at', models.DateField(auto_now_add=True, null=True)),
