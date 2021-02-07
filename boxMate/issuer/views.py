@@ -9,10 +9,10 @@ from rest_framework.decorators import api_view
 
 from issuer.models import *
 from issuer.serializers import IssuerSerializer
-from taxManagement.models import * 
+from taxManagement.models import *
 from django.db.models import Count
 from django.utils import timezone
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from codes.models import CountryCode
 from django.shortcuts import get_object_or_404
 
@@ -58,7 +58,6 @@ class IssuerListView(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         data = {"success": True, "data": serializer.data}
         return Response(data)
-
 
 
 def get_issuer_data():
@@ -129,7 +128,6 @@ def get_issuer_data():
                 )
             address_obj.save()
 
-        
 
 def get_receiver_data():
     receiver_data = MainTable.objects.values(
