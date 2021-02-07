@@ -55,3 +55,4 @@ def upload_excel_sheet(request):
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
     return Response(data, status=status.HTTP_200_OK)
+

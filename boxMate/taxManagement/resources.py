@@ -257,9 +257,9 @@ class MainTableResource(resources.ModelResource):
         column_name='signatureType', 
         attribute='signature_type',) 
 
-    # signature_value = fields.Field(
-    #     column_name='value', 
-    #     attribute='signature_value',) 
+    signature_value = fields.Field(
+        column_name='value', 
+        attribute='signature_value',) 
   
     #Tax Total
     taxt_type = fields.Field(
