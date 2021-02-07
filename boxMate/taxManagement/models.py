@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from issuer.models import Issuer, Receiver
+from issuer.models import Issuer, Receiver, Address
 from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
 from django.utils import timezone
@@ -119,7 +119,9 @@ class MainTable(models.Model):
 
 class InvoiceHeader(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE ,null=True,blank=True)
+    issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True, related_name="issuer_address")
     receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE,null=True,blank=True)
+    receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True, related_name="receiver_address")
     document_type = models.CharField(max_length=2,
                                      choices=[('i', 'invoice')], default='i',null=True,blank=True)
     document_type_version = models.CharField(max_length=8,
