@@ -38,7 +38,7 @@ class Receiver(models.Model):
     def __str__(self):
         return self.name
 
- 
+
 class Address(models.Model):
     branch_id = models.CharField(max_length=10)
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_addresses')

@@ -127,7 +127,7 @@ def get_issuer_data():
                 additionalInformation = x['issuer_additional_information']
                 )
             address_obj.save()
-        
+
 
 def get_receiver_data():
     receiver_data = MainTable.objects.values(
@@ -193,7 +193,6 @@ def get_receiver_data():
                 additionalInformation = x['receiver_additional_information']
                 )
             address_obj.save()
-        
     
         
 
