@@ -10,11 +10,11 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader ,InvoiceLine , TaxTypes,TaxLine , Signature
-from issuer.models import Issuer,Receiver
-from codes.models import ActivityType , TaxSubtypes, TaxTypes
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature
+from issuer.models import Issuer, Receiver
+from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
-import pprint
+from pprint import pprint
 from decimal import Decimal
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
@@ -31,18 +31,18 @@ def write_to_tmp_storage(import_file):
     return tmp_storage
 
 
-
-
 # @api_view(['POST', ])
 def import_data_to_invoice():
     #### to be tested ####
-    headers = MainTable.objects.values('document_type','document_type_version',
-    'date_time_issued','taxpayer_activity_code','internal_id',
-    'purchase_order_reference','purchase_order_description','sales_order_reference',
-    'sales_order_description','proforma_invoice_number','total_sales_amount',
-    'total_discount_amount','net_amount','total_amount','total_items_discount_amount',
-    'extra_discount_amount','issuer_registration_num','receiver_registration_num',
-    'signature_type','signature_value').annotate(Count('internal_id'))
+    headers = MainTable.objects.values('document_type', 'document_type_version',
+                                       'date_time_issued', 'taxpayer_activity_code', 'internal_id',
+                                       'purchase_order_reference', 'purchase_order_description',
+                                       'sales_order_reference',
+                                       'sales_order_description', 'proforma_invoice_number', 'total_sales_amount',
+                                       'total_discount_amount', 'net_amount', 'total_amount',
+                                       'total_items_discount_amount',
+                                       'extra_discount_amount', 'issuer_registration_num', 'receiver_registration_num',
+                                       'signature_type', 'signature_value').annotate(Count('internal_id'))
     for header in headers:
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
@@ -54,18 +54,18 @@ def import_data_to_invoice():
             document_type_version=header['document_type_version'],
             date_time_issued=header['date_time_issued'],
             taxpayer_activity_code=taxpayer_activity_code,
-            internal_id = header['internal_id'],
-            purchase_order_reference = header['purchase_order_reference'],
-            purchase_order_description = header['purchase_order_description'],
-            sales_order_reference = header['sales_order_reference'],
-            sales_order_description = header['sales_order_description'],
-            proforma_invoice_number = header['proforma_invoice_number'],
-            total_sales_amount = header['total_sales_amount'],
-            total_discount_amount = header['total_discount_amount'],
-            net_amount = header['net_amount'],
-            extra_discount_amount = header['extra_discount_amount'],
-            total_items_discount_amount = header['total_items_discount_amount'],
-            total_amount = header['total_amount'],
+            internal_id=header['internal_id'],
+            purchase_order_reference=header['purchase_order_reference'],
+            purchase_order_description=header['purchase_order_description'],
+            sales_order_reference=header['sales_order_reference'],
+            sales_order_description=header['sales_order_description'],
+            proforma_invoice_number=header['proforma_invoice_number'],
+            total_sales_amount=header['total_sales_amount'],
+            total_discount_amount=header['total_discount_amount'],
+            net_amount=header['net_amount'],
+            extra_discount_amount=header['extra_discount_amount'],
+            total_items_discount_amount=header['total_items_discount_amount'],
+            total_amount=header['total_amount'],
         )
         header_obj.save()
         ####### create signature #######
@@ -76,46 +76,47 @@ def import_data_to_invoice():
         )
         signature_obj.save()
         ####### create lines per invoice header #######
-        lines = MainTable.objects.values('description','item_code','item_type',
-        'unit_type','quantity', 'sales_total','currency_sold','amount_egp',
-        'amount_sold','currency_exchange_rate','total','value_difference',
-        'total_taxable_fees','items_discount','net_total','discount_rate',
-        'discount_amount','internal_code').annotate(Count('item_code'))
+        lines = MainTable.objects.values('description', 'item_code', 'item_type',
+                                         'unit_type', 'quantity', 'sales_total', 'currency_sold', 'amount_egp',
+                                         'amount_sold', 'currency_exchange_rate', 'total', 'value_difference',
+                                         'total_taxable_fees', 'items_discount', 'net_total', 'discount_rate',
+                                         'discount_amount', 'internal_code').annotate(Count('item_code'))
         for line in lines:
             line_obj = InvoiceLine(
                 invoice_header=header_obj,
-                description = line['description'],
-                itemType = line['item_type'],
-                itemCode = line['item_code'],
-                unitType = line['unit_type'],
-                quantity = line['quantity'],
-                currencySold = line['currency_sold'],
-                amountEGP = line['amount_egp'],
-                amountSold = line['amount_sold'],
-                currencyExchangeRate = line['currency_exchange_rate'],
-                salesTotal = line['sales_total'],
-                total = line['total'],
-                valueDifference = line['value_difference'],
-                totalTaxableFees = line['total_taxable_fees'],
-                itemsDiscount = line['items_discount'],
-                netTotal = line['net_total'],
-                rate = line['discount_rate'],
-                amount = line['discount_amount'],
-                internalCode = line['internal_code'],
+                description=line['description'],
+                itemType=line['item_type'],
+                itemCode=line['item_code'],
+                unitType=line['unit_type'],
+                quantity=line['quantity'],
+                currencySold=line['currency_sold'],
+                amountEGP=line['amount_egp'],
+                amountSold=line['amount_sold'],
+                currencyExchangeRate=line['currency_exchange_rate'],
+                salesTotal=line['sales_total'],
+                total=line['total'],
+                valueDifference=line['value_difference'],
+                totalTaxableFees=line['total_taxable_fees'],
+                itemsDiscount=line['items_discount'],
+                netTotal=line['net_total'],
+                rate=line['discount_rate'],
+                amount=line['discount_amount'],
+                internalCode=line['internal_code'],
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.values('taxt_item_type','tax_item_amount',
-            'tax_item_subtype','tax_item_rate').annotate(Count('internal_id')).annotate(Count('item_code'))
+            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
+                                                 'tax_item_subtype', 'tax_item_rate').annotate(
+                Count('internal_id')).annotate(Count('item_code'))
             for tax_type in tax_types:
-                tax_main_type = TaxTypes.objects.get(code = tax_type['taxt_item_type'])
-                tax_subtype = TaxSubtypes.objects.get(code = tax_type['tax_item_subtype'])
+                tax_main_type = TaxTypes.objects.get(code=tax_type['taxt_item_type'])
+                tax_subtype = TaxSubtypes.objects.get(code=tax_type['tax_item_subtype'])
                 tax_type_obj = TaxLine(
                     invoice_line=line_obj,
-                    taxType = tax_main_type,
-                    subType = tax_subtype,
-                    amount = tax_type['tax_item_amount'],
-                    rate = tax_type['tax_item_rate']
+                    taxType=tax_main_type,
+                    subType=tax_subtype,
+                    amount=tax_type['tax_item_amount'],
+                    rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
 
@@ -243,60 +244,62 @@ def get_invoice_header(invoice_id):
     signature_list = []
     for signature in signatures:
         signature_obj = {
-            "signatureType":signature.signature_type,
-            "value":signature.signature_value
+            "signatureType": signature.signature_type,
+            "value": signature.signature_value
         }
         signature_list.append(signature_obj)
 
     #### output data ####
     data = {
-                "documentType": invoice_header.document_type,
-                "documentTypeVersion": invoice_header.document_type_version,
-                "dateTimeIssued": invoice_header.date_time_issued,
-                "taxpayerActivityCode": invoice_header.taxpayer_activity_code,
-                "internalID": invoice_header.internal_id,
-                "purchaseOrderReference": invoice_header.purchase_order_reference,
-                "purchaseOrderDescription": invoice_header.purchase_order_description,
-                "salesOrderReference": invoice_header.sales_order_description,
-                "salesOrderDescription": invoice_header.sales_order_description,
-                "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-                # "payment": {
-                #     "bankName": "SomeValue",
-                #     "bankAddress": "SomeValue",
-                #     "bankAccountNo": "SomeValue",
-                #     "bankAccountIBAN": "",
-                #     "swiftCode": "",
-                #     "terms": "SomeValue"
-                # },
-                # "delivery": {
-                #     "approach": "SomeValue",
-                #     "packaging": "SomeValue",
-                #     "dateValidity": "2020-09-28T09:30:10Z",
-                #     "exportPort": "SomeValue",
-                #     "countryOfOrigin": "LS",
-                #     "grossWeight": 10.59100,
-                #     "netWeight": 20.58700,
-                #     "terms": "SomeValue"
-                # },
-                "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
-                "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
-                "netAmount": invoice_header.net_amount.__float__(),
-                "taxTotals": [
-                #     {
-                #         "taxType": "T1",
-                #         "amount": 1286.79112
-                #     },
-                #     {
-                #         "taxType": "T2",
-                #         "amount": 984.78912
-                #     }
-                ],
-                "totalAmount": invoice_header.total_amount.__float__(),
-                "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
-                "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
-                "signatures": signature_list
+        "documentType": invoice_header.document_type,
+        "documentTypeVersion": invoice_header.document_type_version,
+        "dateTimeIssued": invoice_header.date_time_issued,
+        "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
+        "internalID": invoice_header.internal_id,
+        "purchaseOrderReference": invoice_header.purchase_order_reference,
+        "purchaseOrderDescription": invoice_header.purchase_order_description,
+        "salesOrderReference": invoice_header.sales_order_description,
+        "salesOrderDescription": invoice_header.sales_order_description,
+        "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
+        # "payment": {
+        #     "bankName": "SomeValue",
+        #     "bankAddress": "SomeValue",
+        #     "bankAccountNo": "SomeValue",
+        #     "bankAccountIBAN": "",
+        #     "swiftCode": "",
+        #     "terms": "SomeValue"
+        # },
+        # "delivery": {
+        #     "approach": "SomeValue",
+        #     "packaging": "SomeValue",
+        #     "dateValidity": "2020-09-28T09:30:10Z",
+        #     "exportPort": "SomeValue",
+        #     "countryOfOrigin": "LS",
+        #     "grossWeight": 10.59100,
+        #     "netWeight": 20.58700,
+        #     "terms": "SomeValue"
+        # },
+        "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
+        "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
+        "netAmount": invoice_header.net_amount.__float__(),
+        "taxTotals": [
+            #     {
+            #         "taxType": "T1",
+            #         "amount": 1286.79112
+            #     },
+            #     {
+            #         "taxType": "T2",
+            #         "amount": 984.78912
+            #     }
+        ],
+        "totalAmount": invoice_header.total_amount.__float__(),
+        "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
+        "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
+        "signatures": signature_list
     }
-    pprint.pprint(data)
+    pprint(data)
+    return data
+
 
 def get_invoice_lines(invoice_id):
     # for every line it will call the function get_taxable_lines(invoice_line_id)
@@ -342,13 +345,14 @@ def get_invoice_lines(invoice_id):
 
     #                  }
     #                ]
-    invoice_lines = InvoiceLine.objects.filter(invoice_header__id=invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header__internal_id=invoice_id)
     invoice_lines_list = []
     for line in invoice_lines:
         invoice_line = {
             "description": line.description, "itemType": line.itemType,
             "itemCode": line.itemCode, "unitType": line.unitType, "quantity": line.quantity.__float__(),
-            "internalCode": line.internalCode, "salesTotal": line.salesTotal.__float__(), "total": line.total.__float__(),
+            "internalCode": line.internalCode, "salesTotal": line.salesTotal.__float__(),
+            "total": line.total.__float__(),
             "valueDifference": line.valueDifference.__float__(), "totalTaxableFees": line.totalTaxableFees.__float__(),
             "netTotal": line.netTotal.__float__(), "itemsDiscount": line.itemsDiscount.__float__(),
             "unitValue": {"currencySold": line.currencySold, "amountEGP": line.amountEGP.__float__(),
@@ -401,22 +405,19 @@ def get_taxable_lines(invoice_line_id):
     return tax_lines_list
 
 
-
 def get_one_invoice(invoice_id):
-   # issuer_body = get_issuer_body(invoice_id)
-    #receiver_body = get_receiver_body(invoice_id)
-   # invoice_header = get_invoice_header(invoice_id)
+    # issuer_body = get_issuer_body(invoice_id)
+    # receiver_body = get_receiver_body(invoice_id)
+    invoice_header = get_invoice_header(invoice_id)
     invoice_lines = get_invoice_lines(invoice_id)
     invoice = {
-       # "issuer": issuer_body,
-        #"receiver": receiver_body,
+        # "issuer": issuer_body,
+        # "receiver": receiver_body,
 
     }
-    #invoice.update(invoice_header)
-    invoice.update({"invoiceLines":invoice_lines})
+    invoice.update(invoice_header)
+    invoice.update({"invoiceLines": invoice_lines})
     pprint(invoice)
-
-
 
 
 def submit_invoice():
