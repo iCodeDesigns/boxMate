@@ -78,55 +78,55 @@ def get_issuer_data():
         'issuer_postal_code',
         'issuer_country',
         'issuer_branch_id').annotate(Count('issuer_registration_num'))
-    for x in issuer_data:
-        issuer_code = x['issuer_registration_num']
-        address = x['issuer_branch_id']
+    for data in issuer_data:
+        issuer_code = data['issuer_registration_num']
+        address = data['issuer_branch_id']
         try:
             issuer_id = Issuer.objects.get(reg_num=issuer_code)
             try:
                 address_id = Address.objects.get(branch_id=address)
             except Address.DoesNotExist as e:    
-                country_code = x['issuer_country']
+                country_code = data['issuer_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
                 address_obj = Address(
                     issuer = issuer_id,
                     branch_id = x['issuer_branch_id'],
                     country = code_obj,
-                    governate = x['issuer_governate'],
-                    regionCity = x['issuer_region_city'],
-                    street = x['issuer_street'],
-                    buildingNumber = x['issuer_building_num'],
-                    postalCode = x['issuer_postal_code'],
-                    floor = x['issuer_floor'],
-                    room = x['issuer_room'],
-                    landmark = x['issuer_land_mark'],
-                    additionalInformation = x['issuer_additional_information']
+                    governate = data['issuer_governate'],
+                    regionCity = data['issuer_region_city'],
+                    street = data['issuer_street'],
+                    buildingNumber = data['issuer_building_num'],
+                    postalCode = data['issuer_postal_code'],
+                    floor = data['issuer_floor'],
+                    room = data['issuer_room'],
+                    landmark = data['issuer_land_mark'],
+                    additionalInformation = data['issuer_additional_information']
                 )
                 address_obj.save()    
         except Issuer.DoesNotExist as e:
             issuer_obj = Issuer(
-                type = x['issuer_type'],
-                reg_num = x['issuer_registration_num'],
-                name = x['issuer_name']
+                type = data['issuer_type'],
+                reg_num = data['issuer_registration_num'],
+                name = data['issuer_name']
             )
             issuer_obj.save()
             issuer_id = issuer_obj
-            country_code = x['issuer_country']
+            country_code = data['issuer_country']
             code_obj = CountryCode.objects.get(pk=country_code)
-            address = x['issuer_branch_id']
+            address = data['issuer_branch_id']
             address_obj = Address(
                 issuer = issuer_id,
-                branch_id = x['issuer_branch_id'],
+                branch_id = data['issuer_branch_id'],
                 country = code_obj,
-                governate = x['issuer_governate'],
-                regionCity = x['issuer_region_city'],
-                street = x['issuer_street'],
-                buildingNumber = x['issuer_building_num'],
-                postalCode = x['issuer_postal_code'],
-                floor = x['issuer_floor'],
-                room = x['issuer_room'],
-                landmark = x['issuer_land_mark'],
-                additionalInformation = x['issuer_additional_information']
+                governate = data['issuer_governate'],
+                regionCity = data['issuer_region_city'],
+                street = data['issuer_street'],
+                buildingNumber = data['issuer_building_num'],
+                postalCode = data['issuer_postal_code'],
+                floor = data['issuer_floor'],
+                room = data['issuer_room'],
+                landmark = data['issuer_land_mark'],
+                additionalInformation = data['issuer_additional_information']
                 )
             address_obj.save()
 
@@ -145,53 +145,53 @@ def get_receiver_data():
         'receiver_region_city',
         'receiver_postal_code',
         'receiver_country').annotate(Count('receiver_registration_num'))
-    for x in receiver_data: 
-        receiver_code = x['receiver_registration_num']
-        building_num = x['receiver_building_num']
-        floor = x['receiver_floor']
-        room = x['receiver_room']
+    for data in receiver_data: 
+        receiver_code = data['receiver_registration_num']
+        building_num = data['receiver_building_num']
+        floor = data['receiver_floor']
+        room = data['receiver_room']
         try:
             receiver_id = Receiver.objects.get(reg_num=receiver_code)
             address = Address.objects.filter(buildingNumber=building_num, floor=floor, room=room)
             if len(address) == 0 :
-                country_code = x['receiver_country']
+                country_code = data['receiver_country']
                 code_obj = CountryCode.objects.get(pk=country_code)      
                 address_obj = Address(
                     receiver = receiver_id,
                     country = code_obj,
-                    governate = x['receiver_governate'],
-                    regionCity = x['receiver_region_city'],
-                    street = x['receiver_street'],
-                    buildingNumber = x['receiver_building_num'],
-                    postalCode = x['receiver_postal_code'],
-                    floor = x['receiver_floor'],
-                    room = x['receiver_room'],
-                    landmark = x['receiver_land_mark'],
-                    additionalInformation = x['receiver_additional_information']
+                    governate = data['receiver_governate'],
+                    regionCity = data['receiver_region_city'],
+                    street = data['receiver_street'],
+                    buildingNumber = data['receiver_building_num'],
+                    postalCode = data['receiver_postal_code'],
+                    floor = data['receiver_floor'],
+                    room = data['receiver_room'],
+                    landmark = data['receiver_land_mark'],
+                    additionalInformation = data['receiver_additional_information']
                 )
                 address_obj.save()
         except Receiver.DoesNotExist as e:
             receiver_obj = Receiver(
-                type = x['receiver_type'],
-                reg_num = x['receiver_registration_num'],
-                name = x['receiver_name']
+                type = data['receiver_type'],
+                reg_num = data['receiver_registration_num'],
+                name = data['receiver_name']
             )
             receiver_obj.save()
             receiver_id = receiver_obj
-            country_code = x['receiver_country']
+            country_code = data['receiver_country']
             code_obj = CountryCode.objects.get(pk=country_code)
             address_obj = Address(
                 receiver = receiver_id,
                 country = code_obj,
-                governate = x['receiver_governate'],
-                regionCity = x['receiver_region_city'],
-                street = x['receiver_street'],
-                buildingNumber = x['receiver_building_num'],
-                postalCode = x['receiver_postal_code'],
-                floor = x['receiver_floor'],
-                room = x['receiver_room'],
-                landmark = x['receiver_land_mark'],
-                additionalInformation = x['receiver_additional_information']
+                governate = data['receiver_governate'],
+                regionCity = data['receiver_region_city'],
+                street = data['receiver_street'],
+                buildingNumber = data['receiver_building_num'],
+                postalCode = data['receiver_postal_code'],
+                floor = data['receiver_floor'],
+                room = data['receiver_room'],
+                landmark = data['receiver_land_mark'],
+                additionalInformation = data['receiver_additional_information']
                 )
             address_obj.save()
     
