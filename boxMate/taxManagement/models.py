@@ -125,7 +125,7 @@ class InvoiceHeader(models.Model):
     document_type_version = models.CharField(max_length=8,
                                              choices=[('1.0', '1.0')], default='1.0', null=True, blank=True)
 
-    date_time_issued = models.DateTimeField(default=datetime.now().strftime("%Y-%m-%dT%H:%M:%S%Z")
+    date_time_issued = models.DateTimeField(default=datetime.now()
                                             , null=True, blank=True)
     taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
     internal_id = models.CharField(max_length=50, null=True, blank=True)
@@ -142,7 +142,7 @@ class InvoiceHeader(models.Model):
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
 
     def __str__(self):
-        return self.issuer.name + ' ' + self.receiver.name
+        return str(self.issuer.name + ' ' + self.receiver.name)
 
 
 class Signature(models.Model):
@@ -151,7 +151,7 @@ class Signature(models.Model):
     signature_value = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.signature_type + ' ' + self.signature_value
+        return self.signature_type
 
 
 class InvoiceLine(models.Model):
@@ -203,7 +203,7 @@ class InvoiceLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.itemCode + ' ' + self.total
+        return self.itemCode + ' ' + str(self.total)
 
 
 class TaxLine(models.Model):
