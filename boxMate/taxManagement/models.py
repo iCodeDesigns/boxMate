@@ -144,7 +144,7 @@ class InvoiceHeader(models.Model):
     signature = models.TextField(null=True,blank=True)
 
     def __str__(self):
-        return self.issuer + ' ' + self.receiver + ' ' + self.date_time_issued
+        return self.internal_id
 
 
 class InvoiceLine(models.Model):
@@ -196,7 +196,7 @@ class InvoiceLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.itemCode + ' ' + self.total
+        return self.itemCode
 
 
 class TaxLine(models.Model):
@@ -212,4 +212,4 @@ class TaxLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.invoice_line.itemCode + ' ' + self.taxType
+        return self.invoice_line.itemCode + ' ' + str(self.taxType)
