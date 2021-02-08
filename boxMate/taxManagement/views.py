@@ -14,6 +14,10 @@ from .models import MainTable, InvoiceHeader ,InvoiceLine , TaxTypes,TaxLine
 from issuer.models import Issuer,Receiver
 from codes.models import ActivityType , TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
+from issuer.models import *
+from codes.models import *
+import pprint
+
 
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
@@ -41,14 +45,18 @@ def import_data_to_invoice():
     'sales_order_description','proforma_invoice_number','total_sales_amount',
     'total_discount_amount','net_amount','total_amount','total_items_discount_amount',
     'extra_discount_amount','issuer_registration_num','receiver_registration_num',
-    'signature_type').annotate(Count('internal_id'))
+    'signature_type', 'issuer_branch_id','receiver_building_num','receiver_floor','receiver_room').annotate(Count('internal_id'))
     for header in headers:
+        issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
+        receiver_address = Address.objects.get(buildingNumber=header['receiver_building_num'], floor=header['receiver_floor'], room=header['receiver_room'])
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
         taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
             issuer = issuer,
+            issuer_address = issuer_address,
             receiver = receiver,
+            receiver_address = receiver_address,
             document_type = header['document_type'],
             document_type_version =header['document_type_version'],
             date_time_issued = header['date_time_issued'],
@@ -111,6 +119,7 @@ def import_data_to_invoice():
                     rate = tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
+
 # Create your views here.
 @api_view(['POST', ])
 def upload_excel_sheet(request):
@@ -147,85 +156,110 @@ def upload_excel_sheet(request):
 
 
 def get_issuer_body(invoice_id):
-    # will call the function of get_issuer_address(invoice_id)
-    # will return {
-    #                 "type": "B",
-    #                 "id": "113317713",
-    #                 "name": "Issuer Company","address",
-    #                 "address": {
-    #                     "branchID": "0",
-    #                     "country": "EG",
-    #                     "governate": "Cairo",
-    #                     "regionCity": "Nasr City",
-    #                     "street": "580 Clementina Key",
-    #                     "buildingNumber": "Bldg. 0",
-    #                     "postalCode": "68030",
-    #                     "floor": "1",
-    #                     "room": "123",
-    #                     "landmark": "7660 Melody Trail",
-    #                     "additionalInformation": "beside Townhall"
-    #                 }
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    issuer_id = invoice.issuer
+    issuer = Issuer.objects.get(id=issuer_id.id)
 
-    #                 }
-    pass
+    type = issuer.type
+    reg_num = issuer.reg_num            
+    name = issuer.name
+
+    address = get_issuer_address(invoice_id)
+  
+    return {
+            "type": type,
+            "id": reg_num,
+            "name": name,
+            "address": address,
+            }
+    
 
 
 def get_receiver_body(invoice_id):
-    # will call the function of get_receiver_address(invoice_id)
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    receiver_id = invoice.receiver
+    receiver = Receiver.objects.get(id=receiver_id.id)
 
-    # will return   {
-    #                 "type": "B",
-    #                 "id": "313717919",
-    #                 "name": "Receiver",
-    #                 "address":
-    #                           {
-    #                     "branchID": "0",
-    #                     "country": "EG",
-    #                     "governate": "Cairo",
-    #                     "regionCity": "Nasr City",
-    #                     "street": "580 Clementina Key",
-    #                     "buildingNumber": "Bldg. 0",
-    #                     "postalCode": "68030",
-    #                     "floor": "1",
-    #                     "room": "123",
-    #                     "landmark": "7660 Melody Trail",
-    #                     "additionalInformation": "beside Townhall"
-    #                 }
-    #              }
-    pass
+    type = receiver.type
+    reg_num = receiver.reg_num            
+    name = receiver.name
+
+    address = get_receiver_address(invoice_id)
+  
+    return {
+            "type": type,
+            "id": reg_num,
+            "name": name,
+            "address": address,
+            }
+    
 
 
 def get_issuer_address(invoice_id):
-    # will return {
-    #                     "branchID": "0",
-    #                     "country": "EG",
-    #                     "governate": "Cairo",
-    #                     "regionCity": "Nasr City",
-    #                     "street": "580 Clementina Key",
-    #                     "buildingNumber": "Bldg. 0",
-    #                     "postalCode": "68030",
-    #                     "floor": "1",
-    #                     "room": "123",
-    #                     "landmark": "7660 Melody Trail",
-    #                     "additionalInformation": "beside Townhall"
-    #                 }
-    pass
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    address_id = invoice.issuer_address
+    address = Address.objects.get(id=address_id.id)
+
+    country_id = address.country
+    country_code = CountryCode.objects.get(code=country_id.code)
+    country = country_code.code
+    branchID = address.branch_id
+    governate = address.governate
+    regionCity = address.regionCity
+    street = address.street
+    buildingNumber = address.buildingNumber
+    postalCode = address.postalCode
+    floor = address.floor
+    room = address.room
+    landmark = address.landmark
+    additionalInformation = address.additionalInformation
+   
+    return {
+            "branchID": branchID,
+            "country": country,
+            "governate": governate,
+            "regionCity": regionCity,
+            "street": street,
+            "buildingNumber":buildingNumber,
+            "postalCode": postalCode,
+            "floor": floor,
+            "room": room,
+            "landmark": landmark,
+            "additionalInformation": additionalInformation
+                    }
 
 
 def get_receiver_address(invoice_id):
-    # will return {
-    #                     "country": "EG",
-    #                     "governate": "Egypt",
-    #                     "regionCity": "Mufazat al Ismlyah",
-    #                     "street": "580 Clementina Key",
-    #                     "buildingNumber": "Bldg. 0",
-    #                     "postalCode": "68030",
-    #                     "floor": "1",
-    #                     "room": "123",
-    #                     "landmark": "7660 Melody Trail",
-    #                     "additionalInformation": "beside Townhall"
-    #                 }
-    pass
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    address_id = invoice.receiver_address
+    address = Address.objects.get(id=address_id.id)
+
+    country_id = address.country
+    country_code = CountryCode.objects.get(code=country_id.code)
+    country = country_code.code
+
+    governate = address.governate
+    regionCity = address.regionCity
+    street = address.street
+    buildingNumber = address.buildingNumber
+    postalCode = address.postalCode
+    floor = address.floor
+    room = address.room
+    landmark = address.landmark
+    additionalInformation = address.additionalInformation
+    return {
+        "country": country,
+        "governate": governate,
+        "regionCity": regionCity,
+        "street": street,
+        "buildingNumber":buildingNumber,
+        "postalCode": postalCode,
+        "floor": floor,
+        "room": room,
+        "landmark":landmark,
+        "additionalInformation":additionalInformation
+            }
+    
 
 
 def get_invoice_header(invoice_id):
