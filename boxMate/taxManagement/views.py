@@ -17,6 +17,8 @@ from rest_framework.decorators import api_view
 from issuer.models import *
 from codes.models import *
 import pprint
+from django.db.models import Q
+
 
 
 
@@ -39,7 +41,7 @@ def write_to_tmp_storage(import_file):
 # @api_view(['POST', ])
 def import_data_to_invoice():
     #### to be tested ####
-    headers = MainTable.objects.values('document_type','document_type_version',
+    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type','document_type_version',
     'date_time_issued','taxpayer_activity_code','internal_id',
     'purchase_order_reference','purchase_order_description','sales_order_reference',
     'sales_order_description','proforma_invoice_number','total_sales_amount',
@@ -48,9 +50,9 @@ def import_data_to_invoice():
     'signature_type', 'issuer_branch_id','receiver_building_num','receiver_floor','receiver_room').annotate(Count('internal_id'))
     for header in headers:
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
-        receiver_address = Address.objects.get(buildingNumber=header['receiver_building_num'], floor=header['receiver_floor'], room=header['receiver_room'])
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
+        receiver_address = Address.objects.get(receiver=receiver.id,buildingNumber=header['receiver_building_num'], floor=header['receiver_floor'], room=header['receiver_room'])
         taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
             issuer = issuer,
@@ -106,8 +108,9 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.values('taxt_item_type','tax_item_amount',
+            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type','tax_item_amount',
             'tax_item_subtype','tax_item_rate').annotate(Count('internal_id')).annotate(Count('item_code'))
+            pprint.pprint(tax_types)
             for tax_type in tax_types:
                 tax_main_type = TaxTypes.objects.get(code = tax_type['taxt_item_type'])
                 tax_subtype = TaxSubtypes.objects.get(code = tax_type['tax_item_subtype'])

@@ -15,6 +15,8 @@ from django.utils import timezone
 from django.shortcuts import render, redirect
 from codes.models import CountryCode
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 
 
 
@@ -61,7 +63,7 @@ class IssuerListView(ListAPIView):
 
 
 def get_issuer_data():
-    issuer_data = MainTable.objects.values(
+    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None)).values(
         'issuer_type',
         'issuer_registration_num',
         'issuer_name',
@@ -127,10 +129,9 @@ def get_issuer_data():
                 additionalInformation = x['issuer_additional_information']
                 )
             address_obj.save()
-        
 
 def get_receiver_data():
-    receiver_data = MainTable.objects.values(
+    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
         'receiver_type',
         'receiver_registration_num',
         'receiver_name',
@@ -193,7 +194,6 @@ def get_receiver_data():
                 additionalInformation = x['receiver_additional_information']
                 )
             address_obj.save()
-        
     
         
 
