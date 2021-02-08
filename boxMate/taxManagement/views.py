@@ -10,10 +10,12 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader ,InvoiceLine , TaxTypes,TaxLine
+from .models import MainTable, InvoiceHeader ,InvoiceLine , TaxTypes,TaxLine , Signature
 from issuer.models import Issuer,Receiver
 from codes.models import ActivityType , TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
+import pprint
+from decimal import Decimal
 
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
@@ -41,7 +43,7 @@ def import_data_to_invoice():
     'sales_order_description','proforma_invoice_number','total_sales_amount',
     'total_discount_amount','net_amount','total_amount','total_items_discount_amount',
     'extra_discount_amount','issuer_registration_num','receiver_registration_num',
-    'signature_type').annotate(Count('internal_id'))
+    'signature_type','signature_value').annotate(Count('internal_id'))
     for header in headers:
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
@@ -65,9 +67,15 @@ def import_data_to_invoice():
             extra_discount_amount = header['extra_discount_amount'],
             total_items_discount_amount = header['total_items_discount_amount'],
             total_amount = header['total_amount'],
-            signature= header['signature_type']
         )
         header_obj.save()
+        ####### create signature #######
+        signature_obj = Signature(
+            invoice_header=header_obj,
+            signature_type=header['signature_type'],
+            signature_value=header['signature_value']
+        )
+        signature_obj.save()
         ####### create lines per invoice header #######
         lines = MainTable.objects.values('description','item_code','item_type',
         'unit_type','quantity', 'sales_total','currency_sold','amount_egp',
@@ -229,60 +237,65 @@ def get_receiver_address(invoice_id):
 
 
 def get_invoice_header(invoice_id):
-    # will return  {
-    #                 "documentType": "I",
-    #             "documentTypeVersion": "0.9",
-    #             "dateTimeIssued": "2020-11-11T02:04:45Z",
-    #             "taxpayerActivityCode": "4620",
-    #             "internalID": "IID1",
-    #             "purchaseOrderReference": "P-233-A6375",
-    #             "purchaseOrderDescription": "purchase Order description",
-    #             "salesOrderReference": "1231",
-    #             "salesOrderDescription": "Sales Order description",
-    #             "proformaInvoiceNumber": "SomeValue",
-    #             "payment": {
-    #                 "bankName": "SomeValue",
-    #                 "bankAddress": "SomeValue",
-    #                 "bankAccountNo": "SomeValue",
-    #                 "bankAccountIBAN": "",
-    #                 "swiftCode": "",
-    #                 "terms": "SomeValue"
-    #             },
-    #             "delivery": {
-    #                 "approach": "SomeValue",
-    #                 "packaging": "SomeValue",
-    #                 "dateValidity": "2020-09-28T09:30:10Z",
-    #                 "exportPort": "SomeValue",
-    #                 "countryOfOrigin": "LS",
-    #                 "grossWeight": 10.59100,
-    #                 "netWeight": 20.58700,
-    #                 "terms": "SomeValue"
-    #             },
-    #             "totalDiscountAmount": 214.41458,
-    #             "totalSalesAmount": 4419.56300,
-    #             "netAmount": 4205.14842,
-    #             "taxTotals": [
-    #                 {
-    #                     "taxType": "T1",
-    #                     "amount": 1286.79112
-    #                 },
-    #                 {
-    #                     "taxType": "T2",
-    #                     "amount": 984.78912
-    #                 }
-    #             ],
-    #             "totalAmount": 14082.88542,
-    #             "extraDiscountAmount": 5.00000,
-    #             "totalItemsDiscountAmount": 25.00000,
-    #             "signatures": [
-    #                 {
-    #                     "signatureType": "I",
-    #                     "value": "MIII0QYJKoZIhvcNAQcCoIIIwjCCCL4CAQMxDTALBglghkgBZQMEAgEwCwYJKoZIhvcNAQcFoIIGDzCCBgswggPzoAMCAQICEB7WHdVfBczn8ZiawvdzGP0wDQYJKoZIhvcNAQELBQAwRDELMAkGA1UEBhMCRUcxFDASBgNVBAoTC0VneXB0IFRydXN0MR8wHQYDVQQDExZFZ3lwdCBUcnVzdCBTZWFsaW5nIENBMB4XDTIwMDkyODAwMDAwMFoXDTIxMDkyODIzNTk1OVowggFYMRgwFgYDVQRhDA9WQVRFRy02NzQ4NTk1NDUxIjAgBgNVBAsMGVRBWCBJRCAtIDIyNTUwMDAwODExMDAwMTAxJTAjBgNVBAsMHE5hdGlvbmFsIElEIC0gMjcxMDExMjIxMDEzNzQxcTBvBgNVBAoMaNi02LHZg9mHINin2YTYtdmI2YHZiiDZhNmE2KrYrNin2LHZhyDZiNin2YTYqtmI2LHZitiv2KfYqiDYudio2K/Yp9mE2LnYstmK2LIg2KfYqNix2KfZh9mK2YUg2KfZhNi12YjZgdmKMXEwbwYDVQQDDGjYtNix2YPZhyDYp9mE2LXZiNmB2Yog2YTZhNiq2KzYp9ix2Ycg2YjYp9mE2KrZiNix2YrYr9in2Kog2LnYqNiv2KfZhNi52LLZitiyINin2KjYsdin2YfZitmFINin2YTYtdmI2YHZijELMAkGA1UEBhMCRUcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCccO0oSnJjeL3Ebf8pLON\u002Br2dUrn3o9y8pdxOLEV\u002BLcmVBYlM2fY01jk6vU4BLmPFoYBclwD/smbtrXvXMQeeTH\u002B/2z8VZrDrsZwx3GpF5Auu0k/eruUrGN1W8LqSkMsCcIgseODTbjkn9tACdtFkYkrbnmqRuA9Cxc0kenscYTvtj4iUVjmJSnUK32c41kGQYmXyBCyfMKcxGFiF8\u002Bogg74CELrtVJfYA3toFGieRrD2JM\u002BziqbxfwjjtYayMHg\u002BPaOH06Qh/3JW/FyeQyRm3HYgxKxEGSMtPJAw/PsfqvsWOP5cGhgzPtsqQHyRCupLmSbYrS0dXg6/ZF1FAPyirAgMBAAGjgeIwgd8wCQYDVR0TBAIwADBQBgNVHR8ESTBHMEWgQ6BBhj9odHRwOi8vbXBraWNybC5lZ3lwdHRydXN0LmNvbS9FZ3lwdFRydXN0U2VhbGluZ0NBL0xhdGVzdENSTC5jcmwwCwYDVR0PBAQDAgbAMB0GA1UdDgQWBBSgbTpnmRnzk7m07ys9uTcWvVGzkDAfBgNVHSMEGDAWgBS15KC43nSgLTbHhRpk/f8aINUKwzARBglghkgBhvhCAQEEBAMCB4AwIAYDVR0RBBkwF4EVZXllaGlhQGVneXB0dHJ1c3QuY29tMA0GCSqGSIb3DQEBCwUAA4ICAQC7wmdpRtWiIuQsokfjUl3pruOsX7NBU46h\u002B\u002BWReQR/ceEcdzDRBVqwM7FKsTZy3/i6ACSE9MUMpMUPgtR\u002BneBq1cuknFSqhgQmnOa8mG2/nUjISNhyrcrnFSYrmJyBxT2wOO8xwtLDA2PQJIdG/n1Xn6YxwU7gbB0NApPmORhMfD1S6KINzvTj1D/EIpMaKzg7DC4wYgR2UbO8dFvNgaNtze/GRks7xQC4KMJ9udaf0JBOzyvuGtjzsB\u002B69XG0t68WVXyTIqxBZKVVU4jqG9JZdKhCHgr2P2G4nEJxTiXf3cl6iemdC1JezaoGW5FEph/wFqswiP05TVQdLOB9EkurvdrBF6sY8Xbk/2st5FvG9uAUuyQjzUETA/As4Clqr9dNirT6OVzWhI06S8CTgOONXwWTx9CjCoc\u002BERx8ce20YgVipZnKfz2MRy3bCF37\u002BCOgNyPNXy/bneFlSKEpMPYUKk5jt2z3G/I9gyozaXVGZ3sFjxHu0UX5fuiP7xknmPDdSi\u002BMwEfnh8EApgSvPlY7RLWQU8A2cUqWrCOvvuQfc2C5VG8CBP\u002BldOZt54OXSfEnx2841bTyKJGP86NvAZOTN9wFKoyhBztN9FmhG69IWbtsxdit2pbgCofh751MsN1Zbp9JerLwBxrmcEmUZfwSvE8ojOipxaszLKzg1SO7QTGCAogwggKEAgEBMFgwRDELMAkGA1UEBhMCRUcxFDASBgNVBAoTC0VneXB0IFRydXN0MR8wHQYDVQQDExZFZ3lwdCBUcnVzdCBTZWFsaW5nIENBAhAe1h3VXwXM5/GYmsL3cxj9MAsGCWCGSAFlAwQCAaCCAQUwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHBTAcBgkqhkiG9w0BCQUxDxcNMjAxMTAzMTAwMTQ4WjAvBgkqhkiG9w0BCQQxIgQgUt/GoPN5xkeHpV4L5olwuicaAObCbf0ORKgN4O260CIwgZkGCyqGSIb3DQEJEAIvMYGJMIGGMIGDMIGABCD6bb7asgHoS/gNVKpFneOpR/9uWobTYwah5r9IQzH\u002BcTBcMEigRjBEMQswCQYDVQQGEwJFRzEUMBIGA1UEChMLRWd5cHQgVHJ1c3QxHzAdBgNVBAMTFkVneXB0IFRydXN0IFNlYWxpbmcgQ0ECEB7WHdVfBczn8ZiawvdzGP0wCwYJKoZIhvcNAQEBBIIBAC3gpQ0ldw5TCYHG0rNMGveNtoC2vRWk7EXjPCYQJS11fkBnZ6VWAgcFtJrBHzv0x81Ik6ngvXlrl/bmB0yCm71yLcL4iBFRvB1CQ8nBlnrx24xD2OQPC\u002Bjza/7yt/y747kaJgoOcmP5Q7k92vtnIxdO\u002BX0SI3Jb9\u002BuByvJEZZTFHnjXie4gKLyR2HZqHB2VLf/scBTe2\u002BzxQx3p3Hn15Sh7Muufw0ARpZkuiT5haskusdGRF2JEsHtGX/X57JmXzHdOms/mDusbg4Mee2tLT\u002B67Bnz8FAX8qTMD8oCtOdfQaKQDhyyCsqxeLUMJ5oM28ZA/Ncf\u002BMlmVl0\u002BHKkGS13c="
-    #                 }
-    #             ]
-    #         }
-    pass
-
+    invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
+    signatures = Signature.objects.filter(invoice_header=invoice_header)
+    signature_list = []
+    for signature in signatures:
+        signature_obj = {
+            "signatureType":signature.signature_type,
+            "value":signature.signature_value
+        }
+        signature_list.append(signature_obj)
+    
+    #### output data ####           
+    data = {
+                "documentType": invoice_header.document_type,
+                "documentTypeVersion": invoice_header.document_type_version,
+                "dateTimeIssued": invoice_header.date_time_issued,
+                "taxpayerActivityCode": invoice_header.taxpayer_activity_code,
+                "internalID": invoice_header.internal_id,
+                "purchaseOrderReference": invoice_header.purchase_order_reference,
+                "purchaseOrderDescription": invoice_header.purchase_order_description,
+                "salesOrderReference": invoice_header.sales_order_description,
+                "salesOrderDescription": invoice_header.sales_order_description,
+                "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
+                # "payment": {
+                #     "bankName": "SomeValue",
+                #     "bankAddress": "SomeValue",
+                #     "bankAccountNo": "SomeValue",
+                #     "bankAccountIBAN": "",
+                #     "swiftCode": "",
+                #     "terms": "SomeValue"
+                # },
+                # "delivery": {
+                #     "approach": "SomeValue",
+                #     "packaging": "SomeValue",
+                #     "dateValidity": "2020-09-28T09:30:10Z",
+                #     "exportPort": "SomeValue",
+                #     "countryOfOrigin": "LS",
+                #     "grossWeight": 10.59100,
+                #     "netWeight": 20.58700,
+                #     "terms": "SomeValue"
+                # },
+                "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
+                "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
+                "netAmount": invoice_header.net_amount.__float__(),
+                "taxTotals": [
+                #     {
+                #         "taxType": "T1",
+                #         "amount": 1286.79112
+                #     },
+                #     {
+                #         "taxType": "T2",
+                #         "amount": 984.78912
+                #     }
+                ],
+                "totalAmount": invoice_header.total_amount.__float__(),
+                "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
+                "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
+                "signatures": signature_list
+    }
+    pprint.pprint(data)
 
 def get_invoice_lines(invoice_id):
     # for every line it will call the function get_taxable_lines(invoice_line_id)
@@ -331,7 +344,8 @@ def get_invoice_lines(invoice_id):
     pass
 
 
-def get_taxable_lines(invoice_line_id):
+def get_tax_lines_per_invoice_line(invoice_line_id):
+    
     # will return [
     #                             {
     #                                 "taxType": "T1",
