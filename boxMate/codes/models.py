@@ -48,4 +48,4 @@ class TaxSubtypes(models.Model):
     taxtype_reference = models.ForeignKey(TaxTypes, on_delete=models.CASCADE,)
 
     def __str__(self):
-         return self.taxtype_reference.code+" - "+self.code
+         return self.code

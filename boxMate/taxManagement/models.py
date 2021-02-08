@@ -141,11 +141,17 @@ class InvoiceHeader(models.Model):
     extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
     total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    signature = models.TextField(null=True,blank=True)
 
     def __str__(self):
-        return self.internal_id
+        return self.issuer.name + ' ' + self.receiver.name
 
+class Signature(models.Model):
+    invoice_header = models.ForeignKey(InvoiceHeader , on_delete=models.CASCADE)
+    signature_type = models.CharField(max_length=20,null=True,blank=True)
+    signature_value = models.TextField(null=True,blank=True)
+
+    def __str__(self):
+        return self.signature_type + ' ' + self.signature_value
 
 class InvoiceLine(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, )
@@ -196,7 +202,7 @@ class InvoiceLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.itemCode
+        return self.itemCode + ' ' + self.total
 
 
 class TaxLine(models.Model):
@@ -212,4 +218,4 @@ class TaxLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.invoice_line.itemCode + ' ' + str(self.taxType)
+        return str(self.invoice_line.itemCode + ' ' + self.taxType.code)
