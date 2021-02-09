@@ -27,3 +27,4 @@ class IssuerSerializer(serializers.ModelSerializer):
         for address in address_data:
             Address.objects.create(issuer=issuer, **address)
         return issuer
+        
