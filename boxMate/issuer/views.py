@@ -129,6 +129,10 @@ def get_issuer_data():
                 additionalInformation = data['issuer_additional_information']
                 )
             address_obj.save()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 17c8c95a6d3e7e2d7dec438e2160dfeff57aab3e
 
 def get_receiver_data():
     receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
@@ -194,5 +198,4 @@ def get_receiver_data():
                 additionalInformation = data['receiver_additional_information']
                 )
             address_obj.save()
-
             
