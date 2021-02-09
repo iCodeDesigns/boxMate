@@ -78,4 +78,4 @@ class IssuerTax(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="issuer_tax_last_update_by")
 
     def __str__(self):
-        return self.issuer.name + ' ' + self.branch_id
+        return self.issuer.name

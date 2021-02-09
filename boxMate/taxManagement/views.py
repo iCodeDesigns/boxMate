@@ -4,6 +4,12 @@ import requests
 from django.shortcuts import render
 from requests.auth import HTTPBasicAuth
 
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from demjson import decode
+
+
 from taxManagement.resources import MainTableResource
 from tablib import Dataset
 from django.conf import settings
@@ -14,6 +20,8 @@ from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from issuer.models import *
 from codes.models import *
+from django.db.models import Q
+
 from pprint import pprint
 from decimal import Decimal
 
@@ -33,22 +41,28 @@ def write_to_tmp_storage(import_file):
 
 def import_data_to_invoice():
     #### to be tested ####
-    headers = MainTable.objects.values('document_type', 'document_type_version',
-                                       'date_time_issued', 'taxpayer_activity_code', 'internal_id',
-                                       'purchase_order_reference', 'purchase_order_description',
-                                       'sales_order_reference',
-                                       'sales_order_description', 'proforma_invoice_number', 'total_sales_amount',
-                                       'total_discount_amount', 'net_amount', 'total_amount',
-                                       'total_items_discount_amount',
-                                       'extra_discount_amount', 'issuer_registration_num', 'receiver_registration_num',
-                                       'signature_type', 'issuer_branch_id', 'receiver_building_num', 'receiver_floor',
-                                       'receiver_room', 'signature_type', 'signature_value').annotate(
+    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
+                                                                    'date_time_issued', 'taxpayer_activity_code',
+                                                                    'internal_id',
+                                                                    'purchase_order_reference',
+                                                                    'purchase_order_description',
+                                                                    'sales_order_reference',
+                                                                    'sales_order_description',
+                                                                    'proforma_invoice_number', 'total_sales_amount',
+                                                                    'total_discount_amount', 'net_amount',
+                                                                    'total_amount', 'total_items_discount_amount',
+                                                                    'extra_discount_amount', 'issuer_registration_num',
+                                                                    'receiver_registration_num',
+                                                                    'signature_type', 'signature_value',
+                                                                    'issuer_branch_id', 'receiver_building_num',
+                                                                    'receiver_floor', 'receiver_room').annotate(
         Count('internal_id'))
     for header in headers:
+        issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
-        receiver_address = Address.objects.get(buildingNumber=header['receiver_building_num'],
+        receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
                                                floor=header['receiver_floor'], room=header['receiver_room'])
         taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
@@ -111,8 +125,9 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
-                                                 'tax_item_subtype', 'tax_item_rate').annotate(
+            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type', 'tax_item_amount',
+                                                                            'tax_item_subtype',
+                                                                            'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
             for tax_type in tax_types:
                 tax_main_type = TaxTypes.objects.get(code=tax_type['taxt_item_type'])
@@ -400,26 +415,7 @@ def get_taxable_lines(invoice_line_id):
     #                                 "amount": 204.67639,
     #                                 "subType": "T1",
     #                                 "rate": 14.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T2",
-    #                                 "amount": 156.64009,
-    #                                 "subType": "T2",
-    #                                 "rate": 12
-    #                             },
-    #                             {
-    #                                 "taxType": "T3",
-    #                                 "amount": 30.00000,
-    #                                 "subType": "T3",
-    #                                 "rate": 0.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T4",
-    #                                 "amount": 32.23210,
-    #                                 "subType": "T4",
-    #                                 "rate": 5.00
     #                             }
-    #                         }
     #                      ]
 
     tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
@@ -447,15 +443,115 @@ def get_one_invoice(invoice_id):
 
 
 def submit_invoice():
-    data1 = get_one_invoice("IID0")
-    data2 = {"documents": [data1]}
-    data = json.dumps(data2, ensure_ascii=False,)
-    pprint(data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI3ODc3MTgsImV4cCI6MTYxMjc5MTMxOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVhY2M4ODA0LTM5YzQtM2MxMS0zZGVlLWYwMDYzNDk0OGZmYSIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.hlU_CmVarV1_C3pH1pmApvluJ2zHGLr9sae9cQ0CnBivMYeZ0CiVY1T85hgqwFYaUhJIx0LpPM3zXC7--fynemvDv-qUZMZoUOlbhiPfG7KG0HjqFHzJkroKsGe-eqlVIHfbUtLPabV5bwVNAbYSHo867F7c0Qq2M1Ovrx9nt9WpPXn2M5KFfJTDd7jHqY3XYOhlEIovMY_xsNVSeTBRu9c5aXV6-P7GrYoUOvynKlvlkYCv9Q8sbTdLFhi_gMyH4SOPtNGG3hmld1fX0t3OahPC9ZTmkSRU2K4-udlijMP-Ctd5NwksVHOzyGhOF-6WrA8-iGkVdmhfTGT41tsHcg"
+    invoice = get_one_invoice("AR-00021")
+    data1 = json.dumps({"documents": [invoice]})
+    data = decode(json.dumps(data1))
+    json_data = data
+    print(json_data)
+    print(type(json_data))
+    data2 = {
+        "documents": [
+            {
+                "issuer": {
+                    "type": "B",
+                    "id": "100324932",
+                    "name": "Dreem",
+                    "address": {
+                        "branchID": "0",
+                        "country": "EG",
+                        "governate": "Cairo",
+                        "regionCity": "Nasr City",
+                        "street": "580 Clementina Key",
+                        "buildingNumber": "Bldg. 0",
+                        "postalCode": "68030",
+                        "floor": "1",
+                        "room": "123",
+                        "landmark": "7660 Melody Trail",
+                        "additionalInformation": "beside Townhall"
+                    }
+                },
+                "receiver": {
+                    "type": "B",
+                    "id": "313717919",
+                    "name": "Receiver",
+                    "address": {
+                        "country": "EG",
+                        "governate": "Egypt",
+                        "regionCity": "Mufazat al Ismlyah",
+                        "street": "580 Clementina Key",
+                        "buildingNumber": "Bldg. 0",
+                        "postalCode": "68030",
+                        "floor": "1",
+                        "room": "123",
+                        "landmark": "7660 Melody Trail",
+                        "additionalInformation": "Egypt"
+                    }
+                },
+                "documentType": "I",
+                "documentTypeVersion": "0.9",
+                "dateTimeIssued": "2021-02-09T13:21:07Z",
+                "taxpayerActivityCode": "1079",
+                "internalID": "AR-00021",
+                "purchaseOrderReference": "P-233-A6375",
+                "purchaseOrderDescription": "purchase Order description",
+                "salesOrderReference": "Sales Order description",
+                "salesOrderDescription": "Sales Order description",
+                "proformaInvoiceNumber": "SomeValue",
+                "totalDiscountAmount": 214.41458,
+                "totalSalesAmount": 4419.563,
+                "netAmount": 4205.14842,
+                "taxTotals": [],
+                "totalAmount": 14082.88542,
+                "extraDiscountAmount": 5.0,
+                "totalItemsDiscountAmount": 25.0,
+                "signatures": [
+                    {
+                        "signatureType": "I",
+                        "value": "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"
+                    }
+                ],
+                "invoiceLines": [
+                    {
+                        "description": "Fruity Machine",
+                        "itemType": "EGS",
+                        "itemCode": "EG-100324932-11111",
+                        "unitType": "EA",
+                        "quantity": 7.0,
+                        "internalCode": "FSPM001",
+                        "salesTotal": 4419.563,
+                        "total": 2220.08914,
+                        "valueDifference": 7.0,
+                        "totalTaxableFees": 618.69212,
+                        "netTotal": 649.642,
+                        "itemsDiscount": 5.0,
+                        "unitValue": {
+                            "currencySold": "USD",
+                            "amountEGP": 94.7,
+                            "amountSold": 4.735,
+                            "currencyExchangeRate": 20.0
+                        },
+                        "discount": {
+                            "rate": 2.0,
+                            "amount": 13.258
+                        },
+                        "taxableItems": [
+                            {
+                                "taxType": "T1",
+                                "amount": 204.67639,
+                                "subType": "V001",
+                                "rate": 14.0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI4Nzc0ODIsImV4cCI6MTYxMjg4MTA4MiwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjQ3YWNhYjY1LTlhOTEtZjk4ZS0zZTk4LTM0MzFjYTgwNTI3MSIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.qkXXdcHSK5tAXQuiJfMD3RCBdiuPqZC6BOJxtwF8ZEvC7IS-gkK5zrB5PsoSYNmESFTwG8BoiMmnF6uBnsGzyZ3C12uGmml37ICvRaQU41aTauV4vkbPZXd-Idk0zUKQrJy6ltNTY92Hk19jRpE3XAi2I1PeKP-JBlh23YuC3RZS3VLKAAMU5jBjN4B78sw9zch2XzsxEkHU0pkjAxHKba7UPG82DEe_tut6VOnTq7crZxydKzGBoy6o9lcRVOxbc1wRD5Gx4jhBQ-IqiZm_SXFxjufBUt0rRB3xbsA-9RQ9o-ZDJAw4k2ytRz6uE4ZrfzAkOlnxZIG0liMmwImk9w"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
-                             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
-                             json=data)
+                             headers={'Content-Type': 'text/plain', 'Authorization': 'Bearer ' + auth_token},
+                             json=json_data)
 
     return response
 
