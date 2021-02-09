@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Issuer, Address
+from django.contrib.admin import site
+
+from .models import Issuer, Address, Receiver
 
 
 # Register your models here.
@@ -15,3 +17,7 @@ class IssuerAdmin(admin.ModelAdmin):
         AddressInline,
 
     ]
+
+
+site.register(Receiver)
+
