@@ -194,6 +194,5 @@ def get_receiver_data():
                 additionalInformation = data['receiver_additional_information']
                 )
             address_obj.save()
-    
-        
 
+            
