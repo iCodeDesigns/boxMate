@@ -3,10 +3,12 @@ import json
 import requests
 from django.shortcuts import render
 from requests.auth import HTTPBasicAuth
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from demjson import decode
+
 
 from taxManagement.resources import MainTableResource
 from tablib import Dataset
@@ -16,7 +18,6 @@ from django.db.models import Count
 from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
-from rest_framework.decorators import api_view
 from issuer.models import *
 from codes.models import *
 from django.db.models import Q
@@ -38,7 +39,6 @@ def write_to_tmp_storage(import_file):
     return tmp_storage
 
 
-# @api_view(['POST', ])
 def import_data_to_invoice():
     #### to be tested ####
     headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
@@ -143,7 +143,7 @@ def import_data_to_invoice():
 
 
 # Create your views here.
-@api_view(['POST', ])
+
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -341,7 +341,6 @@ def get_invoice_header(invoice_id):
         "signatures": signature_list
     }
     return data
-
 
 def get_invoice_lines(invoice_id):
     # for every line it will call the function get_taxable_lines(invoice_line_id)
@@ -555,3 +554,17 @@ def submit_invoice():
                              json=json_data)
 
     return response
+
+
+
+##### get all invoices ######
+
+def get_all_invoice_headers(request):
+    invoice_headers = InvoiceHeader.objects.all()
+    # headers = []
+    # for invoice_header in invoice_headers:
+    #     header = get_invoice_header(invoice_header.internal_id)
+    #     headers.append(header)
+    # if request.method == 'GET':
+    #     serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
+    #     return Response(serializer.data , status=status.HTTP_200_OK)
