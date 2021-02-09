@@ -48,7 +48,7 @@ def import_data_to_invoice():
     'sales_order_description','proforma_invoice_number','total_sales_amount',
     'total_discount_amount','net_amount','total_amount','total_items_discount_amount',
     'extra_discount_amount','issuer_registration_num','receiver_registration_num',
-    'signature_type', 'issuer_branch_id','receiver_building_num','receiver_floor','receiver_room').annotate(Count('internal_id'))
+    'signature_type','signature_value', 'issuer_branch_id','receiver_building_num','receiver_floor','receiver_room').annotate(Count('internal_id'))
     for header in headers:
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
@@ -130,7 +130,6 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-
 
 # Create your views here.
 @api_view(['POST', ])
@@ -475,4 +474,18 @@ def submission_list(request):
     if request.method == 'GET':
         submissions_serializer = SubmissionSerializer(submissions, many=True)
         return Response(submissions_serializer.data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

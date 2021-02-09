@@ -21,4 +21,7 @@ urlpatterns = [
     path('issuer/', include('issuer.urls')),
     path('tax/', include('taxManagement.urls')),
 
+
+    # RESTFUL URLS
+    path('api/issuer/', include('issuer.api.urls')),
 ]
