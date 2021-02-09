@@ -12,14 +12,14 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature , Submission
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
 from issuer.models import *
 from codes.models import *
 from django.db.models import Q
-
+from .serializers import SubmissionSerializer
 
 
 from pprint import pprint
@@ -464,3 +464,15 @@ def submit_invoice():
                              json=data)
 
     return response
+
+
+
+
+
+@api_view(['GET', ])
+def submission_list(request):
+    submissions = Submission.objects.all()
+    if request.method == 'GET':
+        submissions_serializer = SubmissionSerializer(submissions, many=True)
+        return Response(submissions_serializer.data)
+

@@ -90,7 +90,7 @@ def get_issuer_data():
                 code_obj = CountryCode.objects.get(pk=country_code)
                 address_obj = Address(
                     issuer = issuer_id,
-                    branch_id = x['issuer_branch_id'],
+                    branch_id = data['issuer_branch_id'],
                     country = code_obj,
                     governate = data['issuer_governate'],
                     regionCity = data['issuer_region_city'],
@@ -129,10 +129,7 @@ def get_issuer_data():
                 additionalInformation = data['issuer_additional_information']
                 )
             address_obj.save()
-<<<<<<< HEAD
-=======
-
->>>>>>> 17c8c95a6d3e7e2d7dec438e2160dfeff57aab3e
+        
 
 def get_receiver_data():
     receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
