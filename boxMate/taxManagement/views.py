@@ -406,26 +406,7 @@ def get_taxable_lines(invoice_line_id):
     #                                 "amount": 204.67639,
     #                                 "subType": "T1",
     #                                 "rate": 14.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T2",
-    #                                 "amount": 156.64009,
-    #                                 "subType": "T2",
-    #                                 "rate": 12
-    #                             },
-    #                             {
-    #                                 "taxType": "T3",
-    #                                 "amount": 30.00000,
-    #                                 "subType": "T3",
-    #                                 "rate": 0.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T4",
-    #                                 "amount": 32.23210,
-    #                                 "subType": "T4",
-    #                                 "rate": 5.00
     #                             }
-    #                         }
     #                      ]
 
     tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
