@@ -13,9 +13,9 @@ from django.db.models import Count
 from .models import MainTable, InvoiceHeader ,InvoiceLine , TaxTypes,TaxLine , Signature
 from issuer.models import Issuer,Receiver
 from codes.models import ActivityType , TaxSubtypes, TaxTypes
-from rest_framework.decorators import api_view
 import pprint
 from decimal import Decimal
+from .serializers import InvoiceHeaderSerializer
 
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
@@ -295,7 +295,7 @@ def get_invoice_header(invoice_id):
                 "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
                 "signatures": signature_list
     }
-    pprint.pprint(data)
+    return data
 
 def get_invoice_lines(invoice_id):
     # for every line it will call the function get_taxable_lines(invoice_line_id)
@@ -1150,3 +1150,17 @@ def submit_invoice():
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     return response
+
+
+
+##### get all invoices ######
+@api_view(['GET',])
+def get_all_invoice_headers(request):
+    invoice_headers = InvoiceHeader.objects.all()
+    # headers = []
+    # for invoice_header in invoice_headers:
+    #     header = get_invoice_header(invoice_header.internal_id)
+    #     headers.append(header)
+    if request.method == 'GET':
+        serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
+        return Response(serializer.data , status=status.HTTP_200_OK)

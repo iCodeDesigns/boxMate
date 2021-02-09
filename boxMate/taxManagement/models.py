@@ -146,7 +146,7 @@ class InvoiceHeader(models.Model):
         return self.issuer.name + ' ' + self.receiver.name
 
 class Signature(models.Model):
-    invoice_header = models.ForeignKey(InvoiceHeader , on_delete=models.CASCADE)
+    invoice_header = models.ForeignKey(InvoiceHeader , on_delete=models.CASCADE , related_name='signatures')
     signature_type = models.CharField(max_length=20,null=True,blank=True)
     signature_value = models.TextField(null=True,blank=True)
 
