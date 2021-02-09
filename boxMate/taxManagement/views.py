@@ -158,7 +158,12 @@ def upload_excel_sheet(request):
         data = {"success": False, "error": {"code": 400, "message": "Invalid Excel sheet"}}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
-    return Response(data, status=status.HTTP_200_OK)
+    context = {
+        'data': 'data'
+    }
+    return render(request, 'upload-excelsheet.html', context=context)
+
+    
 
 
 def get_issuer_body(invoice_id):
@@ -459,15 +464,13 @@ def submit_invoice():
     return response
 
 
-
-
-
-@api_view(['GET', ])
 def submission_list(request):
     submissions = Submission.objects.all()
-    if request.method == 'GET':
-        submissions_serializer = SubmissionSerializer(submissions, many=True)
-        return Response(submissions_serializer.data)
+    context = {
+        'submissions': 'submissions'
+    }
+    return render(request, 'list-submissions.html', context=context)
+
 
 
 
