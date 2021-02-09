@@ -203,7 +203,7 @@ class InvoiceLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.itemCode + ' ' + str(self.total)
+        return self.itemCode
 
 
 class TaxLine(models.Model):
@@ -218,5 +218,4 @@ class TaxLine(models.Model):
                                    related_name="tax_line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return str(self.invoice_line.itemCode + ' ' + self.taxType.code)
+
