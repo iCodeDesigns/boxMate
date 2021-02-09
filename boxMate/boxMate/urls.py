@@ -20,6 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('issuer/', include('issuer.urls')),
     path('tax/', include('taxManagement.urls')),
+    path('api/tax/' , include('taxManagement.api.urls'))
 
 
     # RESTFUL URLS
