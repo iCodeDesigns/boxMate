@@ -60,7 +60,7 @@ class Address(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.issuer.name + ' ' + self.branch_id
+        return self.branch_id
 
 
 

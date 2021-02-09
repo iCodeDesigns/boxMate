@@ -3,147 +3,147 @@ from django.db import models
 from issuer.models import Issuer, Receiver, Address
 from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
-from django.utils import timezone
+from datetime import datetime
 
 
 # Create your models here.
 
 
 class MainTable(models.Model):
-#Core
+    # Core
     document_type = models.CharField(max_length=20, blank=True, null=True)
-    document_type_version = models.CharField(max_length=20,  blank=True, null=True)
-    date_time_issued = models.DateTimeField( blank=True, null=True)
-    taxpayer_activity_code = models.CharField(max_length=20,  blank=True, null=True)
-    internal_id = models.CharField(max_length=20,  blank=True, null=True)
-    purchase_order_reference = models.CharField(max_length=55 ,  blank=True, null=True)
-    purchase_order_description = models.CharField(max_length=55 ,  blank=True, null=True)
-    sales_order_reference = models.CharField(max_length=20 ,  blank=True, null=True)
-    sales_order_description = models.CharField(max_length=20 ,  blank=True, null=True)
-    proforma_invoice_number = models.CharField(max_length=50 ,  blank=True, null=True)
-    total_sales_amount =  models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
-    total_discount_amount =  models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
-    net_amount =  models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
-    total_amount =  models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
-    total_items_discount_amount = models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
-    extra_discount_amount = models.DecimalField(max_digits=20,  decimal_places=10 ,  blank=True, null=True)
+    document_type_version = models.CharField(max_length=20, blank=True, null=True)
+    date_time_issued = models.DateTimeField(blank=True, null=True)
+    taxpayer_activity_code = models.CharField(max_length=20, blank=True, null=True)
+    internal_id = models.CharField(max_length=20, blank=True, null=True)
+    purchase_order_reference = models.CharField(max_length=55, blank=True, null=True)
+    purchase_order_description = models.CharField(max_length=55, blank=True, null=True)
+    sales_order_reference = models.CharField(max_length=20, blank=True, null=True)
+    sales_order_description = models.CharField(max_length=20, blank=True, null=True)
+    proforma_invoice_number = models.CharField(max_length=50, blank=True, null=True)
+    total_sales_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    total_discount_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    net_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    total_items_discount_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    extra_discount_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
 
-  
-  
+    # Issuer
+    issuer_type = models.CharField(max_length=55, blank=True, null=True)
+    issuer_registration_num = models.CharField(max_length=20, blank=True, null=True)
+    issuer_name = models.CharField(max_length=55, blank=True, null=True)
+    issuer_building_num = models.CharField(max_length=55, blank=True, null=True)
+    issuer_room = models.CharField(max_length=20, blank=True, null=True)
+    issuer_floor = models.CharField(max_length=29, blank=True, null=True)
+    issuer_street = models.CharField(max_length=55, blank=True, null=True)
+    issuer_land_mark = models.CharField(max_length=55, blank=True, null=True)
+    issuer_additional_information = models.CharField(max_length=55, blank=True, null=True)
+    issuer_governate = models.CharField(max_length=55, blank=True, null=True)
+    issuer_region_city = models.CharField(max_length=55, blank=True, null=True)
+    issuer_postal_code = models.CharField(max_length=20, blank=True, null=True)
+    issuer_country = models.CharField(max_length=20, blank=True, null=True)
+    issuer_branch_id = models.CharField(max_length=20, blank=True, null=True)
 
-    #Issuer
-    issuer_type = models.CharField(max_length=55,  blank=True, null=True)
-    issuer_registration_num = models.CharField(max_length=20,  blank=True, null=True)
-    issuer_name = models.CharField(max_length=55,  blank=True, null=True)
-    issuer_building_num = models.CharField(max_length=55 ,  blank=True, null=True)
-    issuer_room = models.CharField(max_length=20 ,  blank=True, null=True)
-    issuer_floor = models.CharField(max_length=29,  blank=True, null=True)
-    issuer_street = models.CharField(max_length=55 ,  blank=True, null=True)
-    issuer_land_mark = models.CharField(max_length=55 ,  blank=True, null=True)
-    issuer_additional_information = models.CharField(max_length=55,  blank=True, null=True)
-    issuer_governate = models.CharField(max_length=55,  blank=True, null=True)
-    issuer_region_city = models.CharField(max_length=55,  blank=True, null=True)
-    issuer_postal_code = models.CharField(max_length=20,  blank=True, null=True)
-    issuer_country = models.CharField(max_length=20,  blank=True, null=True)
-    issuer_branch_id = models.CharField(max_length=20,  blank=True, null=True)
+    # Receiver
+    receiver_type = models.CharField(max_length=55, blank=True, null=True)
+    receiver_registration_num = models.CharField(max_length=20, blank=True, null=True)
+    receiver_name = models.CharField(max_length=55, blank=True, null=True)
+    receiver_building_num = models.CharField(max_length=55, blank=True, null=True)
+    receiver_room = models.CharField(max_length=20, blank=True, null=True)
+    receiver_floor = models.CharField(max_length=5, blank=True, null=True)
+    receiver_street = models.CharField(max_length=55, blank=True, null=True)
+    receiver_land_mark = models.CharField(max_length=55, blank=True, null=True)
+    receiver_additional_information = models.CharField(max_length=55, blank=True, null=True)
+    receiver_governate = models.CharField(max_length=55, blank=True, null=True)
+    receiver_region_city = models.CharField(max_length=55, blank=True, null=True)
+    receiver_postal_code = models.CharField(max_length=20, blank=True, null=True)
+    receiver_country = models.CharField(max_length=20, blank=True, null=True)
 
-    #Receiver
-    receiver_type = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_registration_num = models.CharField(max_length=20 ,  blank=True, null=True)
-    receiver_name = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_building_num = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_room = models.CharField(max_length=20,  blank=True, null=True)
-    receiver_floor = models.CharField(max_length=5,  blank=True, null=True)
-    receiver_street = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_land_mark = models.CharField(max_length=55 ,  blank=True, null=True)
-    receiver_additional_information = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_governate = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_region_city = models.CharField(max_length=55,  blank=True, null=True)
-    receiver_postal_code = models.CharField(max_length=20,  blank=True, null=True)
-    receiver_country = models.CharField(max_length=20,  blank=True, null=True)
+    # Payment
+    bank_name = models.CharField(max_length=20, blank=True, null=True)
+    bank_address = models.CharField(max_length=20, blank=True, null=True)
+    bank_account_no = models.CharField(max_length=55, blank=True, null=True)
+    bank_account_iban = models.CharField(max_length=55, blank=True, null=True)
+    swift_code = models.CharField(max_length=20, blank=True, null=True)
+    payment_terms = models.CharField(max_length=20, blank=True, null=True)
 
-    #Payment
-    bank_name = models.CharField(max_length=20,  blank=True, null=True)
-    bank_address = models.CharField(max_length=20,  blank=True, null=True)
-    bank_account_no = models.CharField(max_length=55,  blank=True, null=True)
-    bank_account_iban = models.CharField(max_length=55,  blank=True, null=True)
-    swift_code = models.CharField(max_length=20,  blank=True, null=True)
-    payment_terms = models.CharField(max_length=20,  blank=True, null=True)
-     
-    #Delivery
-    approach = models.CharField(max_length=20,  blank=True, null=True)
-    packaging = models.CharField(max_length=20,  blank=True, null=True)
-    date_validity = models.DateTimeField( blank=True, null=True)
-    export_port = models.CharField(max_length=55,  blank=True, null=True)
-    country_of_origin = models.CharField(max_length=55,  blank=True, null=True)
-    gross_weight = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    net_weight = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    delivery_terms = models.CharField(max_length=55,  blank=True, null=True)
+    # Delivery
+    approach = models.CharField(max_length=20, blank=True, null=True)
+    packaging = models.CharField(max_length=20, blank=True, null=True)
+    date_validity = models.DateTimeField(blank=True, null=True)
+    export_port = models.CharField(max_length=55, blank=True, null=True)
+    country_of_origin = models.CharField(max_length=55, blank=True, null=True)
+    gross_weight = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    net_weight = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    delivery_terms = models.CharField(max_length=55, blank=True, null=True)
 
-    #Tax Total
-    taxt_type = models.CharField(max_length=55,  blank=True, null=True)
-    tax_amount = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    
-    #Signature
-    signature_type = models.CharField(max_length=55,  blank=True, null=True)
-    signature_value = models.CharField(max_length=200,  blank=True, null=True)
+    # Tax Total
+    taxt_type = models.CharField(max_length=55, blank=True, null=True)
+    tax_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
 
-    #Invoice Line
-    description = models.CharField(max_length=55,  blank=True, null=True)
-    item_type = models.CharField(max_length=20,  blank=True, null=True)
-    item_code = models.CharField(max_length=55,  blank=True, null=True)
-    unit_type = models.CharField(max_length=20,  blank=True, null=True)
-    quantity = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    sales_total = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    internal_code = models.CharField(max_length=20,  blank=True, null=True)
-    items_discount = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    net_total = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    total_taxable_fees= models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    value_difference = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    total = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-        #Value
-    currency_sold = models.CharField(max_length=20,  blank=True, null=True)
-    amount_sold =  models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    amount_egp = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    currency_exchange_rate = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-        #Discount
-    discount_rate  =  models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    discount_amount = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-        #Taxable Item
-    taxt_item_type = models.CharField(max_length=55,  blank=True, null=True)
-    tax_item_amount = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
-    tax_item_subtype = models.CharField(max_length=55,  blank=True, null=True)
-    tax_item_rate = models.DecimalField(max_digits=20,  decimal_places=10,  blank=True, null=True)
+    # Signature
+    signature_type = models.CharField(max_length=55, blank=True, null=True)
+    signature_value = models.CharField(max_length=200, blank=True, null=True)
 
-    
+    # Invoice Line
+    description = models.CharField(max_length=55, blank=True, null=True)
+    item_type = models.CharField(max_length=20, blank=True, null=True)
+    item_code = models.CharField(max_length=55, blank=True, null=True)
+    unit_type = models.CharField(max_length=20, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    sales_total = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    internal_code = models.CharField(max_length=20, blank=True, null=True)
+    items_discount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    net_total = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    total_taxable_fees = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    value_difference = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    total = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    # Value
+    currency_sold = models.CharField(max_length=20, blank=True, null=True)
+    amount_sold = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    amount_egp = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    currency_exchange_rate = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    # Discount
+    discount_rate = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    discount_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    # Taxable Item
+    taxt_item_type = models.CharField(max_length=55, blank=True, null=True)
+    tax_item_amount = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+    tax_item_subtype = models.CharField(max_length=55, blank=True, null=True)
+    tax_item_rate = models.DecimalField(max_digits=20, decimal_places=10, blank=True, null=True)
+
 
 class InvoiceHeader(models.Model):
-    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE ,null=True,blank=True)
-    issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True, related_name="issuer_address")
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE,null=True,blank=True)
-    receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True, related_name="receiver_address")
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True)
+    issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
+                                       related_name="issuer_address")
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE, null=True, blank=True)
+    receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
+                                         related_name="receiver_address")
     document_type = models.CharField(max_length=2,
-                                     choices=[('i', 'invoice')], default='i',null=True,blank=True)
+                                     choices=[('i', 'invoice')], default='i', null=True, blank=True)
     document_type_version = models.CharField(max_length=8,
-                                             choices=[('1.0', '1.0')], default='1.0',null=True,blank=True)
+                                             choices=[('1.0', '1.0')], default='1.0', null=True, blank=True)
 
-    date_time_issued = models.DateTimeField(default=timezone.now,null=True,blank=True)
-    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE,null=True,blank=True)
-    internal_id = models.CharField(max_length=50,null=True,blank=True)
-    purchase_order_reference = models.CharField(max_length=50,null=True,blank=True)
-    purchase_order_description = models.CharField(max_length=100,null=True,blank=True)
-    sales_order_reference = models.CharField(max_length=50,null=True,blank=True)
-    sales_order_description = models.CharField(max_length=100,null=True,blank=True)
-    proforma_invoice_number = models.CharField(max_length=50,null=True,blank=True)
-    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    net_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
-    total_amount = models.DecimalField(decimal_places=5, max_digits=20,null=True,blank=True)
+    date_time_issued = models.DateTimeField(default=datetime.now()
+                                            , null=True, blank=True)
+    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
+    internal_id = models.CharField(max_length=50, null=True, blank=True)
+    purchase_order_reference = models.CharField(max_length=50, null=True, blank=True)
+    purchase_order_description = models.CharField(max_length=100, null=True, blank=True)
+    sales_order_reference = models.CharField(max_length=50, null=True, blank=True)
+    sales_order_description = models.CharField(max_length=100, null=True, blank=True)
+    proforma_invoice_number = models.CharField(max_length=50, null=True, blank=True)
+    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    net_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
 
     def __str__(self):
-        return self.issuer.name + ' ' + self.receiver.name
+        return str(self.issuer.name + ' ' + self.receiver.name)
+
 
 class Signature(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader , on_delete=models.CASCADE , related_name='signatures')
@@ -151,7 +151,8 @@ class Signature(models.Model):
     signature_value = models.TextField(null=True,blank=True)
 
     def __str__(self):
-        return self.signature_type + ' ' + self.signature_value
+        return self.signature_type
+
 
 class InvoiceLine(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, )
@@ -202,7 +203,7 @@ class InvoiceLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.itemCode + ' ' + self.total
+        return self.itemCode + ' ' + str(self.total)
 
 
 class TaxLine(models.Model):
