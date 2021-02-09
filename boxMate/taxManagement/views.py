@@ -454,3 +454,6 @@ def submit_invoice():
                              json=data)
     print(response)
     return response
+
+def list_eta_invoice(request):
+    return render(request, 'eta-invoice.html')

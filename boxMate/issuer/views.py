@@ -194,3 +194,7 @@ def get_receiver_data():
                 additionalInformation=data['receiver_additional_information']
             )
             address_obj.save()
+
+
+def list_uploaded_invoice(request):
+    return render(request, 'upload-invoice.html')
