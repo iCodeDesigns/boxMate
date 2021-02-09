@@ -1,6 +1,6 @@
 from django.urls import path
 
-from taxManagement import views
+from taxManagement.api import views
 
 app_name = 'tax'
 urlpatterns = [
