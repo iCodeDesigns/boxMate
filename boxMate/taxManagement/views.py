@@ -82,7 +82,7 @@ def import_data_to_invoice():
         )
         signature_obj.save()
         ####### create lines per invoice header #######
-        lines = MainTable.objects.values('description', 'item_code', 'item_type',
+        lines = MainTable.objects.filter(~Q(item_code=None)).values('description', 'item_code', 'item_type',
                                          'unit_type', 'quantity', 'sales_total', 'currency_sold', 'amount_egp',
                                          'amount_sold', 'currency_exchange_rate', 'total', 'value_difference',
                                          'total_taxable_fees', 'items_discount', 'net_total', 'discount_rate',
