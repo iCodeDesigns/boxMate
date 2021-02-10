@@ -9,6 +9,5 @@ urlpatterns = [
     path('invoice-headers/' , views.get_all_invoice_headers , name='get-all-invoice-headers'),
     # path('invoice-headers/' , views.get_all_invoice_headers , name='get-all-invoice-headers')
     path('list/eta-invoice/', views.list_eta_invoice, name='list-eta-invoice'),
-    path('test/', views.submit_invoice),
 
 ] 
