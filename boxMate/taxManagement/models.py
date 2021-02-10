@@ -226,8 +226,11 @@ class TaxLine(models.Model):
 
 
 class Submission(models.Model):
+    invoice = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
     subm_uuid = models.CharField(max_length=100, blank=True, null=True,unique=True)
     document_count = models.IntegerField(blank=True, null=True)
     date_time_received = models.DateTimeField(blank=True, null=True)
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
+    
+

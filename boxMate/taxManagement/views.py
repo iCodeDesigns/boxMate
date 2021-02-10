@@ -146,7 +146,6 @@ def import_data_to_invoice():
 
 
 # Create your views here.
-@api_view(['POST', ])
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -451,16 +450,34 @@ def get_one_invoice(invoice_id):
 
 
 def submit_invoice():
-    invoice = get_one_invoice("AR-00021")
+    invoice = get_one_invoice("AR-00021") 
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI4OTI3ODksImV4cCI6MTYxMjg5NjM4OSwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6ImQwNDQ1M2EyLTg4YjgtNjRiMS1mNGIyLTQxZmNjOThiZTM1YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.ix1yZQHQryB7vAeRei-M64xcuDW1JtbjWivzbIuhFMHfDds82poLXgZjJMylMVLZVylQ_ZcQTm4YkPTJb3urWjuOEQcO0qsR1u71t2FfsBVjfeMtTebDfHU-IXl5Ub8bDNgMh54xuTr66iPaWmiq22xRk2O1YU8I63ORxtUY4kRvMnaS6cORDYK6ZqaLlrWINTlTUvgVbbiNYQzmaYz7d9_w8bb5jA5xZA2gxJhB-6cRYde3iKH716sdi2WW-PCAreygtYjEtfuoot2Yg6k-0NMoJUgRgJfTHJiRA4hNmG8Cdeqjbk86Hveyg1Dceb7n3rT_Xdb6RcxIZCqC0B0pFw"
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5NTM4MjMsImV4cCI6MTYxMjk1NzQyMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjEwZWFkOTUwLTI4OWUtN2UwOS1mOGEyLWJlNDk1MjM1NjA2NCIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.c42yc5ZwNF66S8SvscRNeHcwL7_qPXJiCAQNyfW3IzwMqOATJSTpGqOyhNX_UZ9GPgUG4tdO_mSo2gmfx1hcdP55B1mr04QPd9G_Vd8zA-1nhPUa1YoiNk239-uQhYfOqIAe0J01gouW4FVtPkcQFc_b1F7HLvAWXVlYfPNQemvT5qA_JN8S6Xh5xEXTAbQX1rwgMFK7tzt8sYw22JeyLDZID3nqiHIGqqzhgo8vDHK3M3nTDXL9P8YzULpsjgPGMdv8j6NKSis4SWn5bSIYOY4_zAvxcCNjl6VCUhQ_LuwMpog4r9blmkKAkQYmi2Jsy37U3EgZVVTL0Pr_jguxGQ"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     print(response)
+    print(response.content)
     return response
+
+
+
+
+
+
+def save_submition_response(invoice_id, submission_id):
+    submission_obj = Submission(
+            invoice=invoice_id,
+            subm_id=submission_id,
+            )
+    submission_obj.save()
+           
+   
+ 
+
+
 
 
 def submission_list(request):
