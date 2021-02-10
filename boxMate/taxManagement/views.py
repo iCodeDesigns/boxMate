@@ -467,24 +467,68 @@ def submit_invoice(request , invoice_id):
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     print(response)
-    print(response.content)
-    return redirect('/tax/list/uploaded-invoices')
+    response_code = response
+    response_json = response_code.json()    
+    submissionId = response_json['submissionId']
+    print(submissionId)
 
 
+    acceptedDocuments = response_json['acceptedDocuments']
+    uuid = acceptedDocuments[0]['uuid']
+
+    internalId = acceptedDocuments[0]['internalId']
+    save_submition_response(internalId, submissionId)
+
+    return response
 
 
 
 
 def save_submition_response(invoice_id, submission_id):
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     submission_obj = Submission(
-            invoice=invoice_id,
+            invoice=invoice,
             subm_id=submission_id,
             )
     submission_obj.save()
+    get_submition_response(submission_id)
+           
+   
+ 
+#from taxManagement import views
+#a= views.get_submition_response()
+def get_submition_response(submission_id):
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5Njc1MjMsImV4cCI6MTYxMjk3MTEyMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6ImE0Y2VkODI1LTJiZTgtZmI4ZC02MDliLTQ3OTVmYzRhNDhiYyIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.eqIDS9GJURAjGj9LXLMpBxjKdtgxpTMnQDHKcZa8QlHU3zl7yaY7Hafi4c9UwTUDkfmm4pOHFG3SGqTBe67DJIJBQxTFNOaL8U1HluaB8hDtgJFHiLpTLeBLNRsQcLVsJsi9i_43Rk_nOdjA9JaH5B_aBX4goqOOa6YSi_7Bd5GnjyGhhAKKLsiqIvS5b_qiVIgDVhNZUgcPFgDRlN9wbef3MeI3t655jy-QGkSZgoiTjUEa3lQyIMuwpYnGN2UTrlmJyez6KBl2VlDckQQGBHVX0qSC0d0J0Tg2DH4cfRSr0lGqYT81DKsfLyv_0XvB2iS0Kpp__358UcjvynMDwg"
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' +submission_id+ '?PageSize=1'
+    response = requests.get(url, verify=False,
+                             headers={'Authorization': 'Bearer ' + auth_token,}
+                             )
+    print(response)
+
+    response_code = response
+    response_json = response_code.json()    
+    documentCount = response_json['documentCount']
+    dateTimeReceived = response_json['dateTimeReceived']
+    overallStatus = response_json['overallStatus']
+
+    documentSummary = response_json['documentSummary']
+    uuid = documentSummary[0]['uuid']
+    submission = Submission.objects.get(subm_id='5AAPRY0GP6ARNN2XN59J16YE10')
+    submission.subm_uuid = uuid
+    submission.document_count = documentCount
+    submission.date_time_received = dateTimeReceived
+    submission.over_all_status = overallStatus
+    submission.save()
+    
+
+    return response
+    
+ 
 
 
-
-
+   
+           
+   
 
 
 
