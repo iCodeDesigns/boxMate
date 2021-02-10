@@ -12,7 +12,7 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature , Submission
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
@@ -96,10 +96,14 @@ def import_data_to_invoice():
         signature_obj.save()
         ####### create lines per invoice header #######
         lines = MainTable.objects.filter(~Q(item_code=None)).values('description', 'item_code', 'item_type',
-                                         'unit_type', 'quantity', 'sales_total', 'currency_sold', 'amount_egp',
-                                         'amount_sold', 'currency_exchange_rate', 'total', 'value_difference',
-                                         'total_taxable_fees', 'items_discount', 'net_total', 'discount_rate',
-                                         'discount_amount', 'internal_code').annotate(Count('item_code'))
+                                                                    'unit_type', 'quantity', 'sales_total',
+                                                                    'currency_sold', 'amount_egp',
+                                                                    'amount_sold', 'currency_exchange_rate', 'total',
+                                                                    'value_difference',
+                                                                    'total_taxable_fees', 'items_discount', 'net_total',
+                                                                    'discount_rate',
+                                                                    'discount_amount', 'internal_code').annotate(
+            Count('item_code'))
         for line in lines:
             line_obj = InvoiceLine(
                 invoice_header=header_obj,
@@ -140,6 +144,7 @@ def import_data_to_invoice():
                 )
                 tax_type_obj.save()
 
+
 # Create your views here.
 @api_view(['POST', ])
 def upload_excel_sheet(request):
@@ -176,8 +181,6 @@ def upload_excel_sheet(request):
         'data': 'data'
     }
     return render(request, 'upload-excelsheet.html', context=context)
-
-    
 
 
 def get_issuer_body(invoice_id):
@@ -468,20 +471,6 @@ def submission_list(request):
     return render(request, 'list-submissions.html', context=context)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##### get all invoices ######
 
 def get_all_invoice_headers(request):
@@ -493,5 +482,7 @@ def get_all_invoice_headers(request):
     # if request.method == 'GET':
     #     serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
     #     return Response(serializer.data , status=status.HTTP_200_OK)
+
+
 def list_eta_invoice(request):
     return render(request, 'eta-invoice.html')
