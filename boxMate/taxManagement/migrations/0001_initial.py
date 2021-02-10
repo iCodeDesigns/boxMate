@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('issuer', '0001_initial'),
         ('codes', '0001_initial'),
         ('issuer', '0001_initial'),
     ]
