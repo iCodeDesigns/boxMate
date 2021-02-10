@@ -149,7 +149,6 @@ def import_data_to_invoice():
         header_obj.save()
 
 # Create your views here.
-@api_view(['POST', ])
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -463,7 +462,25 @@ def submit_invoice():
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     print(response)
+    print(response.content)
     return response
+
+
+
+
+
+
+def save_submition_response(invoice_id, submission_id):
+    submission_obj = Submission(
+            invoice=invoice_id,
+            subm_id=submission_id,
+            )
+    submission_obj.save()
+
+
+
+
+
 
 
 def submission_list(request):

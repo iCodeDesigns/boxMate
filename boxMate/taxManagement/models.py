@@ -1,8 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import pre_save, post_save
-from django.dispatch import receiver
-
 from issuer.models import Issuer, Receiver, Address
 from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
@@ -260,11 +257,13 @@ class TaxLine(models.Model):
 
 
 class Submission(models.Model):
+    invoice = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
-    subm_uuid = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    subm_uuid = models.CharField(max_length=100, blank=True, null=True,unique=True)
     document_count = models.IntegerField(blank=True, null=True)
     date_time_received = models.DateTimeField(blank=True, null=True)
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
+
 
 
 @receiver(pre_save, sender='taxManagement.InvoiceLine')
