@@ -12,7 +12,7 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from taxManagement.models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature
+from taxManagement.models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature , Submission
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
@@ -20,7 +20,7 @@ from issuer.models import *
 from codes.models import *
 from pprint import pprint
 from decimal import Decimal
-from .serializers import InvoiceHeaderSerializer
+from .serializers import InvoiceHeaderSerializer , SubmissionSerializer
 
 
 @api_view(['POST', ])
@@ -68,3 +68,12 @@ def get_all_invoice_headers(request):
     if request.method == 'GET':
         serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
         return Response(serializer.data , status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET', ])
+def submission_list(request):
+    submissions = Submission.objects.all()
+    if request.method == 'GET':
+        submissions_serializer = SubmissionSerializer(submissions, many=True)
+        return Response(submissions_serializer.data)

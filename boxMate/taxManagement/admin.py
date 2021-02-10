@@ -1,7 +1,6 @@
-from django.contrib import admin
-
 # Register your models here.
 from django.contrib import admin
+from django.contrib.admin import site
 from .models import *
 from import_export.forms import ImportForm, ConfirmImportForm
 from import_export.admin import ImportExportModelAdmin, ImportMixin
@@ -29,3 +28,6 @@ class InvoiceHeaderAdmin(admin.ModelAdmin):
 class MainTableAdmin(ImportExportModelAdmin):
     resource_class = MainTableResource
 
+
+
+site.register(Submission)
