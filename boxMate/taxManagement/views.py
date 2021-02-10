@@ -3,7 +3,10 @@ import json
 import requests
 from django.shortcuts import render
 from requests.auth import HTTPBasicAuth
-
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from demjson import decode
 from taxManagement.resources import MainTableResource
 from tablib import Dataset
 from django.conf import settings
@@ -12,11 +15,10 @@ from django.db.models import Count
 from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature , Submission
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
+from rest_framework.decorators import api_view
 from issuer.models import *
 from codes.models import *
 from django.db.models import Q
-from .serializers import SubmissionSerializer
-
 
 from pprint import pprint
 from decimal import Decimal
@@ -35,21 +37,32 @@ def write_to_tmp_storage(import_file):
     return tmp_storage
 
 
+# @api_view(['POST', ])
 def import_data_to_invoice():
     #### to be tested ####
-    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type','document_type_version',
-    'date_time_issued','taxpayer_activity_code','internal_id',
-    'purchase_order_reference','purchase_order_description','sales_order_reference',
-    'sales_order_description','proforma_invoice_number','total_sales_amount',
-    'total_discount_amount','net_amount','total_amount','total_items_discount_amount',
-    'extra_discount_amount','issuer_registration_num','receiver_registration_num',
-    'signature_type','signature_value', 'issuer_branch_id','receiver_building_num','receiver_floor','receiver_room').annotate(Count('internal_id'))
+    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
+                                                                    'date_time_issued', 'taxpayer_activity_code',
+                                                                    'internal_id',
+                                                                    'purchase_order_reference',
+                                                                    'purchase_order_description',
+                                                                    'sales_order_reference',
+                                                                    'sales_order_description',
+                                                                    'proforma_invoice_number', 'total_sales_amount',
+                                                                    'total_discount_amount', 'net_amount',
+                                                                    'total_amount', 'total_items_discount_amount',
+                                                                    'extra_discount_amount', 'issuer_registration_num',
+                                                                    'receiver_registration_num',
+                                                                    'signature_type', 'signature_value',
+                                                                    'issuer_branch_id', 'receiver_building_num',
+                                                                    'receiver_floor', 'receiver_room').annotate(
+        Count('internal_id'))
     for header in headers:
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
-        receiver_address = Address.objects.get(receiver=receiver.id,buildingNumber=header['receiver_building_num'], floor=header['receiver_floor'], room=header['receiver_room'])
+        receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
+                                               floor=header['receiver_floor'], room=header['receiver_room'])
         taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
             issuer=issuer,
@@ -111,9 +124,10 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type','tax_item_amount',
-            'tax_item_subtype','tax_item_rate').annotate(Count('internal_id')).annotate(Count('item_code'))
-            pprint.pprint(tax_types)
+            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type', 'tax_item_amount',
+                                                                            'tax_item_subtype',
+                                                                            'tax_item_rate').annotate(
+                Count('internal_id')).annotate(Count('item_code'))
             for tax_type in tax_types:
                 tax_main_type = TaxTypes.objects.get(code=tax_type['taxt_item_type'])
                 tax_subtype = TaxSubtypes.objects.get(code=tax_type['tax_item_subtype'])
@@ -127,7 +141,7 @@ def import_data_to_invoice():
                 tax_type_obj.save()
 
 # Create your views here.
-
+@api_view(['POST', ])
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -331,6 +345,7 @@ def get_invoice_header(invoice_id):
     }
     return data
 
+
 def get_invoice_lines(invoice_id):
     # for every line it will call the function get_taxable_lines(invoice_line_id)
     # will return
@@ -404,26 +419,7 @@ def get_taxable_lines(invoice_line_id):
     #                                 "amount": 204.67639,
     #                                 "subType": "T1",
     #                                 "rate": 14.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T2",
-    #                                 "amount": 156.64009,
-    #                                 "subType": "T2",
-    #                                 "rate": 12
-    #                             },
-    #                             {
-    #                                 "taxType": "T3",
-    #                                 "amount": 30.00000,
-    #                                 "subType": "T3",
-    #                                 "rate": 0.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T4",
-    #                                 "amount": 32.23210,
-    #                                 "subType": "T4",
-    #                                 "rate": 5.00
     #                             }
-    #                         }
     #                      ]
 
     tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
@@ -447,20 +443,20 @@ def get_one_invoice(invoice_id):
     }
     invoice.update(invoice_header)
     invoice.update({"invoiceLines": invoice_lines})
+
     return invoice
 
 
 def submit_invoice():
-    data1 = get_one_invoice("IID0")
-    data2 = {"documents": [data1]}
-    data = json.dumps(data2, ensure_ascii=False,)
-    pprint(data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI3ODc3MTgsImV4cCI6MTYxMjc5MTMxOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVhY2M4ODA0LTM5YzQtM2MxMS0zZGVlLWYwMDYzNDk0OGZmYSIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.hlU_CmVarV1_C3pH1pmApvluJ2zHGLr9sae9cQ0CnBivMYeZ0CiVY1T85hgqwFYaUhJIx0LpPM3zXC7--fynemvDv-qUZMZoUOlbhiPfG7KG0HjqFHzJkroKsGe-eqlVIHfbUtLPabV5bwVNAbYSHo867F7c0Qq2M1Ovrx9nt9WpPXn2M5KFfJTDd7jHqY3XYOhlEIovMY_xsNVSeTBRu9c5aXV6-P7GrYoUOvynKlvlkYCv9Q8sbTdLFhi_gMyH4SOPtNGG3hmld1fX0t3OahPC9ZTmkSRU2K4-udlijMP-Ctd5NwksVHOzyGhOF-6WrA8-iGkVdmhfTGT41tsHcg"
+    invoice = get_one_invoice("AR-00021")
+    json_data = json.dumps({'documents': [invoice]})
+    data = decode(json_data)
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI4OTI3ODksImV4cCI6MTYxMjg5NjM4OSwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6ImQwNDQ1M2EyLTg4YjgtNjRiMS1mNGIyLTQxZmNjOThiZTM1YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.ix1yZQHQryB7vAeRei-M64xcuDW1JtbjWivzbIuhFMHfDds82poLXgZjJMylMVLZVylQ_ZcQTm4YkPTJb3urWjuOEQcO0qsR1u71t2FfsBVjfeMtTebDfHU-IXl5Ub8bDNgMh54xuTr66iPaWmiq22xRk2O1YU8I63ORxtUY4kRvMnaS6cORDYK6ZqaLlrWINTlTUvgVbbiNYQzmaYz7d9_w8bb5jA5xZA2gxJhB-6cRYde3iKH716sdi2WW-PCAreygtYjEtfuoot2Yg6k-0NMoJUgRgJfTHJiRA4hNmG8Cdeqjbk86Hveyg1Dceb7n3rT_Xdb6RcxIZCqC0B0pFw"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
-
+    print(response)
     return response
 
 
@@ -497,3 +493,5 @@ def get_all_invoice_headers(request):
     # if request.method == 'GET':
     #     serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
     #     return Response(serializer.data , status=status.HTTP_200_OK)
+def list_eta_invoice(request):
+    return render(request, 'eta-invoice.html')
