@@ -1,7 +1,7 @@
 import json
 
 import requests
-from django.shortcuts import render
+from django.shortcuts import render ,redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -22,6 +22,8 @@ from django.db.models import Q
 
 from pprint import pprint
 from decimal import Decimal
+from django.http import HttpResponse, HttpResponseRedirect
+from issuer import views as issuer_views
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -176,10 +178,13 @@ def upload_excel_sheet(request):
         data = {"success": False, "error": {"code": 400, "message": "Invalid Excel sheet"}}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
+    issuer_views.get_issuer_data()
+    issuer_views.get_receiver_data()
+    import_data_to_invoice()
     context = {
         'data': 'data'
     }
-    return render(request, 'upload-excelsheet.html', context=context)
+    return redirect('/tax/list/uploaded-invoices')
 
 
 def get_issuer_body(invoice_id):
@@ -449,18 +454,18 @@ def get_one_invoice(invoice_id):
     return invoice
 
 
-def submit_invoice():
-    invoice = get_one_invoice("AR-00021") 
+def submit_invoice(request , invoice_id):
+    invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5NTM4MjMsImV4cCI6MTYxMjk1NzQyMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjEwZWFkOTUwLTI4OWUtN2UwOS1mOGEyLWJlNDk1MjM1NjA2NCIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.c42yc5ZwNF66S8SvscRNeHcwL7_qPXJiCAQNyfW3IzwMqOATJSTpGqOyhNX_UZ9GPgUG4tdO_mSo2gmfx1hcdP55B1mr04QPd9G_Vd8zA-1nhPUa1YoiNk239-uQhYfOqIAe0J01gouW4FVtPkcQFc_b1F7HLvAWXVlYfPNQemvT5qA_JN8S6Xh5xEXTAbQX1rwgMFK7tzt8sYw22JeyLDZID3nqiHIGqqzhgo8vDHK3M3nTDXL9P8YzULpsjgPGMdv8j6NKSis4SWn5bSIYOY4_zAvxcCNjl6VCUhQ_LuwMpog4r9blmkKAkQYmi2Jsy37U3EgZVVTL0Pr_jguxGQ"
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5NjI2NjUsImV4cCI6MTYxMjk2NjI2NSwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjgxMTZhODlmLTc1YzktMDkxYS1mNmE0LTU5NTdlZjgyMzI0MiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.jEpglo147QfLXsMMOi8hF8wXGsA7RHBbjP-In3JWnrURkcTque-T9zF5XjMUXKpRqtpcjIuV5apqiA9B0WSzye1Yww2R7QKbAeomi8OBBB9hxQwsxuund7mCJ5R6TV19THo_kxWs0QwMpfTusuScKMJcnOS5A23GHhAK1SqTASWZAdtywEdqz5tYIwXir3DYZTQHIxtsuJyEbgm4_iFOMLIkVFoD3wwBtyTuJHa37GL9OrLnW1WvUylFEoImHIrRWAeP7UOm9MVWSpA5y2p9ofIJsCunHcHM8oBCqKBxTOXTvQVzABOMTm4OGt2PcW18med64n7D1V9Pug7ihzyYAQ"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     print(response)
     print(response.content)
-    return response
+    return redirect('/tax/list/uploaded-invoices')
 
 
 
@@ -492,11 +497,11 @@ def submission_list(request):
 
 def get_all_invoice_headers(request):
     invoice_headers = InvoiceHeader.objects.all()
-
+    count = 0
     for invoice_header in invoice_headers:
-        submissions = Submission.objects.filter(invoice = invoice_header)
-        print("******")
-        print(submissions)    
+        submissions = Submission.objects.filter(invoice = invoice_header).last()
+        invoice_headers[count].submissions = submissions
+        count+=1
     context = {
         "invoice_headers":invoice_headers
     }
