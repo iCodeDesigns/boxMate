@@ -1,0 +1,170 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+   <!-- Content Header (Page header) -->
+   <section class="content-header">
+      <h1>
+         Upload Invoice
+         <!-- <small>Optional description</small> -->
+      </h1>
+
+   </section>
+   <!-- Main content -->
+   <section class="content">
+      <div class="row">
+         <div class="col-xs-12">
+            <div class="box">
+               <div class="box-header">
+                  <h3 class="box-title">Data Table Invoice</h3>
+               </div>
+               <!-- /.box-header -->
+               <div class="box-body">
+                  <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                     <div class="row">
+                        <div class="col-sm-6">
+                           <div class="dataTables_length" id="example1_length">
+                              <label>
+                                 Show
+                                 <select name="example1_length" aria-controls="example1" class="form-control input-sm">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                 </select>
+                                 entries
+                              </label>
+                           </div>
+                        </div>
+                        <div class="col-sm-6">
+                           <div id="example1_filter" class="dataTables_filter">
+                              <div class="margin pull-right">
+                                 <div class="btn-group">
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="btn btn-success" data-toggle="modal"
+                                       data-target="#exampleModal">
+                                       Upload Excel
+                                    </button>
+                                    <button type="button" class="btn btn-success">Create Invoice</button>
+                                 </div>
+
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-sm-12">
+                           <table id="example1" class="table table-bordered table-striped dataTable" role="grid"
+                              aria-describedby="example1_info">
+                              <thead>
+                                 <tr role="row">
+                                    <th>Internal ID</th>
+                                    <th>Purchase Order Reference</th>
+                                    <th>Sales Order Reference</th>
+                                    <th>Total Discount Amount</th>
+                                    <th>Total Sales Amount</th>
+                                    <th>Net Amount</th>
+                                    <th>Total Amount</th>
+                                    <th>Submition ID</th>
+                                    <th>Submit</th>
+                                    <th>View</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 {% for header in invoice_headers %}
+                                 <tr>
+                                    <td>{{ header.internal_id }}</td>
+                                    <td>{{ header.purchase_order_reference }}</td>
+                                    <td>{{ header.sales_order_reference }}</td>
+                                    <td>{{ header.total_discount_amount }}</td>
+                                    <td>{{ header.total_sales_amount }}</td>
+                                    <td>{{ header.net_amount }}</td>
+                                    <td>{{ header.total_amount }}</td>
+                                    {% if header.submissions %}
+                                    <td>{{header.submissions.subm_id}}</td>
+                                    <td><span class="label label-success">Submitted</span></span></td>
+                                    {% else %}
+                                    <td></td>
+                                    <td>
+                                       <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.internal_id %}">
+                                          <span class="glyphicon glyphicon-cloud-upload"></span>
+                                    </td>
+                                    </a>
+                                    {% endif %}
+                                    <td><span class="glyphicon glyphicon-pencil"></span></td>
+                                 </tr>
+                                 {% endfor %}
+                              </tbody>
+
+                           </table>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-sm-5">
+                           <div class="dataTables_info" id="example1_info" role="status" aria-live="polite">Showing 1 to
+                              10 of 57 entries</div>
+                        </div>
+                        <div class="col-sm-7">
+                           <div class="dataTables_paginate paging_simple_numbers" id="example1_paginate">
+                              <ul class="pagination">
+                                 <li class="paginate_button previous disabled" id="example1_previous"><a href="#"
+                                       aria-controls="example1" data-dt-idx="0" tabindex="0">Previous</a></li>
+                                 <li class="paginate_button active"><a href="#" aria-controls="example1" data-dt-idx="1"
+                                       tabindex="0">1</a></li>
+                                 <li class="paginate_button "><a href="#" aria-controls="example1" data-dt-idx="2"
+                                       tabindex="0">2</a></li>
+                                 <li class="paginate_button "><a href="#" aria-controls="example1" data-dt-idx="3"
+                                       tabindex="0">3</a></li>
+                                 <li class="paginate_button "><a href="#" aria-controls="example1" data-dt-idx="4"
+                                       tabindex="0">4</a></li>
+                                 <li class="paginate_button "><a href="#" aria-controls="example1" data-dt-idx="5"
+                                       tabindex="0">5</a></li>
+                                 <li class="paginate_button "><a href="#" aria-controls="example1" data-dt-idx="6"
+                                       tabindex="0">6</a></li>
+                                 <li class="paginate_button next" id="example1_next"><a href="#"
+                                       aria-controls="example1" data-dt-idx="7" tabindex="0">Next</a></li>
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+         </div>
+         <!-- /.col -->
+      </div>
+      <!-- /.row -->
+   </section>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+   aria-hidden="true">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <form method="POST" action="{% url 'taxManagement:upload-excel-sheet' %}" id="form1" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+               <input type="file" name="import_file">
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+               <button type="submit" class="btn btn-secondary" data-dismiss="modal" onclick="document.getElementById('form1').submit();">Submit</button>
+               
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
+{% endblock body %}

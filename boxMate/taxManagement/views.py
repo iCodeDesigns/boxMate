@@ -1,7 +1,7 @@
 import json
 
 import requests
-from django.shortcuts import render
+from django.shortcuts import render ,redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -22,6 +22,8 @@ from django.db.models import Q
 
 from pprint import pprint
 from decimal import Decimal
+from django.http import HttpResponse, HttpResponseRedirect
+from issuer import views as issuer_views
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -176,10 +178,13 @@ def upload_excel_sheet(request):
         data = {"success": False, "error": {"code": 400, "message": "Invalid Excel sheet"}}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
+    issuer_views.get_issuer_data()
+    issuer_views.get_receiver_data()
+    import_data_to_invoice()
     context = {
         'data': 'data'
     }
-    return render(request, 'upload-excelsheet.html', context=context)
+    return redirect('/tax/list/uploaded-invoices')
 
 
 def get_issuer_body(invoice_id):
@@ -449,8 +454,8 @@ def get_one_invoice(invoice_id):
     return invoice
 
 
-def submit_invoice():
-    invoice = get_one_invoice("AR-00021") 
+def submit_invoice(request , invoice_id):
+    invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
     auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5Njc1MjMsImV4cCI6MTYxMjk3MTEyMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6ImE0Y2VkODI1LTJiZTgtZmI4ZC02MDliLTQ3OTVmYzRhNDhiYyIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.eqIDS9GJURAjGj9LXLMpBxjKdtgxpTMnQDHKcZa8QlHU3zl7yaY7Hafi4c9UwTUDkfmm4pOHFG3SGqTBe67DJIJBQxTFNOaL8U1HluaB8hDtgJFHiLpTLeBLNRsQcLVsJsi9i_43Rk_nOdjA9JaH5B_aBX4goqOOa6YSi_7Bd5GnjyGhhAKKLsiqIvS5b_qiVIgDVhNZUgcPFgDRlN9wbef3MeI3t655jy-QGkSZgoiTjUEa3lQyIMuwpYnGN2UTrlmJyez6KBl2VlDckQQGBHVX0qSC0d0J0Tg2DH4cfRSr0lGqYT81DKsfLyv_0XvB2iS0Kpp__358UcjvynMDwg"
@@ -535,6 +540,15 @@ def submission_list(request):
 
 def get_all_invoice_headers(request):
     invoice_headers = InvoiceHeader.objects.all()
+    count = 0
+    for invoice_header in invoice_headers:
+        submissions = Submission.objects.filter(invoice = invoice_header).last()
+        invoice_headers[count].submissions = submissions
+        count+=1
+    context = {
+        "invoice_headers":invoice_headers
+    }
+    return render(request, 'upload-invoice.html', context)
     # headers = []
     # for invoice_header in invoice_headers:
     #     header = get_invoice_header(invoice_header.internal_id)
