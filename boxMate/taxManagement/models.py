@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
+
 from issuer.models import Issuer, Receiver, Address
 from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
@@ -123,7 +126,8 @@ class InvoiceHeader(models.Model):
     document_type = models.CharField(max_length=2,
                                      choices=[('i', 'invoice')], default='i', null=True, blank=True)
     document_type_version = models.CharField(max_length=8,
-                                             choices=[('1.0', '1.0')], default='1.0', null=True, blank=True)
+                                             choices=[('1.0', '1.0'), ('0.9', '0.9')], default='1.0', null=True,
+                                             blank=True)
 
     date_time_issued = models.DateTimeField(default=datetime.now()
                                             , null=True, blank=True)
@@ -144,18 +148,35 @@ class InvoiceHeader(models.Model):
     def __str__(self):
         return str(self.issuer.name + ' ' + self.receiver.name)
 
+    def calculate_total_sales(self):
+        self.total_sales_amount = 0
+        for line in self.lines.all():
+            print(line)
+            self.total_sales_amount = self.total_sales_amount + line.salesTotal
+
+    def calculate_total_item_discount(self):
+        self.total_discount_amount = 0
+        for line in self.lines.all():
+            self.total_discount_amount = (
+                self.total_discount_amount + line.amount if line.amount is not None else self.total_discount_amount)
+
+    def calculate_net_total(self):
+        self.net_amount = 0
+        for line in self.lines.all():
+            self.net_amount = self.net_amount + line.netTotal
+
 
 class Signature(models.Model):
-    invoice_header = models.ForeignKey(InvoiceHeader , on_delete=models.CASCADE , related_name='signatures')
-    signature_type = models.CharField(max_length=20,null=True,blank=True)
-    signature_value = models.TextField(null=True,blank=True)
+    invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name='signatures')
+    signature_type = models.CharField(max_length=20, null=True, blank=True)
+    signature_value = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.signature_type
 
 
 class InvoiceLine(models.Model):
-    invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, )
+    invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name="lines")
     description = models.CharField(max_length=250, blank=True, null=True)
     itemType = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GPC format')
     itemCode = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GS1 code')
@@ -205,6 +226,22 @@ class InvoiceLine(models.Model):
     def __str__(self):
         return self.itemCode
 
+    def calculate_sales_total(self):
+        if self.amountSold is not None:
+            self.salesTotal = self.quantity * self.amountSold
+        else:
+            self.salesTotal = self.quantity * self.amountEGP
+
+    def calculate_discount_amount(self):
+        if self.rate is not None:
+            self.amount = self.rate * self.salesTotal / 100
+
+    def calculate_net_total(self):
+        if self.amount is not None:
+            self.netTotal = self.salesTotal - self.amount
+        else:
+            self.netTotal = self.salesTotal
+
 
 class TaxLine(models.Model):
     invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.CASCADE, related_name='tax_lines')
@@ -222,12 +259,16 @@ class TaxLine(models.Model):
         return str(self.invoice_line.itemCode + ' ' + self.taxType.code)
 
 
-
-
-
 class Submission(models.Model):
     subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
-    subm_uuid = models.CharField(max_length=100, blank=True, null=True,unique=True)
+    subm_uuid = models.CharField(max_length=100, blank=True, null=True, unique=True)
     document_count = models.IntegerField(blank=True, null=True)
     date_time_received = models.DateTimeField(blank=True, null=True)
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
+
+
+@receiver(pre_save, sender='taxManagement.InvoiceLine')
+def update_total_line(sender, instance, **kwargs):
+    instance.calculate_sales_total()
+    instance.calculate_discount_amount()
+    instance.calculate_net_total()
