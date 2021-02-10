@@ -218,4 +218,16 @@ class TaxLine(models.Model):
                                    related_name="tax_line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
+    def __str__(self):
+        return str(self.invoice_line.itemCode + ' ' + self.taxType.code)
 
+
+
+
+
+class Submission(models.Model):
+    subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
+    subm_uuid = models.CharField(max_length=100, blank=True, null=True,unique=True)
+    document_count = models.IntegerField(blank=True, null=True)
+    date_time_received = models.DateTimeField(blank=True, null=True)
+    over_all_status = models.CharField(max_length=100, blank=True, null=True)
