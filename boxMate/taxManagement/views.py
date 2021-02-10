@@ -475,6 +475,15 @@ def submission_list(request):
 
 def get_all_invoice_headers(request):
     invoice_headers = InvoiceHeader.objects.all()
+
+    for invoice_header in invoice_headers:
+        submissions = Submission.objects.filter(invoice = invoice_header)
+        print("******")
+        print(submissions)    
+    context = {
+        "invoice_headers":invoice_headers
+    }
+    return render(request, 'upload-invoice.html', context)
     # headers = []
     # for invoice_header in invoice_headers:
     #     header = get_invoice_header(invoice_header.internal_id)

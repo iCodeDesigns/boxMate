@@ -67,67 +67,20 @@
                                           </tr>
                                        </thead>
                                        <tbody>
+                                          {% for header in invoice_headers %}
                                           <tr>
-                                             <td>AR-00021</td>
-                                             <td>P-233-A6375</td>
-                                             <td>1231</td>
-                                             <td>214.41458</td>
-                                             <td>4419.563</td>
-                                             <td>4205.1484/td>
-                                             <td>14082.886</td>
+                                             <td>{{ header.internal_id }}</td>
+                                             <td>{{ header.purchase_order_reference }}</td>
+                                             <td>{{ header.sales_order_reference }}</td>
+                                             <td>{{ header.total_discount_amount }}</td>
+                                             <td>{{ header.total_sales_amount }}</td>
+                                             <td>{{ header.net_amount }}</td>
+                                             <td>{{ header.total_amount }}</td>
                                              <td>1150489736547</td>
                                              <td><span class="label label-success">Submitted</span></span></td>
                                              <td><span class="glyphicon glyphicon-pencil"></span></td>
                                           </tr>
-                                          <tr>
-                                             <td>AR-00021</td>
-                                             <td>P-233-A6375</td>
-                                             <td>1231</td>
-                                             <td>214.41458</td>
-                                             <td>4419.563</td>
-                                             <td>4205.1484/td>
-                                             <td>14082.886</td>
-                                             <td>1150489736547</td>
-                                             <td><span class="label label-success">Submitted</span></span></td>
-                                             <td><span class="glyphicon glyphicon-pencil"></span></td>
-                                          </tr>
-                                          <tr>
-                                             <td>AR-00021</td>
-                                             <td>P-233-A6375</td>
-                                             <td>1231</td>
-                                             <td>214.41458</td>
-                                             <td>4419.563</td>
-                                             <td>4205.1484/td>
-                                             <td>14082.886</td>
-                                             <td>1150489736547</td>
-                                             <td><span class="label label-success">Submitted</span></span></td>
-                                             <td><span class="glyphicon glyphicon-pencil"></span></td>
-                                          </tr>
-                                          <tr>
-                                             <td>AR-00021</td>
-                                             <td>P-233-A6375</td>
-                                             <td>1231</td>
-                                             <td>214.41458</td>
-                                             <td>4419.563</td>
-                                             <td>4205.1484/td>
-                                             <td>14082.886</td>
-                                             <td></td>
-                                             <td><span class="glyphicon glyphicon-cloud-upload"></span></td>
-                                             <td><span class="glyphicon glyphicon-pencil"></span></td>
-                                          </tr>
-                                          <tr>
-                                             <td>AR-00021</td>
-                                             <td>P-233-A6375</td>
-                                             <td>1231</td>
-                                             <td>214.41458</td>
-                                             <td>4419.563</td>
-                                             <td>4205.1484/td>
-                                             <td>14082.886</td>
-                                             <td></td>
-                                             <td><span class="glyphicon glyphicon-cloud-upload"></span></td>
-                                             <td><span class="glyphicon glyphicon-pencil"></span></td>
-                                          </tr>
-                                          
+                                          {% endfor %}
                                        </tbody>
                                        
                                     </table>
