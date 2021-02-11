@@ -57,60 +57,27 @@
                                              <th>Status</th>
                                              <th>Transaction Date</th>
                                              <th>Doc Sequence Value</th>
-                                             <th>Trk number</th>
+                                             <th>Submission ID</th>
                                              <th>Uuid</th>
+                                             <th></th>
                                           </tr>
                                        </thead>
                                        <tbody>
+                                       {% for invoice in eta_invoice_list %}
                                           <tr>
-                                             <td>88169</td>
-                                             <td>Approved</td>
-                                             <td>1/1/2021</td>
-                                             <td>2060</td>
-                                             <td>12</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
+                                             <td>{{ invoice.invoice.internal_id }}</td>
+                                             {% if invoice.over_all_status == 'Approved' %}
+                                             <td><span class="label label-success">Approved</span></td>
+                                             {% else %}
+                                             <td><span class="label label-danger">Rejected</span></td>
+                                             {% endif %}
+                                             <td>{{ invoice.date_time_received }}</td>
+                                             <td>{{ invoice.document_count }}</td>
+                                             <td>{{ invoice.subm_id }}</td>
+                                             <td>{{ invoice.subm_uuid }}</td>
+                                             <td><a href="{% url 'taxManagement:dec-detail' invoice.subm_uuid %}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
                                           </tr>
-                                           <tr>
-                                             <td>88169</td>
-                                             <td>Submitted</td>
-                                             <td>12/1/2021</td>
-                                             <td>2060</td>
-                                             <td>16</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
-                                          </tr>
-                                           <tr>
-                                             <td>88169</td>
-                                             <td>Rejected</td>
-                                             <td>12/11/2020</td>
-                                             <td>2060</td>
-                                             <td>12</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
-                                          </tr>
-                                          <tr>
-                                             <td>88169</td>
-                                             <td>Approved</td>
-                                             <td>12/1/2021</td>
-                                             <td>2060</td>
-                                             <td>18</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
-                                          </tr>
-                                           <tr>
-                                             <td>88169</td>
-                                             <td>Approved</td>
-                                             <td>12/1/2021</td>
-                                             <td>2060</td>
-                                             <td>19</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
-                                          </tr>
-                                           <tr>
-                                             <td>88169</td>
-                                             <td>Approved</td>
-                                             <td>12/1/2021</td>
-                                             <td>2060</td>
-                                             <td>20</td>
-                                             <td>SDJHKSJDFKSJDFHKSLDKFOSDKFNLSDKNFOSDNMWEFOJGIDFUBIDUFBGKERNDJH</td>
-                                          </tr>
-                                          
+                                           {% endfor %}
                                        </tbody>
                                        
                                     </table>

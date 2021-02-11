@@ -41,7 +41,6 @@ def write_to_tmp_storage(import_file):
 
 # @api_view(['POST', ])
 def import_data_to_invoice():
-    #### to be tested ####
     headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
                                                                     'date_time_issued', 'taxpayer_activity_code',
                                                                     'internal_id',
@@ -305,7 +304,6 @@ def get_invoice_header(invoice_id):
         }
         signature_list.append(signature_obj)
 
-    #### output data ####
     data = {
         "documentType": invoice_header.document_type,
         "documentTypeVersion": invoice_header.document_type_version,
@@ -357,49 +355,6 @@ def get_invoice_header(invoice_id):
 
 
 def get_invoice_lines(invoice_id):
-    # for every line it will call the function get_taxable_lines(invoice_line_id)
-    # will return
-    #               [
-    #                 {
-    #                     "description": "Computer1",
-    #                     "itemType": "GPC",
-    #                     "itemCode": "10003752",
-    #                     "unitType": "EA",
-    #                     "quantity": 7.00000,
-    #                     "internalCode": "IC0",
-    #                     "salesTotal": 662.90000,
-    #                     "total": 2220.08914,
-    #                     "valueDifference": 7.00000,
-    #                     "totalTaxableFees": 618.69212,
-    #                     "netTotal": 649.64200,
-    #                     "itemsDiscount": 5.00000,
-    #                     "unitValue": {
-    #                         "currencySold": "USD",
-    #                         "amountEGP": 94.70000,
-    #                         "amountSold": 4.73500,
-    #                         "currencyExchangeRate": 20.00000
-    #                     },
-    #                     "discount": {
-    #                         "rate": 2,
-    #                         "amount": 13.25800
-    #                     },
-    #                     "taxableItems": [
-    #                             {
-    #                                 "taxType": "T1",
-    #                                 "amount": 385.24093,
-    #                                 "subType": "T1",
-    #                                 "rate": 14.00
-    #                             },
-    #                             {
-    #                                 "taxType": "T2",
-    #                                 "amount": 294.82724,
-    #                                 "subType": "T2",
-    #                                 "rate": 12
-    #                             }
-    #                           ]
-
-    #                  }
-    #                ]
     invoice_lines = InvoiceLine.objects.filter(invoice_header__internal_id=invoice_id)
     invoice_lines_list = []
     for line in invoice_lines:
@@ -423,15 +378,6 @@ def get_invoice_lines(invoice_id):
 
 
 def get_taxable_lines(invoice_line_id):
-    # will return [
-    #                             {
-    #                                 "taxType": "T1",
-    #                                 "amount": 204.67639,
-    #                                 "subType": "T1",
-    #                                 "rate": 14.00
-    #                             }
-    #                      ]
-
     tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
     tax_lines_list = []
     for line in tax_lines:
@@ -457,54 +403,12 @@ def get_one_invoice(invoice_id):
     return invoice
 
 
-def submit_invoice(request , invoice_id):
-    invoice = get_one_invoice(invoice_id)
-    json_data = json.dumps({'documents': [invoice]})
-    data = decode(json_data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5NjcwMDcsImV4cCI6MTYxMjk3MDYwNywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjI3ODM3YWNmLTIxMGEtOTU0Yi1hNDcwLWNhMjgwNGQ3ZWZkYyIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.YKS_cK9pJlJ8hBRZ3X0zoLe6er5dST_QmIHTVqLGpVIhRKa8o_TeqV_uqTtpLGqAukjgWMb7w-_jdItNPK5g8yie0tdctMKetrVxBEC4sE_OiDAdXeT-lrsYc_8TSxEU9VzB3kv6MGjY0oyesMNXQ7dgVRCfEfJlC6mTQFcTJRU1UNzV9ec8sBPokQ5k0Sm5ZTqLuqDyEcX-MMtJdUGj1mwNXevRid49LapHXn-YLoiBNyCUQ2408BTiHLKZtlVqK4yWvr4qs5uQhlgxFvDXLSdHjg1dTH-dQqatpSG7uiMHtT_WmaEqluKl_QlHmv0bRyzXDzCrAnw7CWzQRsO4OQ"
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
-    response = requests.post(url, verify=False,
-                             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
-                             json=data)
-    print(response)
-    response_code = response
-    response_json = response_code.json()    
-    submissionId = response_json['submissionId']
-    print(submissionId)
-
-
-    acceptedDocuments = response_json['acceptedDocuments']
-    uuid = acceptedDocuments[0]['uuid']
-
-    internalId = acceptedDocuments[0]['internalId']
-    save_submition_response(internalId, submissionId)
-
-    return response
-
-
-
-
-def save_submition_response(invoice_id, submission_id):
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
-    submission_obj = Submission(
-            invoice=invoice,
-            subm_id=submission_id,
-            )
-    submission_obj.save()
-    get_submition_response(submission_id)
-           
-   
- 
-#from taxManagement import views
-#a= views.get_submition_response()
 def get_submition_response(submission_id):
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5Njc1MjMsImV4cCI6MTYxMjk3MTEyMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6ImE0Y2VkODI1LTJiZTgtZmI4ZC02MDliLTQ3OTVmYzRhNDhiYyIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.eqIDS9GJURAjGj9LXLMpBxjKdtgxpTMnQDHKcZa8QlHU3zl7yaY7Hafi4c9UwTUDkfmm4pOHFG3SGqTBe67DJIJBQxTFNOaL8U1HluaB8hDtgJFHiLpTLeBLNRsQcLVsJsi9i_43Rk_nOdjA9JaH5B_aBX4goqOOa6YSi_7Bd5GnjyGhhAKKLsiqIvS5b_qiVIgDVhNZUgcPFgDRlN9wbef3MeI3t655jy-QGkSZgoiTjUEa3lQyIMuwpYnGN2UTrlmJyez6KBl2VlDckQQGBHVX0qSC0d0J0Tg2DH4cfRSr0lGqYT81DKsfLyv_0XvB2iS0Kpp__358UcjvynMDwg"
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5ODU0NjMsImV4cCI6MTYxMjk4OTA2MywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjAwOWZiMTlmLWU2MDItYWI3NS04ZTc1LTgxOGM4ZTgyOWY2YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.n7KEfB9M3NeUEecO2VMyjZga_-ewdaAi363ubo56OkRKlHtnY-gEjHdUIEIOnZJNoaMhGajQjMa2BN2j-xEtf-gF9vtasthzhO90bJC-5IS4cXwIbHP6RuMRWKxWIyqooiaO5mLbGhyDIC7Z96zFIbWDy0geQkE-WgCN3O-lc7WrXQZ3Y8wvCpPBBiAjXx59bW3cIC4HcAVUkh0wntNSjPwNHnYCCQwoWF_yq74SvclDBzDVf3q8RKCUfhbh95jkdu4ABkEx9bTohit0mddrCLe8N8SJHRn2eIm_054RKc1BP8k29BIDIqEUs0eR9zJFtMwNAVLf3SRHv0k2KZxqVQ"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' +submission_id+ '?PageSize=1'
     response = requests.get(url, verify=False,
                              headers={'Authorization': 'Bearer ' + auth_token,}
                              )
-    print(response)
-
     response_code = response
     response_json = response_code.json()    
     documentCount = response_json['documentCount']
@@ -513,23 +417,47 @@ def get_submition_response(submission_id):
 
     documentSummary = response_json['documentSummary']
     uuid = documentSummary[0]['uuid']
-    submission = Submission.objects.get(subm_id='5AAPRY0GP6ARNN2XN59J16YE10')
+    submission = Submission.objects.get(subm_id=submission_id)
     submission.subm_uuid = uuid
     submission.document_count = documentCount
     submission.date_time_received = dateTimeReceived
     submission.over_all_status = overallStatus
     submission.save()
     
-
     return response
     
  
+def save_submition_response(invoice_id, submission_id):
+    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    submission_obj = Submission(
+            invoice=invoice,
+            subm_id=submission_id,
+            )
+    submission_obj.save()
+    get_submition_response(submission_id)
+    
+
+def submit_invoice(request , invoice_id):
+    invoice = get_one_invoice(invoice_id)
+    json_data = json.dumps({'documents': [invoice]})
+    data = decode(json_data)
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5ODU0NjMsImV4cCI6MTYxMjk4OTA2MywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjAwOWZiMTlmLWU2MDItYWI3NS04ZTc1LTgxOGM4ZTgyOWY2YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.n7KEfB9M3NeUEecO2VMyjZga_-ewdaAi363ubo56OkRKlHtnY-gEjHdUIEIOnZJNoaMhGajQjMa2BN2j-xEtf-gF9vtasthzhO90bJC-5IS4cXwIbHP6RuMRWKxWIyqooiaO5mLbGhyDIC7Z96zFIbWDy0geQkE-WgCN3O-lc7WrXQZ3Y8wvCpPBBiAjXx59bW3cIC4HcAVUkh0wntNSjPwNHnYCCQwoWF_yq74SvclDBzDVf3q8RKCUfhbh95jkdu4ABkEx9bTohit0mddrCLe8N8SJHRn2eIm_054RKc1BP8k29BIDIqEUs0eR9zJFtMwNAVLf3SRHv0k2KZxqVQ"
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
+    response = requests.post(url, verify=False,
+                             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
+                             json=data)
+    response_code = response
+    response_json = response_code.json()    
+    submissionId = response_json['submissionId']
 
 
-   
-           
-   
+    acceptedDocuments = response_json['acceptedDocuments']
+    uuid = acceptedDocuments[0]['uuid']
 
+    internalId = acceptedDocuments[0]['internalId']
+    save_submition_response(internalId, submissionId)
+    return redirect('taxManagement:get-all-invoice-headers')
+    # return response
 
 
 def submission_list(request):
@@ -562,5 +490,22 @@ def get_all_invoice_headers(request):
     #     return Response(serializer.data , status=status.HTTP_200_OK)
 
 
+def get_decument_detail_after_submit(request, doc_uuid):
+    doc_uuid = 'WKQHEVS77MJD295JVA9BS6YE10'
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5OTYwMTYsImV4cCI6MTYxMjk5OTYxNiwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjM0NTk3NTY5LTFhYmUtM2Q5MS1iY2RkLTVkYWFlZWVhNGM3YyIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.bQ9VvoomdnXBU0QyD_-RGSc83th55O6ykjo8Ls9lKe6qwlL4K1CsKE8IWhNK9l8d0q806CGFziq2va40Vn6YeGPq8mniuH1Gjal2fRZlh5WkaQMHuhB_DfgCiwbgMtSE63bZsZhOwFlWsviJVRexDvHaC2Di9OspyvH1oE7XxJbqgh1QcpkcR4Uc4Z1KJRtQweIBnUySmnK5OztJHntrWGmoCdZAazraEQ50WAlBbNmCZ3mj-2P4_zXFpgFjAaxfcPPbPeRUlM4OF_8PzLmhKYicnGN4gfyM-L7G7cbaCsSjOI4D5QmOYxVeF6xQDkBSVCcwJgxdwMXY7smrgm2YWA"
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/'+ doc_uuid +'/details'
+    response = requests.get(url, verify=False,
+                             headers={'Authorization': 'Bearer ' + auth_token,}
+                             ).json()
+    get_doc_context = {
+        "response_json":response,
+    }
+    return render(request, 'doc-detail.html', get_doc_context)
+
+
 def list_eta_invoice(request):
-    return render(request, 'eta-invoice.html')
+    eta_invoice_list = Submission.objects.filter()
+    eta_context = {
+        "eta_invoice_list":eta_invoice_list,
+    }
+    return render(request, 'eta-invoice.html', eta_context)

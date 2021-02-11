@@ -18,7 +18,7 @@
                         <span class="info-box-icon bg-aqua"><i class="ion ion-ios-gear-outline"></i></span>
                         <div class="info-box-content">
                            <span class="info-box-text">Total Invoices</span>
-                           <span class="info-box-number">90<small></small></span>
+                           <span class="info-box-number">{{ total_invoice_count }}<small></small></span>
                         </div>
                         <!-- /.info-box-content -->
                      </div>
@@ -30,7 +30,7 @@
                         <span class="info-box-icon bg-red"><i class="fa fa-file-invoice"></i></span>
                         <div class="info-box-content">
                            <span class="info-box-text">Submitted Invoices</span>
-                           <span class="info-box-number">60</span>
+                           <span class="info-box-number">{{ total_submited_invoice_count }}</span>
                         </div>
                         <!-- /.info-box-content -->
                      </div>
@@ -44,7 +44,7 @@
                         <span class="info-box-icon bg-green"><i class="ion ion-ios-cart-outline"></i></span>
                         <div class="info-box-content">
                            <span class="info-box-text">Not Submitted</span>
-                           <span class="info-box-number">30</span>
+                           <span class="info-box-number">{{ total_not_submited_invoice_count }}</span>
                         </div>
                         <!-- /.info-box-content -->
                      </div>
