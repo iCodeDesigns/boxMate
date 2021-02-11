@@ -24,6 +24,7 @@ from pprint import pprint
 from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
 from issuer import views as issuer_views
+import time
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -404,11 +405,20 @@ def get_one_invoice(invoice_id):
 
 
 def get_submition_response(submission_id):
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5ODU0NjMsImV4cCI6MTYxMjk4OTA2MywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjAwOWZiMTlmLWU2MDItYWI3NS04ZTc1LTgxOGM4ZTgyOWY2YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.n7KEfB9M3NeUEecO2VMyjZga_-ewdaAi363ubo56OkRKlHtnY-gEjHdUIEIOnZJNoaMhGajQjMa2BN2j-xEtf-gF9vtasthzhO90bJC-5IS4cXwIbHP6RuMRWKxWIyqooiaO5mLbGhyDIC7Z96zFIbWDy0geQkE-WgCN3O-lc7WrXQZ3Y8wvCpPBBiAjXx59bW3cIC4HcAVUkh0wntNSjPwNHnYCCQwoWF_yq74SvclDBzDVf3q8RKCUfhbh95jkdu4ABkEx9bTohit0mddrCLe8N8SJHRn2eIm_054RKc1BP8k29BIDIqEUs0eR9zJFtMwNAVLf3SRHv0k2KZxqVQ"
+    print(submission_id)
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTMwMzE4MzgsImV4cCI6MTYxMzAzNTQzOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVkNDcwODgwLTZlYWEtMWJmYy03MDI4LTU0ODFiYWExOTJhNiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.seAUChdV8e0cs_vww8RFjULzj0070rIT3tJAuORGZu6oEtZ9hs4sy0jByD1cMa6t3VmOsKCAJILFUUndRfnhCFFhhamMevm8f15ymy4KxMmrDmDGn8N-bA80Y5tMqA2oaqEs9aFJsrBSH39Z8fy5XIasXQuDHjhCz0W_0K3aBwfsorJVrY5HeIvH-KH97SN6Rg9QSTcSV0XzmfyxfC2XRsXwDjNRh86IXANPunMIvUvrZ7Uxl3uGVH1dljq1iw8l3HJ0sonT3o5iIvGCbkg0yonjCt_KWeoxERFGopK6Kbp9Q7y0dtSyCyuDWFB18CaKRjFMm1aBWr0Losk6tJTzTA"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' +submission_id+ '?PageSize=1'
     response = requests.get(url, verify=False,
                              headers={'Authorization': 'Bearer ' + auth_token,}
                              )
+    if(response.status_code != status.HTTP_200_OK):
+        time.sleep(5)
+        response = requests.get(url, verify=False,
+                             headers={'Authorization': 'Bearer ' + auth_token,}
+                             )
+    print("*************")
+    print(response.content)
+    print(response.status_code)
     response_code = response
     response_json = response_code.json()    
     documentCount = response_json['documentCount']
@@ -441,11 +451,12 @@ def submit_invoice(request , invoice_id):
     invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTI5ODU0NjMsImV4cCI6MTYxMjk4OTA2MywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjAwOWZiMTlmLWU2MDItYWI3NS04ZTc1LTgxOGM4ZTgyOWY2YiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.n7KEfB9M3NeUEecO2VMyjZga_-ewdaAi363ubo56OkRKlHtnY-gEjHdUIEIOnZJNoaMhGajQjMa2BN2j-xEtf-gF9vtasthzhO90bJC-5IS4cXwIbHP6RuMRWKxWIyqooiaO5mLbGhyDIC7Z96zFIbWDy0geQkE-WgCN3O-lc7WrXQZ3Y8wvCpPBBiAjXx59bW3cIC4HcAVUkh0wntNSjPwNHnYCCQwoWF_yq74SvclDBzDVf3q8RKCUfhbh95jkdu4ABkEx9bTohit0mddrCLe8N8SJHRn2eIm_054RKc1BP8k29BIDIqEUs0eR9zJFtMwNAVLf3SRHv0k2KZxqVQ"
+    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTMwMzE4MzgsImV4cCI6MTYxMzAzNTQzOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVkNDcwODgwLTZlYWEtMWJmYy03MDI4LTU0ODFiYWExOTJhNiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.seAUChdV8e0cs_vww8RFjULzj0070rIT3tJAuORGZu6oEtZ9hs4sy0jByD1cMa6t3VmOsKCAJILFUUndRfnhCFFhhamMevm8f15ymy4KxMmrDmDGn8N-bA80Y5tMqA2oaqEs9aFJsrBSH39Z8fy5XIasXQuDHjhCz0W_0K3aBwfsorJVrY5HeIvH-KH97SN6Rg9QSTcSV0XzmfyxfC2XRsXwDjNRh86IXANPunMIvUvrZ7Uxl3uGVH1dljq1iw8l3HJ0sonT3o5iIvGCbkg0yonjCt_KWeoxERFGopK6Kbp9Q7y0dtSyCyuDWFB18CaKRjFMm1aBWr0Losk6tJTzTA"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
+    
     response_code = response
     response_json = response_code.json()    
     submissionId = response_json['submissionId']
