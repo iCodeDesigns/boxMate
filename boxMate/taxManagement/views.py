@@ -450,11 +450,16 @@ def get_submition_response(submission_id):
 
 def save_submition_response(invoice_id, submission_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
-    submission_obj = Submission(
-        invoice=invoice,
-        subm_id=submission_id,
-    )
-    submission_obj.save()
+    try:
+        old_sub = Submission.objects.get(invoice__internal_id=invoice_id)
+        old_sub.subm_id = submission_id
+        old_sub.save()
+    except Submission.DoesNotExist:
+        submission_obj = Submission(
+            invoice=invoice,
+            subm_id=submission_id,
+        )
+        submission_obj.save()
     get_submition_response(submission_id)
 
 
@@ -471,8 +476,6 @@ def submit_invoice(request, invoice_id):
         response = requests.post(url, verify=False,
                                  headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                                  json=data)
-
-
 
     response_code = response
     response_json = response_code.json()
@@ -553,3 +556,12 @@ def get_token():
                              data=data)
     global auth_token
     auth_token = response.json()["access_token"]
+
+
+def resubmit(request, sub_id):
+    submission = Submission.objects.get(subm_id=sub_id)
+    header_id = submission.invoice.internal_id
+    submit_invoice(request, header_id)
+    return redirect("taxManagement:list-eta-invoice")
+
+
