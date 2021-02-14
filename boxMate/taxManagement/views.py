@@ -61,7 +61,11 @@ def import_data_to_invoice():
                                                                     'receiver_floor', 'receiver_room').annotate(
         Count('internal_id'))
     for header in headers:
-        issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
+        try:
+            old_header = InvoiceHeader.objects.get(internal_id=header["internal_id"])
+            old_header.delete()
+        except InvoiceHeader.DoesNotExist:
+            pass
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
         receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
@@ -171,6 +175,9 @@ def upload_excel_sheet(request):
         # data = force_str(data, "utf-8")
         dataset = Dataset()
         # Enter format = 'csv' for csv file
+        success = MainTable.objects.all().delete()
+        if not success:
+            return redirect('/tax/list/uploaded-invoices')
         imported_data = dataset.load(data, format='xlsx')
 
         result = main_table_resource.import_data(imported_data,
@@ -443,11 +450,16 @@ def get_submition_response(submission_id):
 
 def save_submition_response(invoice_id, submission_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
-    submission_obj = Submission(
-        invoice=invoice,
-        subm_id=submission_id,
-    )
-    submission_obj.save()
+    try:
+        old_sub = Submission.objects.get(invoice__internal_id=invoice_id)
+        old_sub.subm_id = submission_id
+        old_sub.save()
+    except Submission.DoesNotExist:
+        submission_obj = Submission(
+            invoice=invoice,
+            subm_id=submission_id,
+        )
+        submission_obj.save()
     get_submition_response(submission_id)
 
 
@@ -464,8 +476,6 @@ def submit_invoice(request, invoice_id):
         response = requests.post(url, verify=False,
                                  headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                                  json=data)
-
-
 
     response_code = response
     response_json = response_code.json()
@@ -511,7 +521,6 @@ def get_all_invoice_headers(request):
 
 
 def get_decument_detail_after_submit(request, doc_uuid):
-    # doc_uuid = 'WKQHEVS77MJD295JVA9BS6YE10'
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + doc_uuid + '/details'
     response = requests.get(url, verify=False,
                             headers={'Authorization': 'Bearer ' + auth_token, }
@@ -562,3 +571,12 @@ def get_token():
                              data=data)
     global auth_token
     auth_token = response.json()["access_token"]
+
+
+def resubmit(request, sub_id):
+    submission = Submission.objects.get(subm_id=sub_id)
+    header_id = submission.invoice.internal_id
+    submit_invoice(request, header_id)
+    return redirect("taxManagement:list-eta-invoice")
+
+
