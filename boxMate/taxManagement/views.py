@@ -1,7 +1,7 @@
 import json
 
 import requests
-from django.shortcuts import render ,redirect
+from django.shortcuts import render, redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -28,6 +28,8 @@ import time
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
+
+auth_token = ""
 
 
 def write_to_tmp_storage(import_file):
@@ -149,6 +151,7 @@ def import_data_to_invoice():
         header_obj.calculate_total_item_discount()
         header_obj.calculate_net_total()
         header_obj.save()
+
 
 # Create your views here.
 def upload_excel_sheet(request):
@@ -405,22 +408,23 @@ def get_one_invoice(invoice_id):
 
 
 def get_submition_response(submission_id):
-    print(submission_id)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTMwMzE4MzgsImV4cCI6MTYxMzAzNTQzOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVkNDcwODgwLTZlYWEtMWJmYy03MDI4LTU0ODFiYWExOTJhNiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.seAUChdV8e0cs_vww8RFjULzj0070rIT3tJAuORGZu6oEtZ9hs4sy0jByD1cMa6t3VmOsKCAJILFUUndRfnhCFFhhamMevm8f15ymy4KxMmrDmDGn8N-bA80Y5tMqA2oaqEs9aFJsrBSH39Z8fy5XIasXQuDHjhCz0W_0K3aBwfsorJVrY5HeIvH-KH97SN6Rg9QSTcSV0XzmfyxfC2XRsXwDjNRh86IXANPunMIvUvrZ7Uxl3uGVH1dljq1iw8l3HJ0sonT3o5iIvGCbkg0yonjCt_KWeoxERFGopK6Kbp9Q7y0dtSyCyuDWFB18CaKRjFMm1aBWr0Losk6tJTzTA"
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' +submission_id+ '?PageSize=1'
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' + submission_id + '?PageSize=1'
     response = requests.get(url, verify=False,
-                             headers={'Authorization': 'Bearer ' + auth_token,}
-                             )
-    if(response.status_code != status.HTTP_200_OK):
-        time.sleep(5)
+                            headers={'Authorization': 'Bearer ' + auth_token, }
+                            )
+    if response.status_code == status.HTTP_401_UNAUTHORIZED:
+        get_token()
         response = requests.get(url, verify=False,
-                             headers={'Authorization': 'Bearer ' + auth_token,}
-                             )
-    print("*************")
-    print(response.content)
-    print(response.status_code)
+                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                )
+
+    if (response.status_code != status.HTTP_200_OK):
+        time.sleep(10)
+        response = requests.get(url, verify=False,
+                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                )
     response_code = response
-    response_json = response_code.json()    
+    response_json = response_code.json()
     documentCount = response_json['documentCount']
     dateTimeReceived = response_json['dateTimeReceived']
     overallStatus = response_json['overallStatus']
@@ -433,34 +437,39 @@ def get_submition_response(submission_id):
     submission.date_time_received = dateTimeReceived
     submission.over_all_status = overallStatus
     submission.save()
-    
+
     return response
-    
- 
+
+
 def save_submition_response(invoice_id, submission_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     submission_obj = Submission(
-            invoice=invoice,
-            subm_id=submission_id,
-            )
+        invoice=invoice,
+        subm_id=submission_id,
+    )
     submission_obj.save()
     get_submition_response(submission_id)
-    
 
-def submit_invoice(request , invoice_id):
+
+def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTMwMzE4MzgsImV4cCI6MTYxMzAzNTQzOCwiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjVkNDcwODgwLTZlYWEtMWJmYy03MDI4LTU0ODFiYWExOTJhNiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.seAUChdV8e0cs_vww8RFjULzj0070rIT3tJAuORGZu6oEtZ9hs4sy0jByD1cMa6t3VmOsKCAJILFUUndRfnhCFFhhamMevm8f15ymy4KxMmrDmDGn8N-bA80Y5tMqA2oaqEs9aFJsrBSH39Z8fy5XIasXQuDHjhCz0W_0K3aBwfsorJVrY5HeIvH-KH97SN6Rg9QSTcSV0XzmfyxfC2XRsXwDjNRh86IXANPunMIvUvrZ7Uxl3uGVH1dljq1iw8l3HJ0sonT3o5iIvGCbkg0yonjCt_KWeoxERFGopK6Kbp9Q7y0dtSyCyuDWFB18CaKRjFMm1aBWr0Losk6tJTzTA"
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
-    
-    response_code = response
-    response_json = response_code.json()    
-    submissionId = response_json['submissionId']
+    if response.status_code == status.HTTP_401_UNAUTHORIZED:
+        get_token()
+        response = requests.post(url, verify=False,
+                                 headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
+                                 json=data)
 
+
+
+    response_code = response
+    response_json = response_code.json()
+    submissionId = response_json['submissionId']
 
     acceptedDocuments = response_json['acceptedDocuments']
     uuid = acceptedDocuments[0]['uuid']
@@ -485,11 +494,11 @@ def get_all_invoice_headers(request):
     invoice_headers = InvoiceHeader.objects.all()
     count = 0
     for invoice_header in invoice_headers:
-        submissions = Submission.objects.filter(invoice = invoice_header).last()
+        submissions = Submission.objects.filter(invoice=invoice_header).last()
         invoice_headers[count].submissions = submissions
-        count+=1
+        count += 1
     context = {
-        "invoice_headers":invoice_headers
+        "invoice_headers": invoice_headers
     }
     return render(request, 'upload-invoice.html', context)
     # headers = []
@@ -503,13 +512,18 @@ def get_all_invoice_headers(request):
 
 def get_decument_detail_after_submit(request, doc_uuid):
     doc_uuid = 'WKQHEVS77MJD295JVA9BS6YE10'
-    auth_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBGOTkyNkZFQTUyOTgxRjZDMjBENUMzNUQ0NjUxMzAzQ0QzQzBFMzIiLCJ0eXAiOiJhdCtqd3QiLCJ4NXQiOiJENWttX3FVcGdmYkNEVncxMUdVVEE4MDhEakkifQ.eyJuYmYiOjE2MTMwMzI1MzMsImV4cCI6MTYxMzAzNjEzMywiaXNzIjoiaHR0cHM6Ly9pZC5wcmVwcm9kLmV0YS5nb3YuZWciLCJhdWQiOiJJbnZvaWNpbmdBUEkiLCJjbGllbnRfaWQiOiI1NDc0MTNhNC03OWVlLTQ3MTUtODUzMC1hN2RkYmUzOTI4NDgiLCJJbnRlcm1lZElkIjoiMCIsIkludGVybWVkUklOIjoiIiwiSW50ZXJtZWRFbmZvcmNlZCI6IjIiLCJuYW1lIjoiMTAwMzI0OTMyOjU0NzQxM2E0LTc5ZWUtNDcxNS04NTMwLWE3ZGRiZTM5Mjg0OCIsInNpZCI6IjM2YjFiOGUyLTJmOWYtZTU0MC1iODc1LTk2YWYwZjM3Y2EyMiIsInByZWZlcnJlZF91c2VybmFtZSI6IkRyZWVtRVJQU3lzdGVtIiwiVGF4SWQiOiIxMDYzMCIsIlRheFJpbiI6IjEwMDMyNDkzMiIsIlByb2ZJZCI6IjIxODc4IiwiSXNUYXhBZG1pbiI6IjAiLCJJc1N5c3RlbSI6IjEiLCJOYXRJZCI6IiIsInNjb3BlIjpbIkludm9pY2luZ0FQSSJdfQ.oEQxAUlNdlKNl0swriFpO_cMpeTORjoXzpOTmTJDnsRg_gT7MvqSyjWg_v47-ZECEV0DZY3osVogUChgerZ-YgCL-kmAsUujXWf4MMZaiwPyYlyF9cYhuNM79ASQYc9XBmOvWa4H8RhQsLHB91xldfoIjG3WumQWZ1nTpuMIcm3QQvsN8VNDwaeoMRsR89UpPmZ51xR39ZSoq-kB6eV-ukQLLqbxN66q0JDL7P2XsO27Ct7Md_fJCMyi0kDqF5IxVXuRDap10Kh646KCHIMKbcsf4fLYgUvdBnouHHKL5b4XNWobK8f9gkBGt8fq0eCv8lgCf7HON4Spn7iQyx2HQw"
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/'+ doc_uuid +'/details'
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + doc_uuid + '/details'
     response = requests.get(url, verify=False,
-                             headers={'Authorization': 'Bearer ' + auth_token,}
-                             ).json()
+                            headers={'Authorization': 'Bearer ' + auth_token, }
+                            )
+    if response.status_code == status.HTTP_401_UNAUTHORIZED:
+        get_token()
+        response = requests.get(url, verify=False,
+                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                )
+
     get_doc_context = {
-        "response_json":response,
+        "response_json": response.json(),
     }
     return render(request, 'doc-detail.html', get_doc_context)
 
@@ -517,6 +531,19 @@ def get_decument_detail_after_submit(request, doc_uuid):
 def list_eta_invoice(request):
     eta_invoice_list = Submission.objects.filter()
     eta_context = {
-        "eta_invoice_list":eta_invoice_list,
+        "eta_invoice_list": eta_invoice_list,
     }
     return render(request, 'eta-invoice.html', eta_context)
+
+
+def get_token():
+    url = "https://id.preprod.eta.gov.eg/connect/token"
+    client_id = "547413a4-79ee-4715-8530-a7ddbe392848"
+    client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
+    scope = "InvoicingAPI"
+
+    data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "scope": scope}
+    response = requests.post(url, verify=False,
+                             data=data)
+    global auth_token
+    auth_token = response.json()["access_token"]
