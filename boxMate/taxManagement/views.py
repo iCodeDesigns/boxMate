@@ -511,7 +511,7 @@ def get_all_invoice_headers(request):
 
 
 def get_decument_detail_after_submit(request, doc_uuid):
-    doc_uuid = 'WKQHEVS77MJD295JVA9BS6YE10'
+    # doc_uuid = 'WKQHEVS77MJD295JVA9BS6YE10'
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + doc_uuid + '/details'
     response = requests.get(url, verify=False,
                             headers={'Authorization': 'Bearer ' + auth_token, }
@@ -522,8 +522,23 @@ def get_decument_detail_after_submit(request, doc_uuid):
                                 headers={'Authorization': 'Bearer ' + auth_token, }
                                 )
 
+    validation_steps = response.json()['validationResults']['validationSteps']
+    header_errors=[]
+    lines_errors=[]
+    for validation_step in validation_steps:
+        if validation_step['status'] == 'Invalid':
+            inner_errors = validation_step['error']['innerError']
+            for inner_error in inner_errors:
+                if inner_error['propertyPath'].startswith('invoiceLine') :
+                    lines_errors.append(inner_error['error'])
+                elif inner_error['propertyPath'].startswith('document'):
+                    header_errors.append(inner_error['error'])
+
+
     get_doc_context = {
         "response_json": response.json(),
+        'header_errors':header_errors,
+        'lines_errors':lines_errors,
     }
     return render(request, 'doc-detail.html', get_doc_context)
 
