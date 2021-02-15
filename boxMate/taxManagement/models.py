@@ -145,7 +145,7 @@ class InvoiceHeader(models.Model):
                                                       default=0.0)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
 
-    def calculate_total_sales(self):
+""" def calculate_total_sales(self):
         self.total_sales_amount = 0
         for line in self.lines.all():
             print(line)
@@ -161,7 +161,7 @@ class InvoiceHeader(models.Model):
         self.net_amount = 0
         for line in self.lines.all():
             self.net_amount = self.net_amount + line.netTotal
-
+ """
 
 class Signature(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name='signatures')
@@ -217,6 +217,15 @@ class InvoiceLine(models.Model):
                                    related_name="line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
+
+
+""" 
+    def get_amount_egp(self):
+        if self.currencySold != 'EGP':
+            self.amountEGP = self.amountSold * self.currencyExchangeRate
+        else:
+                
+
     def calculate_sales_total(self):
         if self.amountSold is not None:
             self.salesTotal = self.quantity * self.amountSold
@@ -232,7 +241,7 @@ class InvoiceLine(models.Model):
             self.netTotal = self.salesTotal - self.amount
         else:
             self.netTotal = self.salesTotal
-
+ """
 
 class TaxLine(models.Model):
     invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.CASCADE, related_name='tax_lines')
@@ -256,8 +265,18 @@ class Submission(models.Model):
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
 
 
-@receiver(pre_save, sender='taxManagement.InvoiceLine')
+
+""" @receiver(pre_save, sender='taxManagement.InvoiceLine')
 def update_total_line(sender, instance, **kwargs):
     instance.calculate_sales_total()
     instance.calculate_discount_amount()
     instance.calculate_net_total()
+ """
+
+
+class HeaderTaxTotal(models.Model):
+    header= models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
+    tax = models.ForeignKey( TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
+    total = models.IntegerField(blank=True, null=True)
+
+
