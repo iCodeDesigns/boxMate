@@ -31,6 +31,7 @@ def get_issuer_data():
     for data in issuer_data:
         issuer_code = data['issuer_registration_num']
         address = data['issuer_branch_id']
+        print("**************",address)
         try:
             issuer_id = Issuer.objects.get(reg_num=issuer_code)
             try:

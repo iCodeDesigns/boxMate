@@ -59,23 +59,31 @@
                                              <th>Doc Sequence Value</th>
                                              <th>Submission ID</th>
                                              <th>Uuid</th>
-                                             <th></th>
+                                             <th>view</th>
+                                             <th>Resubmit</th>
                                           </tr>
                                        </thead>
                                        <tbody>
                                        {% for invoice in eta_invoice_list %}
                                           <tr>
                                              <td>{{ invoice.invoice.internal_id }}</td>
-                                             {% if invoice.over_all_status == 'Approved' %}
-                                             <td><span class="label label-success">Approved</span></td>
-                                             {% else %}
-                                             <td><span class="label label-danger">Rejected</span></td>
+                                             {% if invoice.over_all_status == 'Valid' %}
+                                             <td><span class="label label-success">Valid</span></td>
+                                             {% elif invoice.over_all_status == 'Invalid'  %}
+                                             <td><span class="label label-danger">Invalid</span></td>
+                                             {% elif invoice.over_all_status == 'In progress'  %}
+                                             <td><span class="label label-success">In progress</span></td>
+                                             {% elif invoice.over_all_status == 'Partially valid'  %}
+                                             <td><span class="label label-success">Partially Valid</span></td>
+                                              {% else %}
+                                             <td><a href="{% url 'taxManagement:check_status' invoice.subm_id %}">check status</span></td>
                                              {% endif %}
                                              <td>{{ invoice.date_time_received }}</td>
                                              <td>{{ invoice.document_count }}</td>
                                              <td>{{ invoice.subm_id }}</td>
                                              <td>{{ invoice.subm_uuid }}</td>
                                              <td><a href="{% url 'taxManagement:dec-detail' invoice.subm_uuid %}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
+                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.subm_id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
                                           </tr>
                                            {% endfor %}
                                        </tbody>
