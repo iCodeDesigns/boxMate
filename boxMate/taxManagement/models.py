@@ -147,22 +147,22 @@ class InvoiceHeader(models.Model):
     def __str__(self):
         return str(self.issuer.name + ' ' + self.receiver.name)
 
-    def calculate_total_sales(self):
-        self.total_sales_amount = 0
-        for line in self.lines.all():
-            print(line)
-            self.total_sales_amount = self.total_sales_amount + line.salesTotal
+    # def calculate_total_sales(self):
+    #     self.total_sales_amount = 0
+    #     for line in self.lines.all():
+    #         print(line)
+    #         self.total_sales_amount = self.total_sales_amount + line.salesTotal
 
-    def calculate_total_item_discount(self):
-        self.total_discount_amount = 0
-        for line in self.lines.all():
-            self.total_discount_amount = (
-                self.total_discount_amount + line.amount if line.amount is not None else self.total_discount_amount)
+    # def calculate_total_item_discount(self):
+    #     self.total_discount_amount = 0
+    #     for line in self.lines.all():
+    #         self.total_discount_amount = (
+    #             self.total_discount_amount + line.amount if line.amount is not None else self.total_discount_amount)
 
-    def calculate_net_total(self):
-        self.net_amount = 0
-        for line in self.lines.all():
-            self.net_amount = self.net_amount + line.netTotal
+    # def calculate_net_total(self):
+    #     self.net_amount = 0
+    #     for line in self.lines.all():
+    #         self.net_amount = self.net_amount + line.netTotal
 
 
 class Signature(models.Model):
@@ -225,21 +225,21 @@ class InvoiceLine(models.Model):
     def __str__(self):
         return self.itemCode
 
-    def calculate_sales_total(self):
-        if self.amountSold is not None:
-            self.salesTotal = self.quantity * self.amountSold
-        else:
-            self.salesTotal = self.quantity * self.amountEGP
+    # def calculate_sales_total(self):
+    #     if self.amountSold is not None:
+    #         self.salesTotal = self.quantity * self.amountSold
+    #     else:
+    #         self.salesTotal = self.quantity * self.amountEGP
 
-    def calculate_discount_amount(self):
-        if self.rate is not None:
-            self.amount = self.rate * self.salesTotal / 100
+    # def calculate_discount_amount(self):
+    #     if self.rate is not None:
+    #         self.amount = self.rate * self.salesTotal / 100
 
-    def calculate_net_total(self):
-        if self.amount is not None:
-            self.netTotal = self.salesTotal - self.amount
-        else:
-            self.netTotal = self.salesTotal
+    # def calculate_net_total(self):
+    #     if self.amount is not None:
+    #         self.netTotal = self.salesTotal - self.amount
+    #     else:
+    #         self.netTotal = self.salesTotal
 
 
 class TaxLine(models.Model):

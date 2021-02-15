@@ -132,7 +132,7 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type', 'tax_item_amount',
+            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
                                                                             'tax_item_subtype',
                                                                             'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
@@ -147,9 +147,9 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-        header_obj.calculate_total_sales()
-        header_obj.calculate_total_item_discount()
-        header_obj.calculate_net_total()
+        # header_obj.calculate_total_sales()
+        # header_obj.calculate_total_item_discount()
+        # header_obj.calculate_net_total()
         header_obj.save()
 
 
@@ -453,7 +453,7 @@ def save_submition_response(invoice_id, submission_id):
 
 def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
-    json_data = json.dumps({'documents': [invoice]})
+    json_data = json.dumps({"documents": [invoice]})
     data = decode(json_data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
@@ -470,6 +470,8 @@ def submit_invoice(request, invoice_id):
     response_code = response
     response_json = response_code.json()
     submissionId = response_json['submissionId']
+    print("**************")
+    print(data)
 
     acceptedDocuments = response_json['acceptedDocuments']
     uuid = acceptedDocuments[0]['uuid']
