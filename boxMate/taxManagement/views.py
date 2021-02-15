@@ -12,7 +12,7 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
@@ -160,10 +160,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-        #header_obj.calculate_total_sales()
-        #header_obj.calculate_total_item_discount()
-        #header_obj.calculate_net_total()
-        #header_obj.save()
+        # header_obj.calculate_total_sales()
+        # header_obj.calculate_total_item_discount()
+        # header_obj.calculate_net_total()
+        # header_obj.save()
 
 
 # Create your views here.
@@ -320,6 +320,14 @@ def get_receiver_address(invoice_id):
 def get_invoice_header(invoice_id):
     invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
     signatures = Signature.objects.filter(invoice_header=invoice_header)
+    taxtotals = HeaderTaxTotal.objects.filter(header=invoice_header)
+    tax_total_list = []
+    for total in taxtotals:
+        tax_total_object = {
+            "taxType": total.tax.code,
+            "amount": total.total.__float__()
+        }
+        tax_total_list.append(tax_total_object)
     signature_list = []
     for signature in signatures:
         signature_obj = {
@@ -360,16 +368,7 @@ def get_invoice_header(invoice_id):
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
-        "taxTotals": [
-            #     {
-            #         "taxType": "T1",
-            #         "amount": 1286.79112
-            #     },
-            #     {
-            #         "taxType": "T2",
-            #         "amount": 984.78912
-            #     }
-        ],
+        "taxTotals":tax_total_list,
         "totalAmount": invoice_header.total_amount.__float__(),
         "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
         "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
@@ -396,7 +395,11 @@ def get_invoice_lines(invoice_id):
             "totalTaxableFees": line.totalTaxableFees.__float__(),
             "netTotal": line.netTotal.__float__(),
             "itemsDiscount": line.itemsDiscount.__float__(),
-            "unitValue": {},
+            "unitValue": {
+                        "amountEGP": line.amountEGP.__float__(),
+                        #"amountSold": line.amountSold.__float__(),
+                        #"currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                        "currencySold": line.currencySold},
             "discount": {"rate": line.rate.__float__(),
                          "amount": line.amount.__float__()}
         }
@@ -434,23 +437,20 @@ def get_one_invoice(invoice_id):
 
 
 def get_submition_response(submission_id):
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' + \
-        submission_id + '?PageSize=1'
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' + submission_id + '?PageSize=1'
     response = requests.get(url, verify=False,
                             headers={'Authorization': 'Bearer ' + auth_token, }
                             )
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.get(url, verify=False,
-                                headers={
-                                    'Authorization': 'Bearer ' + auth_token, }
+                                headers={'Authorization': 'Bearer ' + auth_token, }
                                 )
 
     if (response.status_code != status.HTTP_200_OK):
         time.sleep(10)
         response = requests.get(url, verify=False,
-                                headers={
-                                    'Authorization': 'Bearer ' + auth_token, }
+                                headers={'Authorization': 'Bearer ' + auth_token, }
                                 )
     response_code = response
     response_json = response_code.json()
@@ -492,14 +492,12 @@ def submit_invoice(request, invoice_id):
     print(json_data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
-                             headers={'Content-Type': 'application/json',
-                                      'Authorization': 'Bearer ' + auth_token},
+                             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                              json=data)
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.post(url, verify=False,
-                                 headers={'Content-Type': 'application/json',
-                                          'Authorization': 'Bearer ' + auth_token},
+                                 headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
                                  json=data)
 
     response_code = response
@@ -625,10 +623,10 @@ def import_data_from_db(request):
         issuer_address = Address.objects.filter(issuer=issuer)[
             0]  # Make sure issuer address already exists already exists before import
         try:
-            receiver = Receiver.objects.get(reg_num=invoice["CUSTOMER_TRX_ID"])  # Make sure receiver address exist
+            receiver = Receiver.objects.get(reg_num=invoice["REGISTERATION_NUMBER"])  # Make sure receiver address exist
         except Receiver.DoesNotExist:
             receiver = Receiver(
-                reg_num=invoice["CUSTOMER_TRX_ID"],
+                reg_num=invoice["REGISTERATION_NUMBER"],
                 name="New Receiver",
                 type="B"
             )
@@ -659,8 +657,8 @@ def import_data_from_db(request):
         line_obj = InvoiceLine(
             invoice_header=header_obj,
             description=invoice['DESCRIPTION'],
-            itemType="GPC",
-            itemCode=invoice['INTERNAL_ITEM_CODE'],
+            itemType="EGS",
+            itemCode=invoice['GS1_CODE'],
             unitType="EA",
             quantity=invoice['QUANTITY_INVOICED'],
             currencySold=invoice['INVOICE_CURRENCY_CODE'],
@@ -680,8 +678,8 @@ def import_data_from_db(request):
             rate=invoice['TAX_RATE']
         )
         tax_type_obj.save()
-        #Header_tax_totals (i)
-        header_tax_totals = {}
+        header_tax_total = HeaderTaxTotal(header=header_obj, tax=tax_main_type, total=invoice['TAX_AMOUNT'])
+        header_tax_total.save()
 
         # header_tax_totals[tax_type['taxt_itaxt_item_typetem_type']] = header_tax_totals[tax_type['taxt_item_type']] + \
         #                                                 tax_type['tax_item_amount']
@@ -689,5 +687,5 @@ def import_data_from_db(request):
         # header_obj.calculate_total_sales()
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
-        header_obj.save()
+        #header_obj.save()
     return redirect('taxManagement:get-all-invoice-headers')

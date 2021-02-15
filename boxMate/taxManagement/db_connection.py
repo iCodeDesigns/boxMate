@@ -18,7 +18,7 @@ class OracleConnection:
         conn = cx_Oracle.connect(user=self.username, password=self.password, dsn=dsn_tns)
 
         cursor = conn.cursor()
-        cursor.execute(" select * from apps.xxeta_invoices")
+        cursor.execute(" select * from apps.xxeta_invoices where REGISTERATION_NUMBER='423993045' ")
         columns = [col[0] for col in cursor.description]
         cursor.rowfactory = lambda *args: dict(zip(columns, args))
         data = cursor.fetchall()
