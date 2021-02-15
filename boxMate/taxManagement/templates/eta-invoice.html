@@ -71,12 +71,12 @@
                                              <td><span class="label label-success">Valid</span></td>
                                              {% elif invoice.over_all_status == 'Invalid'  %}
                                              <td><span class="label label-danger">Invalid</span></td>
-                                             {% elif invoice.over_all_status == 'In progress'  %}
+                                             {% elif invoice.over_all_status == 'InProgress'  %}
                                              <td><span class="label label-success">In progress</span></td>
                                              {% elif invoice.over_all_status == 'Partially valid'  %}
                                              <td><span class="label label-success">Partially Valid</span></td>
                                               {% else %}
-                                             <td><a href="{% url 'taxManagement:check_status' invoice.subm_id %}">check status</span></td>
+                                             <td></td>
                                              {% endif %}
                                              <td>{{ invoice.date_time_received }}</td>
                                              <td>{{ invoice.document_count }}</td>

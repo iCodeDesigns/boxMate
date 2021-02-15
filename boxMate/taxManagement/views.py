@@ -136,7 +136,7 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type', 'tax_item_amount',
+            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
                                                                             'tax_item_subtype',
                                                                             'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
@@ -151,10 +151,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-        #header_obj.calculate_total_sales()
-        #header_obj.calculate_total_item_discount()
-        #header_obj.calculate_net_total()
-        #header_obj.save()
+        # header_obj.calculate_total_sales()
+        # header_obj.calculate_total_item_discount()
+        # header_obj.calculate_net_total()
+        header_obj.save()
 
 
 # Create your views here.
@@ -465,7 +465,7 @@ def save_submition_response(invoice_id, submission_id):
 
 def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
-    json_data = json.dumps({'documents': [invoice]})
+    json_data = json.dumps({"documents": [invoice]})
     data = decode(json_data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
@@ -480,6 +480,8 @@ def submit_invoice(request, invoice_id):
     response_code = response
     response_json = response_code.json()
     submissionId = response_json['submissionId']
+    print("**************")
+    print(data)
 
     acceptedDocuments = response_json['acceptedDocuments']
     uuid = acceptedDocuments[0]['uuid']
@@ -813,3 +815,43 @@ def calculate_taxable_item_amount_t2(id,invoice_line):
     except:
         amount = 0
     return amount 
+def calculate_t3_amount_per_line(invoice_line_id):
+    try:
+        taxline = TaxLine.objects.get(invoice_line=invoice_line_id , taxType='T3')
+        t3_amount = taxline.amount
+    except:
+        t3_amount = 0
+    return t3_amount
+
+def calculate_t1_amount_per_line(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
+    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
+    t1_amount = (invoice_line.totalTaxableFees + invoice_line.valueDifference + invoice_line.netTotal+
+        t2_amount + t3_amount)*invoice_line.rate
+
+    return t1_amount
+
+def calculate_t4_subtypes_amounts_per_line(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    subtypes = ['W001','W002','W003','W004','W005','W006','W007','W008']
+    t4_amounts = 0
+    for subtype in subtypes:
+        try:
+            taxline = TaxLine.objects.get(invoice_line=invoice_line_id , subType=subtype)
+            subtype_amount = taxline.rate*(invoice_line.netTotal - invoice_line.itemsDiscount)
+        except:
+            subtype_amount = 0
+        t4_amounts += subtype_amount
+    return t4_amounts
+
+def calculate_line_total(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
+    t4_amounts = calculate_t4_subtypes_amounts_per_line(invoice_line_id)
+    t1_amount = calculate_t1_amount_per_line(invoice_line_id)
+    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
+    total_non_taxable_fees = non_total_taxable_fees(invoice_line_id)
+
+    line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+    return line_total
