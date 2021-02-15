@@ -397,8 +397,8 @@ def get_invoice_lines(invoice_id):
             "itemsDiscount": line.itemsDiscount.__float__(),
             "unitValue": {
                         "amountEGP": line.amountEGP.__float__(),
-                        "amountSold": line.amountSold.__float__(),
-                        "currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                        #"amountSold": line.amountSold.__float__(),
+                        #"currencyExchangeRate": line.currencyExchangeRate.__float__(),
                         "currencySold": line.currencySold},
             "discount": {"rate": line.rate.__float__(),
                          "amount": line.amount.__float__()}
@@ -604,7 +604,7 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
-def import_data_from_db():
+def import_data_from_db(request):
     address = '156.4.58.40'
     port = '1521'
     service_nm = 'prod'
@@ -612,6 +612,7 @@ def import_data_from_db():
     password = 'applmgr_42'
     connection_class = OracleConnection(address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
+    print(data)
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(internal_id=invoice["INTERNAL_ID"])
@@ -622,10 +623,10 @@ def import_data_from_db():
         issuer_address = Address.objects.filter(issuer=issuer)[
             0]  # Make sure issuer address already exists already exists before import
         try:
-            receiver = Receiver.objects.get(reg_num=invoice["CUSTOMER_TRX_ID"])  # Make sure receiver address exist
+            receiver = Receiver.objects.get(reg_num=invoice["REGISTERATION_NUMBER"])  # Make sure receiver address exist
         except Receiver.DoesNotExist:
             receiver = Receiver(
-                reg_num=invoice["CUSTOMER_TRX_ID"],
+                reg_num=invoice["REGISTERATION_NUMBER"],
                 name="New Receiver",
                 type="B"
             )
@@ -656,8 +657,8 @@ def import_data_from_db():
         line_obj = InvoiceLine(
             invoice_header=header_obj,
             description=invoice['DESCRIPTION'],
-            itemType="GPC",
-            itemCode=invoice['INTERNAL_ITEM_CODE'],
+            itemType="EGS",
+            itemCode=invoice['GS1_CODE'],
             unitType="EA",
             quantity=invoice['QUANTITY_INVOICED'],
             currencySold=invoice['INVOICE_CURRENCY_CODE'],
@@ -687,4 +688,4 @@ def import_data_from_db():
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
         #header_obj.save()
-        return redirect('taxManagement:get-all-invoice-headers')
+    return redirect('taxManagement:get-all-invoice-headers')
