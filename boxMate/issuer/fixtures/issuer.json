@@ -1,0 +1,77 @@
+[
+    {
+        "model": "issuer.issuer",
+        "pk": 1,
+        "fields": {
+            "type": "B",
+            "reg_num": "10032493",
+            "name": "Dreem",
+            "client_id": "547413a4-79ee-4715-8530-a7ddbe392848",
+            "clientSecret1": "913e5e19-6119-45a1-910f-f060f15e666c",
+            "clientSecret2": "2844d181-0247-4dc5-8589-b43a446ee9f8",
+            "created_at": "2021-02-10",
+            "last_updated_at": "2021-02-14",
+            "created_by": 1,
+            "last_updated_by": null
+        }
+    },
+    {
+        "model": "issuer.receiver",
+        "pk": 1,
+        "fields": {
+            "type": "B",
+            "reg_num": "730913562",
+            "name": "\u0627\u0644\u0645\u0633\u062a\u0644\u0645",
+            "created_at": "2021-02-10",
+            "last_updated_at": "2021-02-10",
+            "created_by": null,
+            "last_updated_by": null
+        }
+    },
+    {
+        "model": "issuer.address",
+        "pk": 1,
+        "fields": {
+            "branch_id": "0",
+            "issuer": 1,
+            "receiver": null,
+            "country": "EG",
+            "governate": "Cairo",
+            "regionCity": "Nasr City",
+            "street": "580 Clementina Key",
+            "buildingNumber": "Bldg. 0",
+            "postalCode": "68030",
+            "floor": "1",
+            "room": "123",
+            "landmark": "7660 Melody Trail",
+            "additionalInformation": "beside Townhall",
+            "created_at": "2021-02-10",
+            "last_updated_at": "2021-02-14",
+            "created_by": 1,
+            "last_updated_by": null
+        }
+    },
+    {
+        "model": "issuer.address",
+        "pk": 2,
+        "fields": {
+            "branch_id": "",
+            "issuer": null,
+            "receiver": 1,
+            "country": "EG",
+            "governate": "\u0627\u0644\u0628\u062d\u064a\u0631\u0629",
+            "regionCity": "\u062f\u0645\u0646\u0647\u0648\u0631",
+            "street": "16 \u062d\u0648\u0634 \u0639\u064a\u0633\u0649",
+            "buildingNumber": "\u0639\u0645\u0627\u0631\u0629 15",
+            "postalCode": "98661",
+            "floor": "8",
+            "room": "110",
+            "landmark": "\u062c\u0627\u0645\u0639 \u0627\u0644\u0631\u062d\u0645\u0629",
+            "additionalInformation": "\u0628\u062c\u0627\u0646\u0628 \u062c\u0627\u0645\u0639 \u0627\u0644\u0631\u062d\u0645\u0629",
+            "created_at": "2021-02-10",
+            "last_updated_at": "2021-02-10",
+            "created_by": null,
+            "last_updated_by": null
+        }
+    }
+]
