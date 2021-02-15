@@ -606,7 +606,7 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
-def import_data_from_db():
+def import_data_from_db(request):
     address = '156.4.58.40'
     port = '1521'
     service_nm = 'prod'
@@ -614,6 +614,7 @@ def import_data_from_db():
     password = 'applmgr_42'
     connection_class = OracleConnection(address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
+    print(data)
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(internal_id=invoice["INTERNAL_ID"])
@@ -689,4 +690,4 @@ def import_data_from_db():
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
         header_obj.save()
-        return redirect('taxManagement:get-all-invoice-headers')
+    return redirect('taxManagement:get-all-invoice-headers')
