@@ -268,8 +268,8 @@ class Submission(models.Model):
 
 
 
-@receiver(pre_save, sender='taxManagement.InvoiceLine')
-def update_total_line(sender, instance, **kwargs):
-    instance.calculate_sales_total()
-    instance.calculate_discount_amount()
-    instance.calculate_net_total()
+# @receiver(pre_save, sender='taxManagement.InvoiceLine')
+# def update_total_line(sender, instance, **kwargs):
+#     instance.calculate_sales_total()
+#     instance.calculate_discount_amount()
+#     instance.calculate_net_total()
