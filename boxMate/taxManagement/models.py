@@ -144,10 +144,11 @@ class InvoiceHeader(models.Model):
     total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
 
+
     def __str__(self):
         return str(self.issuer.name + ' ' + self.receiver.name)
 
-    def calculate_total_sales(self):
+""" def calculate_total_sales(self):
         self.total_sales_amount = 0
         for line in self.lines.all():
             print(line)
@@ -163,7 +164,7 @@ class InvoiceHeader(models.Model):
         self.net_amount = 0
         for line in self.lines.all():
             self.net_amount = self.net_amount + line.netTotal
-
+ """
 
 class Signature(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name='signatures')
@@ -225,6 +226,13 @@ class InvoiceLine(models.Model):
     def __str__(self):
         return self.itemCode
 
+""" 
+    def get_amount_egp(self):
+        if self.currencySold != 'EGP':
+            self.amountEGP = self.amountSold * self.currencyExchangeRate
+        else:
+                
+
     def calculate_sales_total(self):
         if self.amountSold is not None:
             self.salesTotal = self.quantity * self.amountSold
@@ -240,7 +248,7 @@ class InvoiceLine(models.Model):
             self.netTotal = self.salesTotal - self.amount
         else:
             self.netTotal = self.salesTotal
-
+ """
 
 class TaxLine(models.Model):
     invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.CASCADE, related_name='tax_lines')
@@ -268,8 +276,17 @@ class Submission(models.Model):
 
 
 
-@receiver(pre_save, sender='taxManagement.InvoiceLine')
+""" @receiver(pre_save, sender='taxManagement.InvoiceLine')
 def update_total_line(sender, instance, **kwargs):
     instance.calculate_sales_total()
     instance.calculate_discount_amount()
     instance.calculate_net_total()
+ """
+
+
+class HeaderTaxTotal(models.Model): 
+    header= models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
+    tax = models.ForeignKey( TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
+    total = models.IntegerField(blank=True, null=True)
+
+

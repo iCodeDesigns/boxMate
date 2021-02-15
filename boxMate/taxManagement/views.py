@@ -151,10 +151,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-        header_obj.calculate_total_sales()
-        header_obj.calculate_total_item_discount()
-        header_obj.calculate_net_total()
-        header_obj.save()
+        #header_obj.calculate_total_sales()
+        #header_obj.calculate_total_item_discount()
+        #header_obj.calculate_net_total()
+        #header_obj.save()
 
 
 # Create your views here.
