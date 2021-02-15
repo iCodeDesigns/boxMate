@@ -25,7 +25,9 @@ from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
 from issuer import views as issuer_views
 import time
-from taxManagement.db_connection import get_data_from_db
+from taxManagement.db_connection import OracleConnection
+
+
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -63,16 +65,20 @@ def import_data_to_invoice():
         Count('internal_id'))
     for header in headers:
         try:
-            old_header = InvoiceHeader.objects.get(internal_id=header["internal_id"])
+            old_header = InvoiceHeader.objects.get(
+                internal_id=header["internal_id"])
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
             pass
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
-        issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
-        receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
+        issuer_address = Address.objects.get(
+            branch_id=header['issuer_branch_id'])
+        receiver = Receiver.objects.get(
+            reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
                                                floor=header['receiver_floor'], room=header['receiver_room'])
-        taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
+        taxpayer_activity_code = ActivityType.objects.get(
+            code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
             issuer=issuer,
             issuer_address=issuer_address,
@@ -142,8 +148,10 @@ def import_data_to_invoice():
                                                                             'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
             for tax_type in tax_types:
-                tax_main_type = TaxTypes.objects.get(code=tax_type['taxt_item_type'])
-                tax_subtype = TaxSubtypes.objects.get(code=tax_type['tax_item_subtype'])
+                tax_main_type = TaxTypes.objects.get(
+                    code=tax_type['taxt_item_type'])
+                tax_subtype = TaxSubtypes.objects.get(
+                    code=tax_type['tax_item_subtype'])
                 tax_type_obj = TaxLine(
                     invoice_line=line_obj,
                     taxType=tax_main_type,
@@ -165,9 +173,11 @@ def upload_excel_sheet(request):
     dataset = Dataset()
     # # unhash the following line in case of csv file
     # # imported_data = dataset.load(import_file.read().decode(), format='csv')
-    imported_data = dataset.load(import_file.read(), format='xlsx')  # this line in case of excel file
+    # this line in case of excel file
+    imported_data = dataset.load(import_file.read(), format='xlsx')
     #
-    result = main_table_resource.import_data(imported_data, dry_run=False)  # Test the data import
+    result = main_table_resource.import_data(
+        imported_data, dry_run=False)  # Test the data import
     tmp_storage = write_to_tmp_storage(import_file)
     if not result.has_errors() and not result.has_validation_errors():
         tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
@@ -189,7 +199,8 @@ def upload_excel_sheet(request):
 
     else:
         print(result.base_errors)
-        data = {"success": False, "error": {"code": 400, "message": "Invalid Excel sheet"}}
+        data = {"success": False, "error": {
+            "code": 400, "message": "Invalid Excel sheet"}}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
     issuer_views.get_issuer_data()
@@ -367,7 +378,8 @@ def get_invoice_header(invoice_id):
 
 
 def get_invoice_lines(invoice_id):
-    invoice_lines = InvoiceLine.objects.filter(invoice_header__internal_id=invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(
+        invoice_header__internal_id=invoice_id)
     invoice_lines_list = []
     for line in invoice_lines:
         invoice_line = {
@@ -539,7 +551,8 @@ def get_decument_detail_after_submit(request, doc_uuid):
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.get(url, verify=False,
-                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                headers={
+                                    'Authorization': 'Bearer ' + auth_token, }
                                 )
 
     validation_steps = response.json()['validationResults']['validationSteps']
@@ -576,7 +589,8 @@ def get_token():
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
     scope = "InvoicingAPI"
 
-    data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "scope": scope}
+    data = {"grant_type": "client_credentials", "client_id": client_id,
+            "client_secret": client_secret, "scope": scope}
     response = requests.post(url, verify=False,
                              data=data)
     global auth_token
@@ -591,7 +605,13 @@ def resubmit(request, sub_id):
 
 
 def import_data_from_db():
-    data = get_data_from_db()
+    address = '156.4.58.40'
+    port = '1521'
+    service_nm = 'prod'
+    username = 'apps'
+    password = 'applmgr_42'
+    connection_class = OracleConnection(address, port, service_nm, username, password)
+    data = connection_class.get_data_from_db()
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(internal_id=invoice["INTERNAL_ID"])
@@ -667,3 +687,4 @@ def import_data_from_db():
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
         #header_obj.save()
+        return redirect('taxManagement:get-all-invoice-headers')
