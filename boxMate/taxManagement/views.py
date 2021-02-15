@@ -12,7 +12,7 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
@@ -152,10 +152,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-        #header_obj.calculate_total_sales()
-        #header_obj.calculate_total_item_discount()
-        #header_obj.calculate_net_total()
-        #header_obj.save()
+        # header_obj.calculate_total_sales()
+        # header_obj.calculate_total_item_discount()
+        # header_obj.calculate_net_total()
+        # header_obj.save()
 
 
 # Create your views here.
@@ -309,6 +309,14 @@ def get_receiver_address(invoice_id):
 def get_invoice_header(invoice_id):
     invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
     signatures = Signature.objects.filter(invoice_header=invoice_header)
+    taxtotals = HeaderTaxTotal.objects.filter(header=invoice_header)
+    tax_total_list = []
+    for total in taxtotals:
+        tax_total_object = {
+            "taxType": total.tax.code,
+            "amount": total.total.__float__()
+        }
+        tax_total_list.append(tax_total_object)
     signature_list = []
     for signature in signatures:
         signature_obj = {
@@ -349,16 +357,7 @@ def get_invoice_header(invoice_id):
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
-        "taxTotals": [
-            #     {
-            #         "taxType": "T1",
-            #         "amount": 1286.79112
-            #     },
-            #     {
-            #         "taxType": "T2",
-            #         "amount": 984.78912
-            #     }
-        ],
+        "taxTotals":tax_total_list,
         "totalAmount": invoice_header.total_amount.__float__(),
         "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
         "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
@@ -384,7 +383,11 @@ def get_invoice_lines(invoice_id):
             "totalTaxableFees": line.totalTaxableFees.__float__(),
             "netTotal": line.netTotal.__float__(),
             "itemsDiscount": line.itemsDiscount.__float__(),
-            "unitValue": {},
+            "unitValue": {
+                        "amountEGP": line.amountEGP.__float__(),
+                        "amountSold": line.amountSold.__float__(),
+                        "currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                        "currencySold": line.currencySold},
             "discount": {"rate": line.rate.__float__(),
                          "amount": line.amount.__float__()}
         }
@@ -654,8 +657,8 @@ def import_data_from_db():
             rate=invoice['TAX_RATE']
         )
         tax_type_obj.save()
-        #Header_tax_totals (i)
-        header_tax_totals = {}
+        header_tax_total = HeaderTaxTotal(header=header_obj, tax=tax_main_type, total=invoice['TAX_AMOUNT'])
+        header_tax_total.save()
 
         # header_tax_totals[tax_type['taxt_itaxt_item_typetem_type']] = header_tax_totals[tax_type['taxt_item_type']] + \
         #                                                 tax_type['tax_item_amount']
@@ -663,4 +666,4 @@ def import_data_from_db():
         # header_obj.calculate_total_sales()
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
-        header_obj.save()
+        #header_obj.save()

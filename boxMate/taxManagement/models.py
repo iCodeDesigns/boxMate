@@ -277,6 +277,5 @@ def update_total_line(sender, instance, **kwargs):
 class HeaderTaxTotal(models.Model):
     header= models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     tax = models.ForeignKey( TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
-    total = models.IntegerField(blank=True, null=True)
-
+    total = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
 
