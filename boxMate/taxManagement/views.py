@@ -25,7 +25,7 @@ from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
 from issuer import views as issuer_views
 import time
-
+from taxManagement.db_connection import get_data_from_db
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
 
@@ -122,8 +122,8 @@ def import_data_to_invoice():
                 quantity=line['quantity'],
                 currencySold=line['currency_sold'],
                 amountEGP=line['amount_egp'],
-                amountSold=line['amount_sold'],
-                currencyExchangeRate=line['currency_exchange_rate'],
+                # amountSold=line['amount_sold'],
+                # currencyExchangeRate=line['currency_exchange_rate'],
                 salesTotal=line['sales_total'],
                 total=line['total'],
                 valueDifference=line['value_difference'],
@@ -275,12 +275,12 @@ def get_issuer_address(invoice_id):
 def get_receiver_address(invoice_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     address_id = invoice.receiver_address
-    address = Address.objects.get(id=address_id.id)
-
+    address = Address.objects.filter(id=address_id.id)[0]
+    #
     country_id = address.country
     country_code = CountryCode.objects.get(code=country_id.code)
     country = country_code.code
-
+    #
     governate = address.governate
     regionCity = address.regionCity
     street = address.street
@@ -291,16 +291,18 @@ def get_receiver_address(invoice_id):
     landmark = address.landmark
     additionalInformation = address.additionalInformation
     return {
-        "country": country,
-        "governate": governate,
-        "regionCity": regionCity,
-        "street": street,
-        "buildingNumber": buildingNumber,
-        "postalCode": postalCode,
-        "floor": floor,
-        "room": room,
-        "landmark": landmark,
-        "additionalInformation": additionalInformation
+
+            "country": country,
+            "governate": governate,
+            "regionCity": regionCity,
+            "street": street,
+            "buildingNumber": buildingNumber,
+            "postalCode": postalCode,
+            "floor": floor,
+            "room": room,
+            "landmark": landmark,
+            "additionalInformation": additionalInformation
+
     }
 
 
@@ -376,9 +378,7 @@ def get_invoice_lines(invoice_id):
             "total": line.total.__float__(),
             "valueDifference": line.valueDifference.__float__(), "totalTaxableFees": line.totalTaxableFees.__float__(),
             "netTotal": line.netTotal.__float__(), "itemsDiscount": line.itemsDiscount.__float__(),
-            "unitValue": {"currencySold": line.currencySold, "amountEGP": line.amountEGP.__float__(),
-                          "amountSold": line.amountSold.__float__(),
-                          "currencyExchangeRate": line.currencyExchangeRate.__float__()},
+            "unitValue": {},
             "discount": {"rate": line.rate.__float__(), "amount": line.amount.__float__()}
         }
 
@@ -467,6 +467,7 @@ def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({'documents': [invoice]})
     data = decode(json_data)
+    print(json_data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
@@ -565,3 +566,69 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
+def import_data_from_db():
+    data = get_data_from_db()
+    for invoice in data:
+        try:
+            old_header = InvoiceHeader.objects.get(internal_id=invoice["INTERNAL_ID"])
+            old_header.delete()
+        except InvoiceHeader.DoesNotExist:
+            pass
+        issuer = Issuer.objects.all()[0]
+        issuer_address = Address.objects.filter(issuer=issuer)[0]
+        try:
+            receiver = Receiver.objects.get(reg_num=invoice["CUSTOMER_TRX_ID"])
+        except Receiver.DoesNotExist:
+            receiver = Receiver(
+                reg_num=invoice["CUSTOMER_TRX_ID"],
+            )
+            receiver.save()
+        receiver_add=Address.objects.all()[0]
+        taxpayer_activity_code = issuer.activity_code
+        header_obj = InvoiceHeader(
+            issuer=issuer,
+            issuer_address=issuer_address,
+            receiver=receiver,
+            receiver_address=receiver_add ,
+            document_type=invoice['INVOICE_TYPE'],
+            document_type_version="0.9",
+            taxpayer_activity_code=taxpayer_activity_code,
+            internal_id=invoice["INTERNAL_ID"],
+            purchase_order_reference=invoice['PURCHASE_ORDER'],
+            sales_order_reference=invoice['SALES_ORDER'],
+            sales_order_description=invoice['SALES_ORDER_DESCRIPTION'],
+        )
+        header_obj.save()
+        ####### create signature #######
+        signature_obj = Signature(
+            invoice_header=header_obj,
+        )
+        signature_obj.save()
+        line_obj = InvoiceLine(
+            invoice_header=header_obj,
+            description=invoice['DESCRIPTION'],
+            itemType="GPC",
+            itemCode=invoice['INTERNAL_ITEM_CODE'],
+            unitType="EA",
+            quantity=invoice['QUANTITY_INVOICED'],
+            currencySold=invoice['INVOICE_CURRENCY_CODE'],
+            amountEGP=invoice['AMOUNTEGP'],
+            amountSold=invoice['AMOUNTSOLD'],
+            currencyExchangeRate=invoice['CURRENT_EXCHANGE_RATE'],
+            internalCode=invoice['INTERNAL_ITEM_CODE'],
+        )
+        line_obj.save()
+        tax_main_type = TaxTypes.objects.get(code=invoice['TAX_TYPE'])
+        tax_subtype = TaxSubtypes.objects.get(code=invoice['TAX_SUB_TYPE'])
+        tax_type_obj = TaxLine(
+            invoice_line=line_obj,
+            taxType=tax_main_type,
+            subType=tax_subtype,
+            amount=invoice['TAX_AMOUNT'],
+            rate=invoice['TAX_RATE']
+        )
+        tax_type_obj.save()
+        header_obj.calculate_total_sales()
+        header_obj.calculate_total_item_discount()
+        header_obj.calculate_net_total()
+        header_obj.save()

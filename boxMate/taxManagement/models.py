@@ -137,15 +137,13 @@ class InvoiceHeader(models.Model):
     sales_order_reference = models.CharField(max_length=50, null=True, blank=True)
     sales_order_description = models.CharField(max_length=100, null=True, blank=True)
     proforma_invoice_number = models.CharField(max_length=50, null=True, blank=True)
-    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
-    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
-    net_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
-    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
-    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
-    total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True)
+    total_sales_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
+    total_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
+    net_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
+    extra_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
+    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
+    total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,default=0.0)
 
-    def __str__(self):
-        return str(self.issuer.name + ' ' + self.receiver.name)
 
     def calculate_total_sales(self):
         self.total_sales_amount = 0
@@ -170,8 +168,7 @@ class Signature(models.Model):
     signature_type = models.CharField(max_length=20, null=True, blank=True)
     signature_value = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return self.signature_type
+
 
 
 class InvoiceLine(models.Model):
@@ -190,26 +187,26 @@ class InvoiceLine(models.Model):
                                                          'used to convert currency sold to the value of currency EGP. '
                                                          'Mandatory if currencySold is not EGP. Should be valid '
                                                          'decimal with max 5 decimal digits.')
-    salesTotal = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    salesTotal = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.00000,
                                      help_text='Total amount for the invoice line considering quantity and unit price '
                                                'in EGP (with excluded factory amounts if they are present for '
                                                'specific types in documents).')
-    total = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    total = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.0,
                                 help_text='Total amount for the invoice line after adding all pricing items, taxes, '
                                           'removing discounts.')
-    valueDifference = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    valueDifference = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.00000,
                                           help_text='Value difference when selling goods already taxed (accepts +/- '
                                                     'numbers), e.g., factory value based.')
-    totalTaxableFees = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    totalTaxableFees = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.0,
                                            help_text='Total amount of additional taxable fees to be used in final tax '
                                                      'calculation.')
-    itemsDiscount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    itemsDiscount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.0,
                                         help_text='Non-taxable items discount.')
-    netTotal = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    netTotal = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.0,
                                    help_text='Total amount for the invoice line after applying discount.')
-    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,
+    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True,default=1,
                                help_text='Optional: discount percentage rate applied. Must be from 0 to 100.')
-    amount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
+    amount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,default=0.0,
                                  help_text='Optional: amount of discount provided to customer for this item. Should '
                                            'be smaller or equal to value Total. If percentage specified should be '
                                            'valid amount calculated from total by applying discount percentage. ')
@@ -222,8 +219,6 @@ class InvoiceLine(models.Model):
                                    related_name="line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return self.itemCode
 
     def calculate_sales_total(self):
         if self.amountSold is not None:
@@ -254,8 +249,7 @@ class TaxLine(models.Model):
                                    related_name="tax_line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return str(self.invoice_line.itemCode + ' ' + self.taxType.code)
+
 
 
 class Submission(models.Model):
