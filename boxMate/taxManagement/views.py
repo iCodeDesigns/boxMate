@@ -12,7 +12,7 @@ from tablib import Dataset
 from django.conf import settings
 from taxManagement.tmp_storage import TempFolderStorage
 from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission
+from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
 from issuer.models import Issuer, Receiver
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
@@ -25,6 +25,9 @@ from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
 from issuer import views as issuer_views
 import time
+from taxManagement.db_connection import OracleConnection
+
+
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -62,16 +65,20 @@ def import_data_to_invoice():
         Count('internal_id'))
     for header in headers:
         try:
-            old_header = InvoiceHeader.objects.get(internal_id=header["internal_id"])
+            old_header = InvoiceHeader.objects.get(
+                internal_id=header["internal_id"])
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
             pass
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
-        issuer_address = Address.objects.get(branch_id=header['issuer_branch_id'])
-        receiver = Receiver.objects.get(reg_num=header['receiver_registration_num'])
+        issuer_address = Address.objects.get(
+            branch_id=header['issuer_branch_id'])
+        receiver = Receiver.objects.get(
+            reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
                                                floor=header['receiver_floor'], room=header['receiver_room'])
-        taxpayer_activity_code = ActivityType.objects.get(code=header['taxpayer_activity_code'])
+        taxpayer_activity_code = ActivityType.objects.get(
+            code=header['taxpayer_activity_code'])
         header_obj = InvoiceHeader(
             issuer=issuer,
             issuer_address=issuer_address,
@@ -122,8 +129,8 @@ def import_data_to_invoice():
                 quantity=line['quantity'],
                 currencySold=line['currency_sold'],
                 amountEGP=line['amount_egp'],
-                amountSold=line['amount_sold'],
-                currencyExchangeRate=line['currency_exchange_rate'],
+                # amountSold=line['amount_sold'],
+                # currencyExchangeRate=line['currency_exchange_rate'],
                 salesTotal=line['sales_total'],
                 total=line['total'],
                 valueDifference=line['value_difference'],
@@ -141,8 +148,10 @@ def import_data_to_invoice():
                                                                             'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
             for tax_type in tax_types:
-                tax_main_type = TaxTypes.objects.get(code=tax_type['taxt_item_type'])
-                tax_subtype = TaxSubtypes.objects.get(code=tax_type['tax_item_subtype'])
+                tax_main_type = TaxTypes.objects.get(
+                    code=tax_type['taxt_item_type'])
+                tax_subtype = TaxSubtypes.objects.get(
+                    code=tax_type['tax_item_subtype'])
                 tax_type_obj = TaxLine(
                     invoice_line=line_obj,
                     taxType=tax_main_type,
@@ -165,9 +174,11 @@ def upload_excel_sheet(request):
     dataset = Dataset()
     # # unhash the following line in case of csv file
     # # imported_data = dataset.load(import_file.read().decode(), format='csv')
-    imported_data = dataset.load(import_file.read(), format='xlsx')  # this line in case of excel file
+    # this line in case of excel file
+    imported_data = dataset.load(import_file.read(), format='xlsx')
     #
-    result = main_table_resource.import_data(imported_data, dry_run=False)  # Test the data import
+    result = main_table_resource.import_data(
+        imported_data, dry_run=False)  # Test the data import
     tmp_storage = write_to_tmp_storage(import_file)
     if not result.has_errors() and not result.has_validation_errors():
         tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
@@ -189,7 +200,8 @@ def upload_excel_sheet(request):
 
     else:
         print(result.base_errors)
-        data = {"success": False, "error": {"code": 400, "message": "Invalid Excel sheet"}}
+        data = {"success": False, "error": {
+            "code": 400, "message": "Invalid Excel sheet"}}
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     data = {"success": True}
     issuer_views.get_issuer_data()
@@ -214,7 +226,7 @@ def get_issuer_body(invoice_id):
 
     return {
         "type": type,
-        "id": '100324932',
+        "id": reg_num,
         "name": name,
         "address": address,
     }
@@ -243,7 +255,6 @@ def get_issuer_address(invoice_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     address_id = invoice.issuer_address
     address = Address.objects.get(id=address_id.id)
-
     country_id = address.country
     country_code = CountryCode.objects.get(code=country_id.code)
     country = country_code.code
@@ -276,12 +287,12 @@ def get_issuer_address(invoice_id):
 def get_receiver_address(invoice_id):
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     address_id = invoice.receiver_address
-    address = Address.objects.get(id=address_id.id)
-
+    address = Address.objects.filter(id=address_id.id)[0]
+    #
     country_id = address.country
     country_code = CountryCode.objects.get(code=country_id.code)
     country = country_code.code
-
+    #
     governate = address.governate
     regionCity = address.regionCity
     street = address.street
@@ -292,6 +303,7 @@ def get_receiver_address(invoice_id):
     landmark = address.landmark
     additionalInformation = address.additionalInformation
     return {
+
         "country": country,
         "governate": governate,
         "regionCity": regionCity,
@@ -302,12 +314,21 @@ def get_receiver_address(invoice_id):
         "room": room,
         "landmark": landmark,
         "additionalInformation": additionalInformation
+
     }
 
 
 def get_invoice_header(invoice_id):
     invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
     signatures = Signature.objects.filter(invoice_header=invoice_header)
+    taxtotals = HeaderTaxTotal.objects.filter(header=invoice_header)
+    tax_total_list = []
+    for total in taxtotals:
+        tax_total_object = {
+            "taxType": total.tax.code,
+            "amount": total.total.__float__()
+        }
+        tax_total_list.append(tax_total_object)
     signature_list = []
     for signature in signatures:
         signature_obj = {
@@ -348,16 +369,7 @@ def get_invoice_header(invoice_id):
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
-        "taxTotals": [
-            #     {
-            #         "taxType": "T1",
-            #         "amount": 1286.79112
-            #     },
-            #     {
-            #         "taxType": "T2",
-            #         "amount": 984.78912
-            #     }
-        ],
+        "taxTotals":tax_total_list,
         "totalAmount": invoice_header.total_amount.__float__(),
         "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
         "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
@@ -367,20 +379,30 @@ def get_invoice_header(invoice_id):
 
 
 def get_invoice_lines(invoice_id):
-    invoice_lines = InvoiceLine.objects.filter(invoice_header__internal_id=invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(
+        invoice_header__internal_id=invoice_id)
     invoice_lines_list = []
     for line in invoice_lines:
         invoice_line = {
-            "description": line.description, "itemType": line.itemType,
-            "itemCode": line.itemCode, "unitType": line.unitType, "quantity": line.quantity.__float__(),
-            "internalCode": line.internalCode, "salesTotal": line.salesTotal.__float__(),
+            "description": line.description,
+            "itemType": line.itemType,
+            "itemCode": line.itemCode,
+            "unitType": line.unitType,
+            "quantity": line.quantity.__float__(),
+            "internalCode": line.internalCode,
+            "salesTotal": line.salesTotal.__float__(),
             "total": line.total.__float__(),
-            "valueDifference": line.valueDifference.__float__(), "totalTaxableFees": line.totalTaxableFees.__float__(),
-            "netTotal": line.netTotal.__float__(), "itemsDiscount": line.itemsDiscount.__float__(),
-            "unitValue": {"currencySold": line.currencySold, "amountEGP": line.amountEGP.__float__(),
-                          "amountSold": line.amountSold.__float__(),
-                          "currencyExchangeRate": line.currencyExchangeRate.__float__()},
-            "discount": {"rate": line.rate.__float__(), "amount": line.amount.__float__()}
+            "valueDifference": line.valueDifference.__float__(),
+            "totalTaxableFees": line.totalTaxableFees.__float__(),
+            "netTotal": line.netTotal.__float__(),
+            "itemsDiscount": line.itemsDiscount.__float__(),
+            "unitValue": {
+                        "amountEGP": line.amountEGP.__float__(),
+                        #"amountSold": line.amountSold.__float__(),
+                        #"currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                        "currencySold": line.currencySold},
+            "discount": {"rate": line.rate.__float__(),
+                         "amount": line.amount.__float__()}
         }
 
         taxable_lines = get_taxable_lines(line.id)
@@ -532,26 +554,26 @@ def get_decument_detail_after_submit(request, doc_uuid):
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.get(url, verify=False,
-                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                headers={
+                                    'Authorization': 'Bearer ' + auth_token, }
                                 )
 
     validation_steps = response.json()['validationResults']['validationSteps']
-    header_errors=[]
-    lines_errors=[]
+    header_errors = []
+    lines_errors = []
     for validation_step in validation_steps:
         if validation_step['status'] == 'Invalid':
             inner_errors = validation_step['error']['innerError']
             for inner_error in inner_errors:
-                if inner_error['propertyPath'].startswith('invoiceLine') :
+                if inner_error['propertyPath'].startswith('invoiceLine'):
                     lines_errors.append(inner_error['error'])
                 elif inner_error['propertyPath'].startswith('document'):
                     header_errors.append(inner_error['error'])
 
-
     get_doc_context = {
         "response_json": response.json(),
-        'header_errors':header_errors,
-        'lines_errors':lines_errors,
+        'header_errors': header_errors,
+        'lines_errors': lines_errors,
     }
     return render(request, 'doc-detail.html', get_doc_context)
 
@@ -570,7 +592,8 @@ def get_token():
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
     scope = "InvoicingAPI"
 
-    data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "scope": scope}
+    data = {"grant_type": "client_credentials", "client_id": client_id,
+            "client_secret": client_secret, "scope": scope}
     response = requests.post(url, verify=False,
                              data=data)
     global auth_token
@@ -936,3 +959,88 @@ def line_taxes_totals(id):
     t1_amount = calculate_t1_amount_per_line(id)
     t4_amount = calculate_t4_subtypes_amounts_per_line(id)
     calculate_line_totals = calculate_line_total(id)
+def import_data_from_db(request):
+    address = '156.4.58.40'
+    port = '1521'
+    service_nm = 'prod'
+    username = 'apps'
+    password = 'applmgr_42'
+    connection_class = OracleConnection(address, port, service_nm, username, password)
+    data = connection_class.get_data_from_db()
+    print(data)
+    for invoice in data:
+        try:
+            old_header = InvoiceHeader.objects.get(internal_id=invoice["INTERNAL_ID"])
+            old_header.delete()
+        except InvoiceHeader.DoesNotExist:
+            pass
+        issuer = Issuer.objects.all()[0]  # Make sure an issuer already exists before import
+        issuer_address = Address.objects.filter(issuer=issuer)[
+            0]  # Make sure issuer address already exists already exists before import
+        try:
+            receiver = Receiver.objects.get(reg_num=invoice["REGISTERATION_NUMBER"])  # Make sure receiver address exist
+        except Receiver.DoesNotExist:
+            receiver = Receiver(
+                reg_num=invoice["REGISTERATION_NUMBER"],
+                name="New Receiver",
+                type="B"
+            )
+            receiver.save()
+        receiver_add = Address.objects.all()[0]  # get any address
+        taxpayer_activity_code = issuer.activity_code
+        header_obj = InvoiceHeader(
+            issuer=issuer,
+            issuer_address=issuer_address,
+            receiver=receiver,
+            receiver_address=receiver_add,
+            document_type=invoice['INVOICE_TYPE'],
+            document_type_version="0.9",
+            taxpayer_activity_code=taxpayer_activity_code,
+            internal_id=invoice["INTERNAL_ID"],
+            purchase_order_reference=invoice['PURCHASE_ORDER'],
+            sales_order_reference=invoice['SALES_ORDER'],
+            sales_order_description=invoice['SALES_ORDER_DESCRIPTION'],
+        )
+        header_obj.save()
+        ####### create signature #######
+        signature_obj = Signature(
+            invoice_header=header_obj,
+            signature_type="I",
+            signature_value="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hkiG9w0BBwUxgiZNBIImSSJJU1NVRVIiIkFERFJFU1MiIkJSQU5DSElEIiIwIiJDT1VOVFJZIiJFRyIiR09WRVJOQVRFIiJDYWlybyIiUkVHSU9OQ0lUWSIiTmFzciBDaXR5IiJTVFJFRVQiIjU4MCBDbGVtZW50aW5hIEtleSIiQlVJTERJTkdOVU1CRVIiIkJsZGcuIDAiIlBPU1RBTENPREUiIjY4MDMwIiJGTE9PUiIiMSIiUk9PTSIiMTIzIiJMQU5ETUFSSyIiNzY2MCBNZWxvZHkgVHJhaWwiIkFERElUSU9OQUxJTkZPUk1BVElPTiIiYmVzaWRlIFRvd25oYWxsIiJUWVBFIiJCIiJJRCIiMTAwMzI0OTMyIiJOQU1FIiJEcmVlbSIiUkVDRUlWRVIiIkFERFJFU1MiIkNPVU5UUlkiIkVHIiJHT1ZFUk5BVEUiIkVneXB0IiJSRUdJT05DSVRZIiJNdWZhemF0IGFsIElzbWx5YWgiIlNUUkVFVCIiNTgwIENsZW1lbnRpbmEgS2V5IiJCVUlMRElOR05VTUJFUiIiQmxkZy4gMCIiUE9TVEFMQ09ERSIiNjgwMzAiIkZMT09SIiIxIiJST09NIiIxMjMiIkxBTkRNQVJLIiI3NjYwIE1lbG9keSBUcmFpbCIiQURESVRJT05BTElORk9STUFUSU9OIiJiZXNpZGUgVG93bmhhbGwiIlRZUEUiIkIiIklEIiIzMTM3MTc5MTkiIk5BTUUiIlJlY2VpdmVyIiJET0NVTUVOVFRZUEUiIkkiIkRPQ1VNRU5UVFlQRVZFUlNJT04iIjEuMCIiREFURVRJTUVJU1NVRUQiIjIwMjEtMDItMTRUMDI6MDQ6NDVaIiJUQVhQQVlFUkFDVElWSVRZQ09ERSIiMTA3OSIiSU5URVJOQUxJRCIiQVItMDAwMjIiIlBVUkNIQVNFT1JERVJSRUZFUkVOQ0UiIlAtMjMzLUE2Mzc1IiJQVVJDSEFTRU9SREVSREVTQ1JJUFRJT04iInB1cmNoYXNlIE9yZGVyIGRlc2NyaXB0aW9uIiJTQUxFU09SREVSUkVGRVJFTkNFIiIxMjMxIiJTQUxFU09SREVSREVTQ1JJUFRJT04iIlNhbGVzIE9yZGVyIGRlc2NyaXB0aW9uIiJQUk9GT1JNQUlOVk9JQ0VOVU1CRVIiIlNvbWVWYWx1ZSIiUEFZTUVOVCIiQkFOS05BTUUiIlNvbWVWYWx1ZSIiQkFOS0FERFJFU1MiIlNvbWVWYWx1ZSIiQkFOS0FDQ09VTlROTyIiU29tZVZhbHVlIiJCQU5LQUNDT1VOVElCQU4iIiIiU1dJRlRDT0RFIiIiIlRFUk1TIiJTb21lVmFsdWUiIklOVk9JQ0VMSU5FUyIiSU5WT0lDRUxJTkVTIiJERVNDUklQVElPTiIiRnJ1aXR5IE1hY2hpbmUiIklURU1UWVBFIiJFR1MiIklURU1DT0RFIiJFRy0xMDAzMjQ5MzItMTExMTEiIlVOSVRUWVBFIiJFQSIiUVVBTlRJVFkiIjcuMDAwMDAiIklOVEVSTkFMQ09ERSIiRlNQTTAwMSIiU0FMRVNUT1RBTCIiNjYyLjkwMDAwIiJUT1RBTCIiMjIyMC4wODkxNCIiVkFMVUVESUZGRVJFTkNFIiI3LjAwMDAwIiJUT1RBTFRBWEFCTEVGRUVTIiI2MTguNjkyMTIiIk5FVFRPVEFMIiI2NDkuNjQyMDAiIklURU1TRElTQ09VTlQiIjUuMDAwMDAiIlVOSVRWQUxVRSIiQ1VSUkVOQ1lTT0xEIiJVU0QiIkFNT1VOVEVHUCIiOTQuNzAwMDAiIkFNT1VOVFNPTEQiIjQuNzM1MDAiIkNVUlJFTkNZRVhDSEFOR0VSQVRFIiIyMC4wMDAwMCIiRElTQ09VTlQiIlJBVEUiIjIiIkFNT1VOVCIiMTMuMjU4MDAiIlRBWEFCTEVJVEVNUyIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMSIiQU1PVU5UIiIyMDQuNjc2MzkiIlNVQlRZUEUiIlYwMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyIiJBTU9VTlQiIjE1Ni42NDAwOSIiU1VCVFlQRSIiVGJsMDEiIlJBVEUiIjEyIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQzIiJBTU9VTlQiIjMwLjAwMDAwIiJTVUJUWVBFIiJUYmwwMiIiUkFURSIiMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNCIiQU1PVU5UIiIzMi4yMzIxMCIiU1VCVFlQRSIiVzAwMSIiUkFURSIiNS4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNSIiQU1PVU5UIiI5MC45NDk4OCIiU1VCVFlQRSIiU1QwMSIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDYiIkFNT1VOVCIiNjAuMDAwMDAiIlNVQlRZUEUiIlNUMDIiIlJBVEUiIjAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDciIkFNT1VOVCIiNjQuOTY0MjAiIlNVQlRZUEUiIkVudDAxIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUOCIiQU1PVU5UIiI5MC45NDk4OCIiU1VCVFlQRSIiUkQwMSIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDkiIkFNT1VOVCIiNzcuOTU3MDQiIlNVQlRZUEUiIlNDMDEiIlJBVEUiIjEyLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxMCIiQU1PVU5UIiI2NC45NjQyMCIiU1VCVFlQRSIiTW4wMSIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDExIiJBTU9VTlQiIjkwLjk0OTg4IiJTVUJUWVBFIiJNSTAxIiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTIiIkFNT1VOVCIiNzcuOTU3MDQiIlNVQlRZUEUiIk9GMDEiIlJBVEUiIjEyLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxMyIiQU1PVU5UIiI2NC45NjQyMCIiU1VCVFlQRSIiU1QwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE0IiJBTU9VTlQiIjkwLjk0OTg4IiJTVUJUWVBFIiJTVDA0IiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTUiIkFNT1VOVCIiNzcuOTU3MDQiIlNVQlRZUEUiIkVudDAzIiJSQVRFIiIxMi4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTYiIkFNT1VOVCIiNjQuOTY0MjAiIlNVQlRZUEUiIlJEMDMiIlJBVEUiIjEwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxNyIiQU1PVU5UIiI2NC45NjQyMCIiU1VCVFlQRSIiU0MwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE4IiJBTU9VTlQiIjkwLjk0OTg4IiJTVUJUWVBFIiJNbjAzIiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTkiIkFNT1VOVCIiNzcuOTU3MDQiIlNVQlRZUEUiIk1JMDMiIlJBVEUiIjEyLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyMCIiQU1PVU5UIiI2NC45NjQyMCIiU1VCVFlQRSIiT0YwMyIiUkFURSIiMTAuMDAiIklOVk9JQ0VMSU5FUyIiREVTQ1JJUFRJT04iIkVHLTEwMDMyNDkzMi0wMDIiIklURU1UWVBFIiJFR1MiIklURU1DT0RFIiJFRy0xMDAzMjQ5MzItMDAyIiJVTklUVFlQRSIiRUEiIlFVQU5USVRZIiI1LjAwMDAwIiJJTlRFUk5BTENPREUiIkZTUE0wMDIiIlNBTEVTVE9UQUwiIjk0Ny4wMDAwMCIiVE9UQUwiIjMxMjMuNTEzMjMiIlZBTFVFRElGRkVSRU5DRSIiNy4wMDAwMCIiVE9UQUxUQVhBQkxFRkVFUyIiODU4LjEzMTYwIiJORVRUT1RBTCIiOTI4LjA2MDAwIiJJVEVNU0RJU0NPVU5UIiI1LjAwMDAwIiJVTklUVkFMVUUiIkNVUlJFTkNZU09MRCIiRVVSIiJBTU9VTlRFR1AiIjE4OS40MDAwMCIiQU1PVU5UU09MRCIiMTAuMDAwMDAiIkNVUlJFTkNZRVhDSEFOR0VSQVRFIiIxOC45NDAwMCIiRElTQ09VTlQiIlJBVEUiIjIiIkFNT1VOVCIiMTguOTQwMDAiIlRBWEFCTEVJVEVNUyIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMSIiQU1PVU5UIiIyODUuODc2NDQiIlNVQlRZUEUiIlYwMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyIiJBTU9VTlQiIjIxOC43ODI5OSIiU1VCVFlQRSIiVGJsMDEiIlJBVEUiIjEyIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQzIiJBTU9VTlQiIjMwLjAwMDAwIiJTVUJUWVBFIiJUYmwwMiIiUkFURSIiMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNCIiQU1PVU5UIiI0Ni4xNTMwMCIiU1VCVFlQRSIiVzAwMSIiUkFURSIiNS4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNSIiQU1PVU5UIiIxMjkuOTI4NDAiIlNVQlRZUEUiIlNUMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ2IiJBTU9VTlQiIjYwLjAwMDAwIiJTVUJUWVBFIiJTVDAyIiJSQVRFIiIwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ3IiJBTU9VTlQiIjkyLjgwNjAwIiJTVUJUWVBFIiJFbnQwMSIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDgiIkFNT1VOVCIiMTI5LjkyODQwIiJTVUJUWVBFIiJSRDAxIiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUOSIiQU1PVU5UIiIxMTEuMzY3MjAiIlNVQlRZUEUiIlNDMDEiIlJBVEUiIjEyLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxMCIiQU1PVU5UIiI5Mi44MDYwMCIiU1VCVFlQRSIiTW4wMSIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDExIiJBTU9VTlQiIjEyOS45Mjg0MCIiU1VCVFlQRSIiTUkwMSIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDEyIiJBTU9VTlQiIjExMS4zNjcyMCIiU1VCVFlQRSIiT0YwMSIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDEzIiJBTU9VTlQiIjkyLjgwNjAwIiJTVUJUWVBFIiJTVDAzIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTQiIkFNT1VOVCIiMTI5LjkyODQwIiJTVUJUWVBFIiJTVDA0IiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTUiIkFNT1VOVCIiMTExLjM2NzIwIiJTVUJUWVBFIiJFbnQwMyIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE2IiJBTU9VTlQiIjkyLjgwNjAwIiJTVUJUWVBFIiJSRDAzIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTciIkFNT1VOVCIiOTIuODA2MDAiIlNVQlRZUEUiIlNDMDMiIlJBVEUiIjEwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxOCIiQU1PVU5UIiIxMjkuOTI4NDAiIlNVQlRZUEUiIk1uMDMiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxOSIiQU1PVU5UIiIxMTEuMzY3MjAiIlNVQlRZUEUiIk1JMDQiIlJBVEUiIjEyLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyMCIiQU1PVU5UIiI5Mi44MDYwMCIiU1VCVFlQRSIiT0YwMyIiUkFURSIiMTAuMDAiIklOVk9JQ0VMSU5FUyIiREVTQ1JJUFRJT04iIkVHLTEwMDMyNDkzMi0wMDMiIklURU1UWVBFIiJFR1MiIklURU1DT0RFIiJFRy0xMDAzMjQ5MzItMDAzIiJVTklUVFlQRSIiRUEiIlFVQU5USVRZIiI2LjU3MjY1IiJJTlRFUk5BTENPREUiIkZTUE0wMDMiIlNBTEVTVE9UQUwiIjE0NDUuOTgzMDAiIlRPVEFMIiI0NTIyLjQxNzcwIiJWQUxVRURJRkZFUkVOQ0UiIjMuMDAwMDAiIlRPVEFMVEFYQUJMRUZFRVMiIjEyMjguOTMyNjQiIk5FVFRPVEFMIiIxMzU5LjIyNDAyIiJJVEVNU0RJU0NPVU5UIiI0LjAwMDAwIiJVTklUVkFMVUUiIkNVUlJFTkNZU09MRCIiVVNEIiJBTU9VTlRFR1AiIjIyMC4wMDAwMCIiQU1PVU5UU09MRCIiMTEuMDAwMDAiIkNVUlJFTkNZRVhDSEFOR0VSQVRFIiIyMC4wMDAwMCIiRElTQ09VTlQiIlJBVEUiIjYiIkFNT1VOVCIiODYuNzU4OTgiIlRBWEFCTEVJVEVNUyIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMSIiQU1PVU5UIiI0MTAuOTk3MzYiIlNVQlRZUEUiIlYwMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyIiJBTU9VTlQiIjMxNC41Mzg4MCIiU1VCVFlQRSIiVGJsMDEiIlJBVEUiIjEyIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQzIiJBTU9VTlQiIjMwLjAwMDAwIiJTVUJUWVBFIiJUYmwwMiIiUkFURSIiMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNCIiQU1PVU5UIiI2Ny43NjEyMCIiU1VCVFlQRSIiVzAwMSIiUkFURSIiNS4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNSIiQU1PVU5UIiIxOTAuMjkxMzYiIlNVQlRZUEUiIlNUMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ2IiJBTU9VTlQiIjYwLjAwMDAwIiJTVUJUWVBFIiJTVDAyIiJSQVRFIiIwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ3IiJBTU9VTlQiIjEzNS45MjI0MCIiU1VCVFlQRSIiRW50MDEiIlJBVEUiIjEwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ4IiJBTU9VTlQiIjE5MC4yOTEzNiIiU1VCVFlQRSIiUkQwMSIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDkiIkFNT1VOVCIiMTYzLjEwNjg4IiJTVUJUWVBFIiJTQzAxIiJSQVRFIiIxMi4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTAiIkFNT1VOVCIiMTM1LjkyMjQwIiJTVUJUWVBFIiJNbjAxIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTEiIkFNT1VOVCIiMTkwLjI5MTM2IiJTVUJUWVBFIiJNSTAxIiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTIiIkFNT1VOVCIiMTYzLjEwNjg4IiJTVUJUWVBFIiJPRjAxIiJSQVRFIiIxMi4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTMiIkFNT1VOVCIiMTM1LjkyMjQwIiJTVUJUWVBFIiJTVDAzIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTQiIkFNT1VOVCIiMTkwLjI5MTM2IiJTVUJUWVBFIiJTVDA0IiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTUiIkFNT1VOVCIiMTYzLjEwNjg4IiJTVUJUWVBFIiJFbnQwMyIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE2IiJBTU9VTlQiIjEzNS45MjI0MCIiU1VCVFlQRSIiUkQwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE3IiJBTU9VTlQiIjEzNS45MjI0MCIiU1VCVFlQRSIiU0MwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE4IiJBTU9VTlQiIjE5MC4yOTEzNiIiU1VCVFlQRSIiTW4wMyIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE5IiJBTU9VTlQiIjE2My4xMDY4OCIiU1VCVFlQRSIiTUkwNCIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDIwIiJBTU9VTlQiIjEzNS45MjI0MCIiU1VCVFlQRSIiT0YwMyIiUkFURSIiMTAuMDAiIklOVk9JQ0VMSU5FUyIiREVTQ1JJUFRJT04iIkVHLTEwMDMyNDkzMi0wMDQiIklURU1UWVBFIiJFR1MiIklURU1DT0RFIiJFRy0xMDAzMjQ5MzItMDA0IiJVTklUVFlQRSIiRUEiIlFVQU5USVRZIiI5LjAwMDAwIiJJTlRFUk5BTENPREUiIkZTUE0wMDQiIlNBTEVTVE9UQUwiIjEzNjMuNjgwMDAiIlRPVEFMIiI0MjIxLjg2NTM1IiJWQUxVRURJRkZFUkVOQ0UiIjguMDAwMDAiIlRPVEFMVEFYQUJMRUZFRVMiIjExNTAuNjcxMjgiIk5FVFRPVEFMIiIxMjY4LjIyMjQwIiJJVEVNU0RJU0NPVU5UIiIxMS4wMDAwMCIiVU5JVFZBTFVFIiJDVVJSRU5DWVNPTEQiIkVVUiIiQU1PVU5URUdQIiIxNTEuNTIwMDAiIkFNT1VOVFNPTEQiIjguMDAwMDAiIkNVUlJFTkNZRVhDSEFOR0VSQVRFIiIxOC45NDAwMCIiRElTQ09VTlQiIlJBVEUiIjciIkFNT1VOVCIiOTUuNDU3NjAiIlRBWEFCTEVJVEVNUyIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMSIiQU1PVU5UIiIzODUuMjQwOTMiIlNVQlRZUEUiIlYwMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQyIiJBTU9VTlQiIjI5NC44MjcyNCIiU1VCVFlQRSIiVGJsMDEiIlJBVEUiIjEyIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQzIiJBTU9VTlQiIjMwLjAwMDAwIiJTVUJUWVBFIiJUYmwwMiIiUkFURSIiMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNCIiQU1PVU5UIiI2Mi44NjExMiIiU1VCVFlQRSIiVzAwMSIiUkFURSIiNS4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUNSIiQU1PVU5UIiIxNzcuNTUxMTQiIlNVQlRZUEUiIlNUMDEiIlJBVEUiIjE0LjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ2IiJBTU9VTlQiIjYwLjAwMDAwIiJTVUJUWVBFIiJTVDAyIiJSQVRFIiIwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ3IiJBTU9VTlQiIjEyNi44MjIyNCIiU1VCVFlQRSIiRW50MDEiIlJBVEUiIjEwLjAwIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQ4IiJBTU9VTlQiIjE3Ny41NTExNCIiU1VCVFlQRSIiUkQwMSIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDkiIkFNT1VOVCIiMTUyLjE4NjY5IiJTVUJUWVBFIiJTQzAxIiJSQVRFIiIxMi4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTAiIkFNT1VOVCIiMTI2LjgyMjI0IiJTVUJUWVBFIiJNbjAxIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTEiIkFNT1VOVCIiMTc3LjU1MTE0IiJTVUJUWVBFIiJNSTAxIiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTIiIkFNT1VOVCIiMTUyLjE4NjY5IiJTVUJUWVBFIiJPRjAxIiJSQVRFIiIxMi4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTMiIkFNT1VOVCIiMTI2LjgyMjI0IiJTVUJUWVBFIiJTVDAzIiJSQVRFIiIxMC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTQiIkFNT1VOVCIiMTc3LjU1MTE0IiJTVUJUWVBFIiJTVDA0IiJSQVRFIiIxNC4wMCIiVEFYQUJMRUlURU1TIiJUQVhUWVBFIiJUMTUiIkFNT1VOVCIiMTUyLjE4NjY5IiJTVUJUWVBFIiJFbnQwMyIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE2IiJBTU9VTlQiIjEyNi44MjIyNCIiU1VCVFlQRSIiUkQwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE3IiJBTU9VTlQiIjEyNi44MjIyNCIiU1VCVFlQRSIiU0MwMyIiUkFURSIiMTAuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE4IiJBTU9VTlQiIjE3Ny41NTExNCIiU1VCVFlQRSIiTW4wMyIiUkFURSIiMTQuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDE5IiJBTU9VTlQiIjE1Mi4xODY2OSIiU1VCVFlQRSIiTUkwNCIiUkFURSIiMTIuMDAiIlRBWEFCTEVJVEVNUyIiVEFYVFlQRSIiVDIwIiJBTU9VTlQiIjEyNi44MjIyNCIiU1VCVFlQRSIiT0YwMyIiUkFURSIiMTAuMDAiIlRPVEFMRElTQ09VTlRBTU9VTlQiIjIxNC40MTQ1OCIiVE9UQUxTQUxFU0FNT1VOVCIiNDQxOS41NjMwMCIiTkVUQU1PVU5UIiI0MjA1LjE0ODQyIiJUQVhUT1RBTFMiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDEiIkFNT1VOVCIiMTI4Ni43OTExMiIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUMiIiQU1PVU5UIiI5ODQuNzg5MTIiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDMiIkFNT1VOVCIiMTIwLjAwMDAwIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQ0IiJBTU9VTlQiIjIwOS4wMDc0MiIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUNSIiQU1PVU5UIiI1ODguNzIwNzgiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDYiIkFNT1VOVCIiMjQwLjAwMDAwIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQ3IiJBTU9VTlQiIjQyMC41MTQ4NCIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUOCIiQU1PVU5UIiI1ODguNzIwNzgiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDkiIkFNT1VOVCIiNTA0LjYxNzgxIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQxMCIiQU1PVU5UIiI0MjAuNTE0ODQiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDExIiJBTU9VTlQiIjU4OC43MjA3OCIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUMTIiIkFNT1VOVCIiNTA0LjYxNzgxIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQxMyIiQU1PVU5UIiI0MjAuNTE0ODQiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDE0IiJBTU9VTlQiIjU4OC43MjA3OCIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUMTUiIkFNT1VOVCIiNTA0LjYxNzgxIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQxNiIiQU1PVU5UIiI0MjAuNTE0ODQiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDE3IiJBTU9VTlQiIjQyMC41MTQ4NCIiVEFYVE9UQUxTIiJUQVhUWVBFIiJUMTgiIkFNT1VOVCIiNTg4LjcyMDc4IiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQxOSIiQU1PVU5UIiI1MDQuNjE3ODEiIlRBWFRPVEFMUyIiVEFYVFlQRSIiVDIwIiJBTU9VTlQiIjQyMC41MTQ4NCIiVE9UQUxBTU9VTlQiIjE0MDgyLjg4NTQyIiJFWFRSQURJU0NPVU5UQU1PVU5UIiI1LjAwMDAwIiJUT1RBTElURU1TRElTQ09VTlRBTU9VTlQiIjI1LjAwMDAwIjANBgkqhkiG9w0BAQEFAASCAQB4RS/P5UYIOouJq2sGLss0U1P+Z9oza9z0bbbhobIaY01tSdqKH07fqfDqLNlnvNIykaPrdgCiGaqMg8cTwAzgNrt/TDKW8p4eSJs5D6NnKuoWZEmVGGeOyoqBcdvyqNLTXPQQz9T0k8pj/DQBM8gLVcdAqIW1VWzFp3/bwGjFpTLmQ9W5AJ+/tdiz5vcBlDxPy66OI3hLjD3UU+KWRsLH6fEsc6VO0bKbFIV7b1xxWrh+RK9t6kAe4DBkBDRKfwVnbKTS24Rc+jkjDWWfYk6tTGLqt38APbxPzBPjXHRPI9j9xQmeT57Dr8uMVFxpCXAaRML1ngqNAMTiP1v07oXoAAAAAAAA"
+        )
+        signature_obj.save()
+        line_obj = InvoiceLine(
+            invoice_header=header_obj,
+            description=invoice['DESCRIPTION'],
+            itemType="EGS",
+            itemCode=invoice['GS1_CODE'],
+            unitType="EA",
+            quantity=invoice['QUANTITY_INVOICED'],
+            currencySold=invoice['INVOICE_CURRENCY_CODE'],
+            amountEGP=invoice['AMOUNTEGP'],
+            amountSold=invoice['AMOUNTSOLD'],
+            currencyExchangeRate=invoice['CURRENT_EXCHANGE_RATE'],
+            internalCode=invoice['INTERNAL_ITEM_CODE'],
+        )
+        line_obj.save()
+        tax_main_type = TaxTypes.objects.get(code=invoice['TAX_TYPE'])
+        tax_subtype = TaxSubtypes.objects.get(code=invoice['TAX_SUB_TYPE'])
+        tax_type_obj = TaxLine(
+            invoice_line=line_obj,
+            taxType=tax_main_type,
+            subType=tax_subtype,
+            amount=invoice['TAX_AMOUNT'],
+            rate=invoice['TAX_RATE']
+        )
+        tax_type_obj.save()
+        header_tax_total = HeaderTaxTotal(header=header_obj, tax=tax_main_type, total=invoice['TAX_AMOUNT'])
+        header_tax_total.save()
+
+        # header_tax_totals[tax_type['taxt_itaxt_item_typetem_type']] = header_tax_totals[tax_type['taxt_item_type']] + \
+        #                                                 tax_type['tax_item_amount']
+
+        # header_obj.calculate_total_sales()
+        # header_obj.calculate_total_item_discount()
+        # header_obj.calculate_net_total()
+        #header_obj.save()
+    return redirect('taxManagement:get-all-invoice-headers')

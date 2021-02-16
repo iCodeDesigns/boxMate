@@ -77,3 +77,5 @@ def submission_list(request):
     if request.method == 'GET':
         submissions_serializer = SubmissionSerializer(submissions, many=True)
         return Response(submissions_serializer.data)
+
+

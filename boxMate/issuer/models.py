@@ -2,26 +2,25 @@ from django.contrib.auth.models import User
 from datetime import datetime, date
 from django.utils import timezone
 from django.db import models
-from codes.models import CountryCode, TaxTypes
+from codes.models import CountryCode, TaxTypes, ActivityType
 
 
 # Create your models here.
 class Issuer(models.Model):
     type = models.CharField(max_length=8,
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
-    reg_num = models.CharField(max_length=8, verbose_name='reg_number')
+    reg_num = models.CharField(max_length=20, verbose_name='reg_number')
     name = models.CharField(max_length=50, verbose_name='issuer name', blank=True, null=True)
     client_id = models.CharField(max_length=50,blank=True, null=True )
     clientSecret1 = models.CharField(max_length=50,blank=True, null=True)
     clientSecret2 = models.CharField(max_length=50,blank=True, null=True)
+    activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="Issuer_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return self.name
 
 
 class Receiver(models.Model):
@@ -35,8 +34,7 @@ class Receiver(models.Model):
                                    related_name="Receiver_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return self.name
+
 
 
 class Address(models.Model):
@@ -59,8 +57,7 @@ class Address(models.Model):
                                    related_name="address_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return self.branch_id
+
 
 
 

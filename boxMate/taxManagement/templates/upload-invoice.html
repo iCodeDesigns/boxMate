@@ -46,7 +46,9 @@
                                        data-target="#exampleModal">
                                        Upload Excel
                                     </button>
-                                    <button type="button" class="btn btn-success">Create Invoice</button>
+                                    <a href="{% url 'taxManagement:connect-oracle' %}">
+                                      <button type="button" class="btn btn-success">Import data from OracleDB</button>
+                                      </a>
                                  </div>
 
                               </div>
@@ -161,7 +163,7 @@
             <div class="modal-footer">
                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                <button type="submit" class="btn btn-secondary" data-dismiss="modal" onclick="document.getElementById('form1').submit();">Submit</button>
-               
+
             </div>
          </form>
       </div>
