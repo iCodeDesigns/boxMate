@@ -1056,6 +1056,7 @@ def import_data_from_db(request):
         )
         tax_type_obj.save()
         line_taxes_totals(line_obj.id)
+        header_totals(header_obj.id)
         header_tax_total = HeaderTaxTotal(
             header=header_obj, tax=tax_main_type, total=invoice['TAX_AMOUNT'])
         header_tax_total.save()
@@ -1162,7 +1163,7 @@ def tax_totals_t1(header_id):
 def tax_totals_t13(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "13")
+    Tax_type = TaxTypes.objects.get(code= "T13")
     tax_totals_t13 = 0
     for line in invoice_lines:
         tax_line_t13=calculate_non_taxable_item_amount_t13(line.id)
@@ -1180,7 +1181,7 @@ def tax_totals_t13(header_id):
 def tax_totals_t14(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "14")
+    Tax_type = TaxTypes.objects.get(code= "T14")
     tax_totals_t14 = 0
     for line in invoice_lines:
         tax_line_t14=calculate_non_taxable_item_amount_t14(line.id)
@@ -1198,7 +1199,7 @@ def tax_totals_t14(header_id):
 def tax_totals_t15(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "15")
+    Tax_type = TaxTypes.objects.get(code= "T15")
     tax_totals_t15 = 0
     for line in invoice_lines:
         tax_line_t15=calculate_non_taxable_item_amount_t15(line.id)
@@ -1217,7 +1218,7 @@ def tax_totals_t15(header_id):
 def tax_totals_t16(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "16")
+    Tax_type = TaxTypes.objects.get(code= "T16")
     tax_totals_t16 = 0
     for line in invoice_lines:
         tax_line_t16=calculate_non_taxable_item_amount_t16(line.id)
@@ -1236,7 +1237,7 @@ def tax_totals_t16(header_id):
 def tax_totals_t17(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "17")
+    Tax_type = TaxTypes.objects.get(code= "T17")
     tax_totals_t17 = 0
     for line in invoice_lines:
         tax_line_t17=calculate_non_taxable_item_amount_t17(line.id)
@@ -1255,7 +1256,7 @@ def tax_totals_t17(header_id):
 def tax_totals_t18(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "18")
+    Tax_type = TaxTypes.objects.get(code= "T18")
 
     tax_totals_t18 = 0
     for line in invoice_lines:
@@ -1275,7 +1276,7 @@ def tax_totals_t18(header_id):
 def tax_totals_t19(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "19")
+    Tax_type = TaxTypes.objects.get(code= "T19")
 
     tax_totals_t19 = 0
     for line in invoice_lines:
@@ -1294,7 +1295,7 @@ def tax_totals_t19(header_id):
 def tax_totals_t20(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "20")
+    Tax_type = TaxTypes.objects.get(code= "T20")
 
     tax_totals_t20 = 0
     for line in invoice_lines:
@@ -1531,3 +1532,30 @@ def tax_totals_t12(header_id):
     return tax_totals_t12
 
 
+def header_totals(id):
+    header_sales_total(id)
+    header_sales_amount(id)
+    header_net_amount(id)
+    header_total_item_discounts_amount(id)
+    header_total_amount(id)
+    extra_discount_amount(id)
+    tax_totals_t1(id)
+    tax_totals_t2(id)
+    tax_totals_t3(id)
+    tax_totals_t4(id)
+    tax_totals_t5(id)
+    tax_totals_t6(id)
+    tax_totals_t7(id)
+    tax_totals_t8(id)
+    tax_totals_t9(id)
+    tax_totals_t10(id)
+    tax_totals_t11(id)
+    tax_totals_t12(id)
+    tax_totals_t13(id)
+    tax_totals_t14(id)
+    tax_totals_t15(id)
+    tax_totals_t16(id)
+    tax_totals_t17(id)
+    tax_totals_t18(id)
+    tax_totals_t19(id)
+    tax_totals_t20(id)
