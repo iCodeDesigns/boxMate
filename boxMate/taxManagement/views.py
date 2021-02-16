@@ -143,7 +143,7 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.filter(~Q(item_code=None)).values('taxt_item_type', 'tax_item_amount',
+            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
                                                                             'tax_item_subtype',
                                                                             'tax_item_rate').annotate(
                 Count('internal_id')).annotate(Count('item_code'))
@@ -160,10 +160,11 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
+            line_taxes_totals(line_obj.id)
         # header_obj.calculate_total_sales()
         # header_obj.calculate_total_item_discount()
         # header_obj.calculate_net_total()
-        # header_obj.save()
+        header_obj.save()
 
 
 # Create your views here.
@@ -487,9 +488,9 @@ def save_submition_response(invoice_id, submission_id):
 
 def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
-    json_data = json.dumps({'documents': [invoice]})
+    json_data = json.dumps({"documents": [invoice]})
     data = decode(json_data)
-    print(json_data)
+    print(data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
@@ -503,12 +504,14 @@ def submit_invoice(request, invoice_id):
     response_code = response
     response_json = response_code.json()
     submissionId = response_json['submissionId']
+    print("**************")
 
     acceptedDocuments = response_json['acceptedDocuments']
     uuid = acceptedDocuments[0]['uuid']
 
     internalId = acceptedDocuments[0]['internalId']
     save_submition_response(internalId, submissionId)
+    print(response.json())
     return redirect('taxManagement:get-all-invoice-headers')
     # return response
 
@@ -604,6 +607,358 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
+
+
+# for TaxLine totals 
+def get_amount_egp(id):
+    line = InvoiceLine.objects.get(id = id)
+    if line.currencySold is not None:
+        if line.currencySold != 'EGP':
+            amount_egp = line.amountSold * line.currencyExchangeRate
+            line.amountEGP = amount_egp
+        else:
+            amount_egp = line.amountEGP
+    line.save()        
+    return amount_egp        
+        
+def calculate_sales_total(id):
+    amount_egp = get_amount_egp(id)
+    line = InvoiceLine.objects.get(id = id)
+    line.salesTotal = line.quantity * amount_egp
+    line.save()
+    return line.salesTotal
+        
+def calculate_discount_amount(id):
+    line = InvoiceLine.objects.get(id = id)
+    if line.rate is not None:
+        line.amount = line.rate * line.salesTotal / 100
+        line.save()
+    return line.amount    
+
+def calculate_net_total(id):
+    salesTotal = calculate_sales_total(id)
+    amount = calculate_discount_amount(id)
+    line = InvoiceLine.objects.get(id = id)
+    if line.amount is not None:
+        line.netTotal = salesTotal - amount
+        line.save()
+    else:
+        line.netTotal = salesTotal
+        line.save()
+    return line.netTotal
+
+
+#for taxable items from T5 to T12
+def calculate_taxable_item_amount_t5(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T5')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum    
+
+        
+        
+
+ 
+
+def calculate_taxable_item_amount_t6(invoice_line):
+    sum= 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T6')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+        
+
+
+def calculate_taxable_item_amount_t7(invoice_line):
+    sum = 0 
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T7')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_taxable_item_amount_t8(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T8')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_taxable_item_amount_t9(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T9')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_taxable_item_amount_t10(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T10')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_taxable_item_amount_t11(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T11')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_taxable_item_amount_t12(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T12')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+def total_taxable_fees(invoice_line):
+    five = calculate_taxable_item_amount_t5(invoice_line)
+    six = calculate_taxable_item_amount_t6(invoice_line)
+    seven = calculate_taxable_item_amount_t7(invoice_line)
+    eight = calculate_taxable_item_amount_t8(invoice_line)
+    nine = calculate_taxable_item_amount_t9(invoice_line)
+    ten = calculate_taxable_item_amount_t10(invoice_line)
+    eleven = calculate_taxable_item_amount_t11(invoice_line)
+    twelve = calculate_taxable_item_amount_t12(invoice_line)
+    totalTaxableFees = five + six + seven + eight + nine + ten + eleven + twelve
+    return totalTaxableFees
+
+#for taxable items from T13 to T20
+def calculate_non_taxable_item_amount_t13(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T13')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+def calculate_non_taxable_item_amount_t14(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T14')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+def calculate_non_taxable_item_amount_t15(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T15')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+def calculate_non_taxable_item_amount_t16(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T16')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_non_taxable_item_amount_t17(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T17')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_non_taxable_item_amount_t18(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T18')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_non_taxable_item_amount_t19(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T19')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum
+
+
+def calculate_non_taxable_item_amount_t20(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    net_total = calculate_net_total(invoice_line)
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T12')
+    for line in taxline:
+        line.amount = line.rate * net_total
+        line.save()
+        sum += line.amount
+    return sum                        
+
+
+def non_total_taxable_fees(invoice_line):
+    thirteen = calculate_non_taxable_item_amount_t13(invoice_line)
+    fourteen = calculate_non_taxable_item_amount_t14(invoice_line)
+    fifteen = calculate_non_taxable_item_amount_t15(invoice_line)
+    sixteen = calculate_non_taxable_item_amount_t16(invoice_line)
+    seventeen = calculate_non_taxable_item_amount_t17(invoice_line)
+    eighteen = calculate_non_taxable_item_amount_t18(invoice_line)
+    nineteen = calculate_non_taxable_item_amount_t19(invoice_line)
+    twenty = calculate_non_taxable_item_amount_t20(invoice_line)
+    nonTotalTaxableFees = thirteen + fourteen + fifteen + sixteen + seventeen + eighteen + nineteen + twenty
+    return nonTotalTaxableFees
+
+
+#for taxable items T2
+def calculate_taxable_item_amount_t2(invoice_line):
+    sum = 0
+    net_total = calculate_net_total(invoice_line)
+    totalTaxableFees= total_taxable_fees(invoice_line)
+    amount_t3= calculate_t3_amount_per_line(invoice_line)
+    line = InvoiceLine.objects.get(id = invoice_line)
+    valueDifference = line.valueDifference
+    taxline = TaxLine.objects.filter(invoice_line = invoice_line, taxType='T2')
+    for line in taxline:
+        rate = line.rate
+        line.amount = (net_total + totalTaxableFees + valueDifference  + amount_t3) * rate
+        line.save()
+        sum += line.amount
+    return sum
+
+
+
+
+def calculate_t3_amount_per_line(invoice_line_id):
+    try:
+        taxline = TaxLine.objects.filter(invoice_line=invoice_line_id , taxType='T3')
+        t3_amount = taxline.amount
+    except:
+        t3_amount = 0
+    return t3_amount
+
+def calculate_t1_amount_per_line(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
+    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
+    taxlines = TaxLine.objects.filter(invoice_line = invoice_line_id , taxType="T1")
+    t1_amounts = 0
+    for taxline in taxlines:
+        t1_amount = (invoice_line.totalTaxableFees + invoice_line.valueDifference + invoice_line.netTotal+
+            t2_amount + t3_amount)*taxline.rate
+        taxline.amount = t1_amount
+        taxline.save()
+        t1_amounts += t1_amount
+
+    return t1_amounts
+
+def calculate_t4_subtypes_amounts_per_line(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    subtypes = ['W001','W002','W003','W004','W005','W006','W007','W008']
+    t4_amounts = 0
+    for subtype in subtypes:
+        try:
+            taxline = TaxLine.objects.get(invoice_line=invoice_line_id , subType=subtype)
+            subtype_amount = taxline.rate*(invoice_line.netTotal - invoice_line.itemsDiscount)
+            taxline.amount = subtype_amount
+            taxline.save()
+        except:
+            subtype_amount = 0
+        t4_amounts += subtype_amount
+    return t4_amounts
+
+def calculate_line_total(invoice_line_id):
+    invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
+    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
+    t4_amounts = calculate_t4_subtypes_amounts_per_line(invoice_line_id)
+    t1_amount = calculate_t1_amount_per_line(invoice_line_id)
+    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
+    total_non_taxable_fees = non_total_taxable_fees(invoice_line_id)
+
+    line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+    invoice_line.total = line_total
+    invoice_line.save()
+    return line_total
+
+
+
+def line_taxes_totals(id):
+    invoice_line = InvoiceLine.objects.get(id = id)
+    sales_total = calculate_sales_total(id)
+    discount_amount = calculate_discount_amount(id)
+    net_total = calculate_net_total(id)
+    five = calculate_taxable_item_amount_t5(id)
+    six = calculate_taxable_item_amount_t6(id)
+    seven = calculate_taxable_item_amount_t7(id)
+    eight = calculate_taxable_item_amount_t8(id)
+    nine = calculate_taxable_item_amount_t9(id)
+    ten = calculate_taxable_item_amount_t10(id)
+    eleven = calculate_taxable_item_amount_t11(id)
+    twelve = calculate_taxable_item_amount_t12(id)
+    totaltaxable_fees =  total_taxable_fees(id)
+    thirteen = calculate_non_taxable_item_amount_t13(id)
+    fourteen = calculate_non_taxable_item_amount_t14(id)
+    fifteen = calculate_non_taxable_item_amount_t15(id)
+    sixteen = calculate_non_taxable_item_amount_t16(id)
+    seventeen = calculate_non_taxable_item_amount_t17(id)
+    eighteen = calculate_non_taxable_item_amount_t18(id)
+    nineteen = calculate_non_taxable_item_amount_t19(id)
+    twenty = calculate_non_taxable_item_amount_t20(id)
+    nontotal_taxable_fees = non_total_taxable_fees(id)
+    t3_amount = calculate_t3_amount_per_line(id)
+    t2_amount = calculate_taxable_item_amount_t2(id)
+    t1_amount = calculate_t1_amount_per_line(id)
+    t4_amount = calculate_t4_subtypes_amounts_per_line(id)
+    calculate_line_totals = calculate_line_total(id)
 def import_data_from_db(request):
     address = '156.4.58.40'
     port = '1521'

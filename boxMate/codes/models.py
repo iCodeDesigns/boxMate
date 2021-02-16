@@ -42,7 +42,7 @@ class TaxTypes(models.Model):
 
 
 class TaxSubtypes(models.Model):
-    code = models.CharField(max_length=4,  primary_key=True)
+    code = models.CharField(max_length=10,  primary_key=True)
     desc_en = models.CharField(max_length=50)
     desc_ar = models.CharField(max_length=50)
     taxtype_reference = models.ForeignKey(TaxTypes, on_delete=models.CASCADE,)
