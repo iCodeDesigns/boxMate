@@ -72,7 +72,7 @@ def import_data_to_invoice():
             pass
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         issuer_address = Address.objects.get(
-            branch_id=header['issuer_branch_id'])
+            branch_id=header['issuer_branch_id'],issuer_id=header['issuer_registration_num'])
         receiver = Receiver.objects.get(
             reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
@@ -160,6 +160,7 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
+            print("***********")    
             line_taxes_totals(line_obj.id)
         # header_obj.calculate_total_sales()
         # header_obj.calculate_total_item_discount()
@@ -959,6 +960,8 @@ def line_taxes_totals(id):
     t1_amount = calculate_t1_amount_per_line(id)
     t4_amount = calculate_t4_subtypes_amounts_per_line(id)
     calculate_line_totals = calculate_line_total(id)
+
+    
 def import_data_from_db(request):
     address = '156.4.58.40'
     port = '1521'
