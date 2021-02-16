@@ -582,9 +582,239 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def calculate_t3_amount_per_line(invoice_line_id):
     try:
-        taxline = TaxLine.objects.get(invoice_line=invoice_line_id , taxType='T3')
+        taxline = TaxLine.objects.filter(invoice_line=invoice_line_id , taxType='T3')
         t3_amount = taxline.amount
     except:
         t3_amount = 0
@@ -594,10 +824,16 @@ def calculate_t1_amount_per_line(invoice_line_id):
     invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
     t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
     t3_amount = calculate_t3_amount_per_line(invoice_line_id)
-    t1_amount = (invoice_line.totalTaxableFees + invoice_line.valueDifference + invoice_line.netTotal+
-        t2_amount + t3_amount)*invoice_line.rate
+    taxlines = TaxLine.objects.filter(invoice_line = invoice_line_id , taxType="T1")
+    t1_amounts = 0
+    for taxline in taxlines:
+        t1_amount = (invoice_line.totalTaxableFees + invoice_line.valueDifference + invoice_line.netTotal+
+            t2_amount + t3_amount)*taxline.rate
+        taxline.amount = t1_amount
+        taxline.save()
+        t1_amounts += t1_amount
 
-    return t1_amount
+    return t1_amounts
 
 def calculate_t4_subtypes_amounts_per_line(invoice_line_id):
     invoice_line = InvoiceLine.objects.get(id = invoice_line_id)
@@ -607,6 +843,8 @@ def calculate_t4_subtypes_amounts_per_line(invoice_line_id):
         try:
             taxline = TaxLine.objects.get(invoice_line=invoice_line_id , subType=subtype)
             subtype_amount = taxline.rate*(invoice_line.netTotal - invoice_line.itemsDiscount)
+            taxline.amount = subtype_amount
+            taxline.save()
         except:
             subtype_amount = 0
         t4_amounts += subtype_amount
@@ -621,4 +859,7 @@ def calculate_line_total(invoice_line_id):
     total_non_taxable_fees = non_total_taxable_fees(invoice_line_id)
 
     line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+    invoice_line.total = line_total
+    invoice_line.save()
+
     return line_total
