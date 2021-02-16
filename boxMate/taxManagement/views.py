@@ -1111,7 +1111,7 @@ def header_total_item_discounts_amount(header_id):
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
     header_total_item_discounts_amount = 0
     for line in invoice_lines:
-        header_total_item_discounts_amount += line.itemsDiscount
+        header_total_item_discounts_amount += line.amount
 
     invoice_header.total_items_discount_amount = header_total_item_discounts_amount
     invoice_header.save()
