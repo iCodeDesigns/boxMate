@@ -1297,3 +1297,7 @@ def tax_totals_t20(header_id):
         )
         tax_total_obj.save()
     return tax_totals_t20 
+
+
+#def header_taxes_totals(id):
+   
