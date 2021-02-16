@@ -468,6 +468,7 @@ def submit_invoice(request, invoice_id):
     invoice = get_one_invoice(invoice_id)
     json_data = json.dumps({"documents": [invoice]})
     data = decode(json_data)
+    print(data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth_token},
@@ -482,13 +483,13 @@ def submit_invoice(request, invoice_id):
     response_json = response_code.json()
     submissionId = response_json['submissionId']
     print("**************")
-    print(data)
 
     acceptedDocuments = response_json['acceptedDocuments']
     uuid = acceptedDocuments[0]['uuid']
 
     internalId = acceptedDocuments[0]['internalId']
     save_submition_response(internalId, submissionId)
+    print(response.json())
     return redirect('taxManagement:get-all-invoice-headers')
     # return response
 
