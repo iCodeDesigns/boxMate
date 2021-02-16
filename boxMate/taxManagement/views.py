@@ -1067,3 +1067,24 @@ def import_data_from_db(request):
         # header_obj.calculate_net_total()
         # header_obj.save()
     return redirect('taxManagement:get-all-invoice-headers')
+
+
+def header_sales_total(header_id):
+    invoice_header = InvoiceHeader.objects.get(id = header_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
+    total_sales_amount = 0
+    for line in invoice_lines:
+        total_sales_amount += line.salesTotal
+
+    return total_sales_amount
+
+
+def tax_totals_t1(header_id):
+    invoice_header = InvoiceHeader.objects.get(id = header_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
+    tax_totals_t1 = 0
+    for line in invoice_lines:
+        tax_line_t1=calculate_t1_amount_per_line(line.id)
+        tax_totals_t1 += tax_line_t1
+
+    return tax_totals_t1
