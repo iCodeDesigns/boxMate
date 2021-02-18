@@ -156,8 +156,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-            print("***********")
+
         header_obj.save()
+        calculate_all_invoice_lines(header_obj)
+        header_totals(header_obj)
 
 
 # Create your views here.
@@ -200,6 +202,7 @@ def upload_excel_sheet(request):
     issuer_views.get_issuer_data()
     issuer_views.get_receiver_data()
     import_data_to_invoice()
+
     context = {
         'data': 'data'
     }
