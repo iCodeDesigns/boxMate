@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Sum
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from issuer.models import Issuer, Receiver, Address
@@ -145,6 +146,36 @@ class InvoiceHeader(models.Model):
                                                       default=0.0)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
 
+    def calculate_header_sales_total(self):
+        sales_total = InvoiceLine.objects.filter(invoice_header=self).aggregate(sales_total=Sum("salesTotal"))[
+            'sales_total']
+        self.total_sales_amount = sales_total
+        self.save()
+
+    def calculate_items_discount(self):
+        items_discount = InvoiceLine.objects.filter(invoice_header=self).aggregate(itemsDiscount=Sum("itemsDiscount"))[
+            'itemsDiscount']
+        self.total_items_discount_amount = items_discount
+        self.save()
+
+    def calculate_discount_amount(self):
+        total_discount_amount = \
+            InvoiceLine.objects.filter(invoice_header=self).aggregate(discount_amount=Sum("amount"))[
+                'discount_amount']
+        self.total_discount_amount = total_discount_amount
+        self.save()
+
+    def calculate_net_amount(self):
+        net_amount = InvoiceLine.objects.filter(invoice_header=self).aggregate(net_amount=Sum("netTotal"))[
+            'net_amount']
+        self.net_amount = net_amount
+        self.save()
+
+    def calculate_total_amount(self):
+        total_amount = InvoiceLine.objects.filter(invoice_header=self).aggregate(total_amount=Sum("total"))[
+            'total_amount']
+        self.total_amount = total_amount - self.extra_discount_amount
+        self.save()
 
 
 class Signature(models.Model):
@@ -201,9 +232,33 @@ class InvoiceLine(models.Model):
                                    related_name="line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
+    # for TaxLine totals
+    def get_amount_egp(self):
+        if self.currencySold is not None:
+            if self.currencySold != 'EGP':
+                self.amountEGP = self.amountSold * self.currencyExchangeRate
+                self.save()
+
+    def calculate_sales_total(self):
+        self.salesTotal = self.quantity * self.amountEGP
+        self.save()
+
+    def calculate_discount_amount(self):
+        if self.rate is not None:
+            self.amount = (self.rate / 100) * self.salesTotal
+            self.save()
+        else:
+            self.amount = 0
+
+    def calculate_net_total(self):
+          if self.amount is not None:
+            self.netTotal = self.salesTotal - self.amount
+            self.save()
+          else:
+            self.netTotal = self.salesTotal
+            self.save()
 
 
- 
 class TaxLine(models.Model):
     invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.CASCADE, related_name='tax_lines')
     taxType = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
@@ -217,6 +272,7 @@ class TaxLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
 
+
 class Submission(models.Model):
     invoice = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
@@ -226,10 +282,7 @@ class Submission(models.Model):
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
 
 
-
-
 class HeaderTaxTotal(models.Model):
-    header= models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
-    tax = models.ForeignKey( TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
+    header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
+    tax = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
-
