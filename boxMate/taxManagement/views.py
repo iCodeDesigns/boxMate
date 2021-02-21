@@ -1,5 +1,4 @@
 import json
-
 import requests
 from django.shortcuts import render, redirect
 from requests.auth import HTTPBasicAuth
@@ -26,7 +25,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from issuer import views as issuer_views
 import time
 from taxManagement.db_connection import OracleConnection
-
+from .tax_calculator import InoviceTaxLineCalculator
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -71,7 +70,7 @@ def import_data_to_invoice():
             pass
         issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
         issuer_address = Address.objects.get(
-            branch_id=header['issuer_branch_id'],issuer_id=header['issuer_registration_num'])
+            branch_id=header['issuer_branch_id'], issuer=issuer)
         receiver = Receiver.objects.get(
             reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
@@ -128,8 +127,8 @@ def import_data_to_invoice():
                 quantity=line['quantity'],
                 currencySold=line['currency_sold'],
                 amountEGP=line['amount_egp'],
-                # amountSold=line['amount_sold'],
-                # currencyExchangeRate=line['currency_exchange_rate'],
+                amountSold=line['amount_sold'],
+                currencyExchangeRate=line['currency_exchange_rate'],
                 salesTotal=line['sales_total'],
                 total=line['total'],
                 valueDifference=line['value_difference'],
@@ -142,10 +141,8 @@ def import_data_to_invoice():
             )
             line_obj.save()
             ##### create tax lines per invoice line #####
-            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount',
-                                                 'tax_item_subtype',
-                                                 'tax_item_rate').annotate(
-                Count('internal_id')).annotate(Count('item_code'))
+            tax_types = MainTable.objects.values('taxt_item_type', 'tax_item_amount', 'tax_item_subtype',
+                                                 'tax_item_rate').all()
             for tax_type in tax_types:
                 tax_main_type = TaxTypes.objects.get(
                     code=tax_type['taxt_item_type'])
@@ -159,12 +156,10 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-            print("***********")    
-            line_taxes_totals(line_obj.id)
-        # header_obj.calculate_total_sales()
-        # header_obj.calculate_total_item_discount()
-        # header_obj.calculate_net_total()
+
         header_obj.save()
+        calculate_all_invoice_lines(header_obj)
+        header_totals(header_obj)
 
 
 # Create your views here.
@@ -207,6 +202,7 @@ def upload_excel_sheet(request):
     issuer_views.get_issuer_data()
     issuer_views.get_receiver_data()
     import_data_to_invoice()
+
     context = {
         'data': 'data'
     }
@@ -340,8 +336,8 @@ def get_invoice_header(invoice_id):
     data = {
         "documentType": invoice_header.document_type,
         "documentTypeVersion": invoice_header.document_type_version,
-        "dateTimeIssued": "2021-02-15T15:37:51Z",
-        # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",
+        # "dateTimeIssued": "2021-02-15T15:37:51Z",
+        "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",
         "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
         "internalID": invoice_header.internal_id,
         "purchaseOrderReference": invoice_header.purchase_order_reference,
@@ -399,8 +395,8 @@ def get_invoice_lines(invoice_id):
             "itemsDiscount": line.itemsDiscount.__float__(),
             "unitValue": {
                 "amountEGP": line.amountEGP.__float__(),
-                # "amountSold": line.amountSold.__float__(),
-                # "currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                "amountSold": line.amountSold.__float__(),
+                "currencyExchangeRate": line.currencyExchangeRate.__float__(),
                 "currencySold": line.currencySold},
             "discount": {"rate": line.rate.__float__(),
                          "amount": line.amount.__float__()}
@@ -440,7 +436,7 @@ def get_one_invoice(invoice_id):
 
 def get_submition_response(submission_id):
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' + \
-        submission_id + '?PageSize=1'
+          submission_id + '?PageSize=1'
     response = requests.get(url, verify=False,
                             headers={'Authorization': 'Bearer ' + auth_token, }
                             )
@@ -613,367 +609,18 @@ def resubmit(request, sub_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
-# for TaxLine totals
-def get_amount_egp(id):
-    line = InvoiceLine.objects.get(id=id)
-    if line.currencySold is not None:
-        if line.currencySold != 'EGP':
-            amount_egp = line.amountSold * line.currencyExchangeRate
-            line.amountEGP = amount_egp
-        else:
-            amount_egp = line.amountEGP
-    line.save()
-    return amount_egp
-
-
-def calculate_sales_total(id):
-    amount_egp = get_amount_egp(id)
-    line = InvoiceLine.objects.get(id=id)
-    line.salesTotal = line.quantity * amount_egp
-    line.save()
-    return line.salesTotal
-
-
-def calculate_discount_amount(id):
-    line = InvoiceLine.objects.get(id=id)
-    if line.rate is not None:
-        line.amount = (line.rate/ 100) * line.salesTotal
-        line.save()
-    return line.amount
-
-
-def calculate_net_total(id):
-    salesTotal = calculate_sales_total(id)
-    amount = calculate_discount_amount(id)
-    line = InvoiceLine.objects.get(id=id)
-    if line.amount is not None:
-        line.netTotal = salesTotal - amount
-        line.save()
-    else:
-        line.netTotal = salesTotal
-        line.save()
-    return line.netTotal
-
-
-# for taxable items from T5 to T12
-def calculate_taxable_item_amount_t5(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T5')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t6(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T6')
-    for line in taxline:
-        line.amount = line.rate * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t7(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T7')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t8(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T8')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t9(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T9')
-    for line in taxline:
-        line.amount = line.rate * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t10(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T10')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t11(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T11')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_taxable_item_amount_t12(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T12')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def total_taxable_fees(invoice_line):
-    five = calculate_taxable_item_amount_t5(invoice_line)
-    six = calculate_taxable_item_amount_t6(invoice_line)
-    seven = calculate_taxable_item_amount_t7(invoice_line)
-    eight = calculate_taxable_item_amount_t8(invoice_line)
-    nine = calculate_taxable_item_amount_t9(invoice_line)
-    ten = calculate_taxable_item_amount_t10(invoice_line)
-    eleven = calculate_taxable_item_amount_t11(invoice_line)
-    twelve = calculate_taxable_item_amount_t12(invoice_line)
-    totalTaxableFees = five + six + seven + eight + nine + ten + eleven + twelve
-    return totalTaxableFees
-
-# for taxable items from T13 to T20
-
-
-def calculate_non_taxable_item_amount_t13(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T13')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t14(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T14')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t15(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T15')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t16(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T16')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t17(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T17')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t18(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T18')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t19(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T19')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_non_taxable_item_amount_t20(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    net_total = calculate_net_total(invoice_line)
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T12')
-    for line in taxline:
-        line.amount = (line.rate/100) * net_total
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def non_total_taxable_fees(invoice_line):
-    thirteen = calculate_non_taxable_item_amount_t13(invoice_line)
-    fourteen = calculate_non_taxable_item_amount_t14(invoice_line)
-    fifteen = calculate_non_taxable_item_amount_t15(invoice_line)
-    sixteen = calculate_non_taxable_item_amount_t16(invoice_line)
-    seventeen = calculate_non_taxable_item_amount_t17(invoice_line)
-    eighteen = calculate_non_taxable_item_amount_t18(invoice_line)
-    nineteen = calculate_non_taxable_item_amount_t19(invoice_line)
-    twenty = calculate_non_taxable_item_amount_t20(invoice_line)
-    nonTotalTaxableFees = thirteen + fourteen + fifteen + \
-        sixteen + seventeen + eighteen + nineteen + twenty
-    return nonTotalTaxableFees
-
-
-# for taxable items T2
-def calculate_taxable_item_amount_t2(invoice_line):
-    sum = 0
-    net_total = calculate_net_total(invoice_line)
-    totalTaxableFees = total_taxable_fees(invoice_line)
-    amount_t3 = calculate_t3_amount_per_line(invoice_line)
-    line = InvoiceLine.objects.get(id=invoice_line)
-    valueDifference = line.valueDifference
-    taxline = TaxLine.objects.filter(invoice_line=invoice_line, taxType='T2')
-    for line in taxline:
-        rate = (line.rate/100)
-        line.amount = (net_total + totalTaxableFees +
-                       valueDifference + amount_t3) * rate
-        line.save()
-        sum += line.amount
-    return sum
-
-
-def calculate_t3_amount_per_line(invoice_line_id):
-    try:
-        taxline = TaxLine.objects.filter(
-            invoice_line=invoice_line_id, taxType='T3')
-        t3_amount = taxline.amount
-    except:
-        t3_amount = 0
-    return t3_amount
-
-
-def calculate_t1_amount_per_line(invoice_line_id):
+def calculate_line_total(invoice_line_id, tax_calculator):
     invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
-    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
-    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
-    taxlines = TaxLine.objects.filter(
-        invoice_line=invoice_line_id, taxType="T1")
-    t1_amounts = 0
-    for taxline in taxlines:
-        t1_amount = (invoice_line.totalTaxableFees + invoice_line.valueDifference + invoice_line.netTotal +
-                     t2_amount + t3_amount) *( taxline.rate/100)
-        t1_amounts += t1_amount
-        taxline.amount = t1_amount
-        taxline.save()
-
-    return t1_amounts
-
-
-def calculate_t4_subtypes_amounts_per_line(invoice_line_id):
-    invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
-    subtypes = ['W001', 'W002', 'W003', 'W004', 'W005', 'W006', 'W007', 'W008']
-    t4_amounts = 0
-    for subtype in subtypes:
-        try:
-            taxline = TaxLine.objects.get(
-                invoice_line=invoice_line_id, subType=subtype)
-            subtype_amount = (taxline.rate/100) * \
-                (invoice_line.netTotal - invoice_line.itemsDiscount)
-            taxline.amount = subtype_amount
-            taxline.save()
-        except:
-            subtype_amount = 0
-        t4_amounts += subtype_amount
-    return t4_amounts
-
-
-def calculate_line_total(invoice_line_id):
-    invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
-    t3_amount = calculate_t3_amount_per_line(invoice_line_id)
-    t4_amounts = calculate_t4_subtypes_amounts_per_line(invoice_line_id)
-    t1_amount = calculate_t1_amount_per_line(invoice_line_id)
-    t2_amount = calculate_taxable_item_amount_t2(invoice_line_id)
-    total_non_taxable_fees = non_total_taxable_fees(invoice_line_id)
-    line_total = 0
+    t3_amount = tax_calculator.t3
+    t4_amounts = tax_calculator.t4
+    t1_amount = tax_calculator.t1
+    t2_amount = tax_calculator.t2
+    total_non_taxable_fees = tax_calculator.total_non_taxable_fees
     line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + \
-        t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+                 t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
     invoice_line.total = line_total
     invoice_line.save()
-    return line_total
 
-
-def line_taxes_totals(id):
-    invoice_line = InvoiceLine.objects.get(id=id)
-    sales_total = calculate_sales_total(id)
-    discount_amount = calculate_discount_amount(id)
-    net_total = calculate_net_total(id)
-    five = calculate_taxable_item_amount_t5(id)
-    six = calculate_taxable_item_amount_t6(id)
-    seven = calculate_taxable_item_amount_t7(id)
-    eight = calculate_taxable_item_amount_t8(id)
-    nine = calculate_taxable_item_amount_t9(id)
-    ten = calculate_taxable_item_amount_t10(id)
-    eleven = calculate_taxable_item_amount_t11(id)
-    twelve = calculate_taxable_item_amount_t12(id)
-    totaltaxable_fees = total_taxable_fees(id)
-    thirteen = calculate_non_taxable_item_amount_t13(id)
-    fourteen = calculate_non_taxable_item_amount_t14(id)
-    fifteen = calculate_non_taxable_item_amount_t15(id)
-    sixteen = calculate_non_taxable_item_amount_t16(id)
-    seventeen = calculate_non_taxable_item_amount_t17(id)
-    eighteen = calculate_non_taxable_item_amount_t18(id)
-    nineteen = calculate_non_taxable_item_amount_t19(id)
-    twenty = calculate_non_taxable_item_amount_t20(id)
-    nontotal_taxable_fees = non_total_taxable_fees(id)
-    t3_amount = calculate_t3_amount_per_line(id)
-    t2_amount = calculate_taxable_item_amount_t2(id)
-    t1_amount = calculate_t1_amount_per_line(id)
-    t4_amount = calculate_t4_subtypes_amounts_per_line(id)
-    calculate_line_totals = calculate_line_total(id)
 
 def import_data_from_db(request):
     address = '156.4.58.40'
@@ -1055,507 +702,30 @@ def import_data_from_db(request):
             rate=invoice['TAX_RATE']
         )
         tax_type_obj.save()
-        line_taxes_totals(line_obj.id)
-        header_totals(header_obj.id)
+        calculate_all_invoice_lines(header_obj)
+        header_totals(header_obj)
         header_tax_total = HeaderTaxTotal(
             header=header_obj, tax=tax_main_type, total=invoice['TAX_AMOUNT'])
         header_tax_total.save()
 
-        # header_tax_totals[tax_type['taxt_itaxt_item_typetem_type']] = header_tax_totals[tax_type['taxt_item_type']] + \
-        #                                                 tax_type['tax_item_amount']
-
-        # header_obj.calculate_total_sales()
-        # header_obj.calculate_total_item_discount()
-        # header_obj.calculate_net_total()
-        # header_obj.save()
     return redirect('taxManagement:get-all-invoice-headers')
 
 
-
-def header_sales_total(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    total_sales_amount = 0
-    for line in invoice_lines:
-        total_sales_amount += line.salesTotal
-
-    invoice_header.total_sales_amount = total_sales_amount
-    invoice_header.save()
-
-    return total_sales_amount
-
-def header_sales_amount(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    total_item_discount = 0
-    for line in invoice_lines:
-        total_item_discount += line.itemsDiscount
-
-    invoice_header.total_discount_amount = total_item_discount
-    invoice_header.save()    
-    return total_item_discount
-
-def header_net_amount(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    total_net_amount = 0
-    for line in invoice_lines:
-        total_net_amount += line.netTotal
-
-    invoice_header.net_amount = total_net_amount
-    invoice_header.save()    
-    return total_net_amount
-
-def header_total_item_discounts_amount(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    header_total_item_discounts_amount = 0
-    for line in invoice_lines:
-        header_total_item_discounts_amount += line.amount
-
-    invoice_header.total_items_discount_amount = header_total_item_discounts_amount
-    invoice_header.save()
-    return header_total_item_discounts_amount
-
-
-def header_total_amount(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    invoiceline_total = 0
-    extra_discount_amount = invoice_header.extra_discount_amount
-    for line in invoice_lines:
-        invoiceline_total += line.total 
-
-    header_total_amount = invoiceline_total - extra_discount_amount
-    invoice_header.total_amount = header_total_amount
-    invoice_header.save()
-    return header_total_amount
-
-def extra_discount_amount(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    extra_discount_amount = 0
-    extra_discount_amount= invoice_header.extra_discount_amount
-    invoice_header.extra_discount_amount = extra_discount_amount
-    invoice_header.save()
-    return extra_discount_amount
-
-def tax_totals_t1(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t1 = 0
-    for line in invoice_lines:
-        tax_line_t1=calculate_t1_amount_per_line(line.id)
-        tax_totals_t1 += tax_line_t1
-
-    tax_type_obj = TaxTypes.objects.get(code="T1")
-    if tax_totals_t1 !=0:
-        header_tax_t1 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t1,
-        )
-        header_tax_t1.save()
-
-    return tax_totals_t1
-
-
-#Non Taxable fees total (T13-->T20) Tax Totals = sum of all NonTaxableItems
-def tax_totals_t13(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T13")
-    tax_totals_t13 = 0
-    for line in invoice_lines:
-        tax_line_t13=calculate_non_taxable_item_amount_t13(line.id)
-        tax_totals_t13 += tax_line_t13
-
-    if tax_totals_t13 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t13
-        )
-        tax_total_obj.save()
-    return tax_totals_t13
-
-def tax_totals_t14(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T14")
-    tax_totals_t14 = 0
-    for line in invoice_lines:
-        tax_line_t14=calculate_non_taxable_item_amount_t14(line.id)
-        tax_totals_t14 += tax_line_t14
-
-    if tax_totals_t14 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t14
-        )
-        tax_total_obj.save()
-    return tax_totals_t14
-
-def tax_totals_t15(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T15")
-    tax_totals_t15 = 0
-    for line in invoice_lines:
-        tax_line_t15=calculate_non_taxable_item_amount_t15(line.id)
-        tax_totals_t15 += tax_line_t15
-
-    if tax_totals_t15 !=0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t15
-        )
-        tax_total_obj.save()
-    return tax_totals_t15
-
-
-def tax_totals_t16(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T16")
-    tax_totals_t16 = 0
-    for line in invoice_lines:
-        tax_line_t16=calculate_non_taxable_item_amount_t16(line.id)
-        tax_totals_t16 += tax_line_t16
-
-    if tax_totals_t16 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t16
-        )
-        tax_total_obj.save()
-    return tax_totals_t16
-
-
-def tax_totals_t17(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T17")
-    tax_totals_t17 = 0
-    for line in invoice_lines:
-        tax_line_t17=calculate_non_taxable_item_amount_t17(line.id)
-        tax_totals_t17 += tax_line_t17
-
-    if tax_totals_t17 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t17
-        )
-        tax_total_obj.save()
-    return tax_totals_t17
-
-
-def tax_totals_t18(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T18")
-
-    tax_totals_t18 = 0
-    for line in invoice_lines:
-        tax_line_t18=calculate_non_taxable_item_amount_t18(line.id)
-        tax_totals_t18 += tax_line_t18
-
-    if tax_totals_t18 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t18
-        )
-        tax_total_obj.save()
-    return tax_totals_t18
-
-
-def tax_totals_t19(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T19")
-
-    tax_totals_t19 = 0
-    for line in invoice_lines:
-        tax_line_t19=calculate_non_taxable_item_amount_t19(line.id)
-        tax_totals_t19 += tax_line_t19
-
-    if tax_totals_t19 != 0:
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t19
-        )
-        tax_total_obj.save()
-    return tax_totals_t19                       
-
-def tax_totals_t20(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    Tax_type = TaxTypes.objects.get(code= "T20")
-
-    tax_totals_t20 = 0
-    for line in invoice_lines:
-        tax_line_t20=calculate_non_taxable_item_amount_t20(line.id)
-        tax_totals_t20 += tax_line_t20
-
-    if tax_totals_t20 != 0 :
-        tax_total_obj = HeaderTaxTotal(
-            header = invoice_header,
-            tax = Tax_type,
-            total = tax_totals_t20
-        )
-        tax_total_obj.save()
-    return tax_totals_t20 
-
-
-#def header_taxes_totals(id):
-   
-def tax_totals_t2(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t2 = 0
-    for line in invoice_lines:
-        tax_line_t2=calculate_taxable_item_amount_t2(line.id)
-        tax_totals_t2 += tax_line_t2
-    
-    tax_type_obj = TaxTypes.objects.get(code="T2")
-    if tax_totals_t2 !=0:
-        header_tax_t2 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t2,
-        )
-        header_tax_t2.save()
-
-    return tax_totals_t2
-
-def tax_totals_t3(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t3 = 0
-    for line in invoice_lines:
-        tax_line_t3=calculate_t3_amount_per_line(line.id)
-        tax_totals_t3 += tax_line_t3
-
-    tax_type_obj = TaxTypes.objects.get(code="T3")
-    if tax_totals_t3 !=0:
-        header_tax_t3 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t3,
-        )
-        header_tax_t3.save()
-
-    return tax_totals_t3
-
-def tax_totals_t4(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t4 = 0
-    for line in invoice_lines:
-        tax_line_t4=calculate_t4_subtypes_amounts_per_line(line.id)
-        tax_totals_t4 += tax_line_t4
-
-    tax_type_obj = TaxTypes.objects.get(code="T4")
-    if tax_totals_t4 !=0:
-        header_tax_t4 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t4,
-        )
-        header_tax_t4.save()
-
-    return tax_totals_t4
-
-
-def tax_totals_t5(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t5 = 0
-    for line in invoice_lines:
-        tax_line_t5=calculate_taxable_item_amount_t5(line.id)
-        tax_totals_t5 += tax_line_t5
-
-    tax_type_obj = TaxTypes.objects.get(code="T5")
-    if tax_totals_t5 !=0:
-        header_tax_t5 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t5,
-        )
-        header_tax_t5.save()
-
-    return tax_totals_t5
-
-
-def tax_totals_t6(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t6 = 0
-    for line in invoice_lines:
-        tax_line_t6=calculate_taxable_item_amount_t6(line.id)
-        tax_totals_t6 += tax_line_t6
-
-    tax_type_obj = TaxTypes.objects.get(code="T6")
-    if tax_totals_t6 !=0:
-        header_tax_t6 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t6,
-        )
-        header_tax_t6.save()
-
-    return tax_totals_t6
-
-
-def tax_totals_t7(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t7 = 0
-    for line in invoice_lines:
-        tax_line_t7=calculate_taxable_item_amount_t7(line.id)
-        tax_totals_t7 += tax_line_t7
-
-    tax_type_obj = TaxTypes.objects.get(code="T7")
-    if tax_totals_t7 !=0:
-        header_tax_t7 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t7,
-        )
-        header_tax_t7.save()
-
-    return tax_totals_t7
-
-
-def tax_totals_t8(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t8 = 0
-    for line in invoice_lines:
-        tax_line_t8=calculate_taxable_item_amount_t8(line.id)
-        tax_totals_t8 += tax_line_t8
-
-    tax_type_obj = TaxTypes.objects.get(code="T8")
-    if tax_totals_t8 !=0:
-        header_tax_t8 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t8,
-        )
-        header_tax_t8.save()
-
-    return tax_totals_t8
-
-
-def tax_totals_t9(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t9 = 0
-    for line in invoice_lines:
-        tax_line_t9=calculate_taxable_item_amount_t9(line.id)
-        tax_totals_t9 += tax_line_t9
-
-    tax_type_obj = TaxTypes.objects.get(code="T9")
-    if tax_totals_t9 !=0:
-        header_tax_t9 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t9,
-        )
-        header_tax_t9.save()
-
-    return tax_totals_t9
-
-
-def tax_totals_t10(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t10 = 0
-    for line in invoice_lines:
-        tax_line_t10=calculate_taxable_item_amount_t10(line.id)
-        tax_totals_t10 += tax_line_t10
-
-    tax_type_obj = TaxTypes.objects.get(code="T10")
-    if tax_totals_t10 !=0:
-        header_tax_t10 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t10,
-        )
-        header_tax_t10.save()
-
-    return tax_totals_t10
-
-
-def tax_totals_t11(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t11 = 0
-    for line in invoice_lines:
-        tax_line_t11=calculate_taxable_item_amount_t11(line.id)
-        tax_totals_t11 += tax_line_t11
-
-    tax_type_obj = TaxTypes.objects.get(code="T11")
-    if tax_totals_t11 !=0:
-        header_tax_t11 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t11,
-        )
-        header_tax_t11.save()
-
-    return tax_totals_t11
-
-
-def tax_totals_t12(header_id):
-    invoice_header = InvoiceHeader.objects.get(id = header_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
-    tax_totals_t12 = 0
-    for line in invoice_lines:
-        tax_line_t12=calculate_taxable_item_amount_t12(line.id)
-        tax_totals_t12 += tax_line_t12
-
-    tax_type_obj = TaxTypes.objects.get(code="T12")
-    if tax_totals_t12 !=0:
-        header_tax_t12 = HeaderTaxTotal(
-            header=invoice_header,
-            tax= tax_type_obj,
-            total=tax_totals_t12,
-        )
-        header_tax_t12.save()
-
-    return tax_totals_t12
-
-
-def header_totals(id):
-    header_sales_total(id)
-    header_sales_amount(id)
-    header_net_amount(id)
-    header_total_item_discounts_amount(id)
-    header_total_amount(id)
-    extra_discount_amount(id)
-    tax_totals_t1(id)
-    tax_totals_t2(id)
-    tax_totals_t3(id)
-    tax_totals_t4(id)
-    tax_totals_t5(id)
-    tax_totals_t6(id)
-    tax_totals_t7(id)
-    tax_totals_t8(id)
-    tax_totals_t9(id)
-    tax_totals_t10(id)
-    tax_totals_t11(id)
-    tax_totals_t12(id)
-    tax_totals_t13(id)
-    tax_totals_t14(id)
-    tax_totals_t15(id)
-    tax_totals_t16(id)
-    tax_totals_t17(id)
-    tax_totals_t18(id)
-    tax_totals_t19(id)
-    tax_totals_t20(id)
+def header_totals(header):
+    header.calculate_header_sales_total()
+    header.calculate_items_discount()
+    header.calculate_discount_amount()
+    header.calculate_net_amount()
+    header.calculate_total_amount()
+
+
+def calculate_all_invoice_lines(header_obj):
+    invoice_lines = header_obj.lines.all()
+    for line_obj in invoice_lines:
+        line_obj.get_amount_egp()
+        line_obj.calculate_sales_total()
+        line_obj.calculate_discount_amount()
+        line_obj.calculate_net_total()
+        tax_calculator = InoviceTaxLineCalculator(line_obj)
+        tax_calculator.calculate_all_taxes_amount()
+        calculate_line_total(line_obj.id, tax_calculator)
