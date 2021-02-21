@@ -85,7 +85,12 @@
                                     <td>{{ header.total_amount }}</td>
                                     {% if header.submissions %}
                                     <td>{{header.submissions.subm_id}}</td>
-                                    <td><span class="label label-success">Submitted</span></span></td>
+                                       {% if header.submissions.subm_id %}
+                                       <td><span class="label label-success">Submitted</span></span></td>
+                                       {% else %}
+                                       <td><span class="label label-danger">Not Submitted</span></span></td>
+                                       {% endif %}
+
                                     {% else %}
                                     <td></td>
                                     <td>

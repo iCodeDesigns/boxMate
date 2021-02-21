@@ -483,7 +483,11 @@ def save_submition_response(invoice_id, submission_id):
             subm_id=submission_id,
         )
         submission_obj.save()
-    get_submition_response(submission_id)
+    if submission_id is not None:
+        get_submition_response(submission_id)
+    else:
+        pass
+
 
 
 def submit_invoice(request, invoice_id):
@@ -504,18 +508,40 @@ def submit_invoice(request, invoice_id):
                                  json=data)
 
     response_code = response
-    response_json = response_code.json()
-    submissionId = response_json['submissionId']
-    print("**************")
+    if response_code is None:
+        submissionId = None
+        try:
+            old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
+            old_submission.subm_id =None
+            old_submission.subm_uuid = None
+            old_submission.document_count = None
+            old_submission.date_time_received = None
+            old_submission.over_all_status = "Not Submitted"
+            old_submission.save()
+        except Submission.DoesNotExist:
+            pass
+        #return redirect('taxManagement:get-all-invoice-headers')
 
-    acceptedDocuments = response_json['acceptedDocuments']
-    uuid = acceptedDocuments[0]['uuid']
+    else:
+        response_json = response_code.json()
+        submissionId = response_json['submissionId']
 
-    internalId = acceptedDocuments[0]['internalId']
-    save_submition_response(internalId, submissionId)
+    if submissionId is None:
+        try:
+            old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
+            old_submission.subm_id = None
+            old_submission.subm_uuid = None
+            old_submission.document_count = None
+            old_submission.date_time_received = None
+            old_submission.over_all_status = "Not Submitted"
+            old_submission.save()
+        except Submission.DoesNotExist:
+            pass
+        #return redirect('taxManagement:get-all-invoice-headers')
+
+    save_submition_response(invoice_id, submissionId)
     print(response.json())
     return redirect('taxManagement:get-all-invoice-headers')
-    # return response
 
 
 def submission_list(request):
@@ -602,10 +628,8 @@ def get_token():
     auth_token = response.json()["access_token"]
 
 
-def resubmit(request, sub_id):
-    submission = Submission.objects.get(subm_id=sub_id)
-    header_id = submission.invoice.internal_id
-    submit_invoice(request, header_id)
+def resubmit(request, invoice_id):
+    submit_invoice(request, invoice_id)
     return redirect("taxManagement:list-eta-invoice")
 
 
