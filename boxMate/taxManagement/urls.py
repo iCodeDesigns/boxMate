@@ -12,7 +12,7 @@ urlpatterns = [
     # path('invoice-headers/' , views.get_all_invoice_headers , name='get-all-invoice-headers')
     path('list/eta-invoice/', views.list_eta_invoice, name='list-eta-invoice'),
     path('submit-invoice/<slug:invoice_id>', views.submit_invoice , name='submit-invoice'),
-    path('document-detail/<slug:doc_uuid>/', views.get_decument_detail_after_submit , name='dec-detail'),
+    path('document-detail/<slug:internal_id>/', views.get_decument_detail_after_submit , name='dec-detail'),
     path('upload-excel-sheet/' , views.upload_excel_sheet, name='upload-excel-sheet'),
     path('resubmit-invoice/<slug:invoice_id>', views.resubmit, name='resubmit-invoice'),
 

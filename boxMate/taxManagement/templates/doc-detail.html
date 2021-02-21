@@ -95,5 +95,47 @@
                </div>
                <!-- /.row -->
             </section>
+             <section class="content">
+               <div class="row">
+                  <div class="col-xs-12">
+                     <div class="box">
+                        <div class="box-header">
+                           <h2 class="box-title">Other Errors</h2>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                           <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+                                       <thead>
+                                          <tr role="row">
+                                             <th style="color: red;">Error Description</th>
+
+                                          </tr>
+                                       </thead>
+                                       <tbody>
+                                       {% for line in other_errors %}
+                                          <tr>
+                                             <td>-{{ line }}</td>
+                                          </tr>
+                                           {% endfor %}
+                                       </tbody>
+
+                                    </table>
+                                 </div>
+                              </div>
+
+                           </div>
+                        </div>
+                        <!-- /.box-body -->
+                     </div>
+                     <!-- /.box -->
+                  </div>
+                  <!-- /.col -->
+               </div>
+               <!-- /.row -->
+            </section>
          </div>
 {% endblock body %}

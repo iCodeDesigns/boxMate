@@ -448,7 +448,7 @@ def get_submition_response(submission_id):
                                 )
 
     if (response.status_code != status.HTTP_200_OK):
-        time.sleep(10)
+        time.sleep(20)
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
@@ -471,23 +471,31 @@ def get_submition_response(submission_id):
     return response
 
 
-def save_submition_response(invoice_id, submission_id):
+def save_submition_response(invoice_id, submission_id,status):
+
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     try:
-        old_sub = Submission.objects.get(invoice__internal_id=invoice_id)
-        old_sub.subm_id = submission_id
-        old_sub.save()
+        old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
+        old_submission.subm_id = submission_id
+        if submission_id is None or status == "Invalid":
+            old_submission.subm_id = None
+            old_submission.subm_uuid = None
+            old_submission.document_count = None
+            old_submission.date_time_received = None
+            old_submission.over_all_status = status
+        old_submission.save()
     except Submission.DoesNotExist:
         submission_obj = Submission(
             invoice=invoice,
             subm_id=submission_id,
+            over_all_status = status,
         )
         submission_obj.save()
     if submission_id is not None:
+        time.sleep(10)
         get_submition_response(submission_id)
     else:
         pass
-
 
 
 def submit_invoice(request, invoice_id):
@@ -506,40 +514,20 @@ def submit_invoice(request, invoice_id):
                                  headers={'Content-Type': 'application/json',
                                           'Authorization': 'Bearer ' + auth_token},
                                  json=data)
-
-    response_code = response
-    if response_code is None:
+    over_all_status = None
+    if response is None:
         submissionId = None
-        try:
-            old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
-            old_submission.subm_id =None
-            old_submission.subm_uuid = None
-            old_submission.document_count = None
-            old_submission.date_time_received = None
-            old_submission.over_all_status = "Not Submitted"
-            old_submission.save()
-        except Submission.DoesNotExist:
-            pass
-        #return redirect('taxManagement:get-all-invoice-headers')
+        over_all_status = "Network Error"
+        # return redirect('taxManagement:get-all-invoice-headers')
 
     else:
-        response_json = response_code.json()
+        response_json = response.json()
         submissionId = response_json['submissionId']
 
-    if submissionId is None:
-        try:
-            old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
-            old_submission.subm_id = None
-            old_submission.subm_uuid = None
-            old_submission.document_count = None
-            old_submission.date_time_received = None
-            old_submission.over_all_status = "Not Submitted"
-            old_submission.save()
-        except Submission.DoesNotExist:
-            pass
-        #return redirect('taxManagement:get-all-invoice-headers')
+    if submissionId is None and response is not None:
+        over_all_status = "Invalid"
 
-    save_submition_response(invoice_id, submissionId)
+    save_submition_response(invoice_id, submissionId, status=over_all_status)
     print(response.json())
     return redirect('taxManagement:get-all-invoice-headers')
 
@@ -574,36 +562,44 @@ def get_all_invoice_headers(request):
     #     return Response(serializer.data , status=status.HTTP_200_OK)
 
 
-def get_decument_detail_after_submit(request, doc_uuid):
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + doc_uuid + '/details'
-    response = requests.get(url, verify=False,
-                            headers={'Authorization': 'Bearer ' + auth_token, }
-                            )
-    if response.status_code == status.HTTP_401_UNAUTHORIZED:
-        get_token()
+def get_decument_detail_after_submit(request, internal_id):
+    submission = Submission.objects.get(invoice__id=internal_id)
+    if submission.subm_uuid is not None:
+        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + submission.subm_uuid + '/details'
         response = requests.get(url, verify=False,
-                                headers={
-                                    'Authorization': 'Bearer ' + auth_token, }
+                                headers={'Authorization': 'Bearer ' + auth_token, }
                                 )
+        if response.status_code == status.HTTP_401_UNAUTHORIZED:
+            get_token()
+            response = requests.get(url, verify=False,
+                                    headers={
+                                        'Authorization': 'Bearer ' + auth_token, }
+                                    )
 
-    validation_steps = response.json()['validationResults']['validationSteps']
-    header_errors = []
-    lines_errors = []
-    for validation_step in validation_steps:
-        if validation_step['status'] == 'Invalid':
-            inner_errors = validation_step['error']['innerError']
-            for inner_error in inner_errors:
-                if inner_error['propertyPath'].startswith('invoiceLine'):
-                    lines_errors.append(inner_error['error'])
-                elif inner_error['propertyPath'].startswith('document'):
-                    header_errors.append(inner_error['error'])
+        validation_steps = response.json()['validationResults']['validationSteps']
+        header_errors = []
+        lines_errors = []
+        general_errors = []
+        for validation_step in validation_steps:
+            if validation_step['status'] == 'Invalid':
+                inner_errors = validation_step['error']['innerError']
+                for inner_error in inner_errors:
+                    if inner_error['propertyPath'].startswith('invoiceLine'):
+                        lines_errors.append(inner_error['error'])
+                    elif inner_error['propertyPath'].startswith('document'):
+                        header_errors.append(inner_error['error'])
+                    else:
+                        general_errors.append(inner_error['error'])
 
-    get_doc_context = {
-        "response_json": response.json(),
-        'header_errors': header_errors,
-        'lines_errors': lines_errors,
-    }
-    return render(request, 'doc-detail.html', get_doc_context)
+        get_doc_context = {
+            "response_json": response.json(),
+            'header_errors': header_errors,
+            'lines_errors': lines_errors,
+            'other_errors': general_errors,
+        }
+        return render(request, 'doc-detail.html', get_doc_context)
+    else:
+        return redirect('taxManagement:list-eta-invoice')
 
 
 def list_eta_invoice(request):
