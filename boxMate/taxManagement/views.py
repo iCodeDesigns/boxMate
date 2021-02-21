@@ -159,7 +159,7 @@ def import_data_to_invoice():
                     rate=tax_type['tax_item_rate']
                 )
                 tax_type_obj.save()
-            print("***********")    
+            print("***********")
             line_taxes_totals(line_obj.id)
         # header_obj.calculate_total_sales()
         # header_obj.calculate_total_item_discount()
@@ -572,6 +572,8 @@ def get_decument_detail_after_submit(request, doc_uuid):
             inner_errors = validation_step['error']['innerError']
             for inner_error in inner_errors:
                 if inner_error['propertyPath'].startswith('invoiceLine'):
+                    lines_errors.append(inner_error['error'])
+                elif inner_error['propertyPath'].startswith('$.'):
                     lines_errors.append(inner_error['error'])
                 elif inner_error['propertyPath'].startswith('document'):
                     header_errors.append(inner_error['error'])
@@ -1093,7 +1095,7 @@ def header_item_discount(header_id):
         total_item_discount += line.amount
 
     invoice_header.total_discount_amount = total_item_discount
-    invoice_header.save()    
+    invoice_header.save()
     return total_item_discount
 
 def header_net_amount(header_id):
@@ -1104,7 +1106,7 @@ def header_net_amount(header_id):
         total_net_amount += line.netTotal
 
     invoice_header.net_amount = total_net_amount
-    invoice_header.save()    
+    invoice_header.save()
     return total_net_amount
 
 
@@ -1127,7 +1129,7 @@ def header_total_amount(header_id):
     invoiceline_total = 0
     extra_discount_amount = invoice_header.extra_discount_amount
     for line in invoice_lines:
-        invoiceline_total += line.total 
+        invoiceline_total += line.total
 
     header_total_amount = invoiceline_total - extra_discount_amount
     invoice_header.total_amount = header_total_amount
@@ -1161,7 +1163,7 @@ def tax_totals_t1(header_id):
         header_tax_t1.save()
 
     return tax_totals_t1
-   
+
 def tax_totals_t2(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
@@ -1169,7 +1171,7 @@ def tax_totals_t2(header_id):
     for line in invoice_lines:
         tax_line_t2=calculate_taxable_item_amount_t2(line.id)
         tax_totals_t2 += tax_line_t2
-    
+
     tax_type_obj = TaxTypes.objects.get(code="T2")
     if tax_totals_t2 !=0:
         header_tax_t2 = HeaderTaxTotal(
@@ -1512,7 +1514,7 @@ def tax_totals_t19(header_id):
             total = tax_totals_t19
         )
         tax_total_obj.save()
-    return tax_totals_t19                       
+    return tax_totals_t19
 
 def tax_totals_t20(header_id):
     invoice_header = InvoiceHeader.objects.get(id = header_id)
@@ -1531,7 +1533,7 @@ def tax_totals_t20(header_id):
             total = tax_totals_t20
         )
         tax_total_obj.save()
-    return tax_totals_t20 
+    return tax_totals_t20
 
 
 
