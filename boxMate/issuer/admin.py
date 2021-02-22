@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import site
 
-from .models import Issuer, Address, Receiver
+from .models import Issuer, Address, Receiver, IssuerTax
 
 
 # Register your models here.
@@ -20,4 +20,4 @@ class IssuerAdmin(admin.ModelAdmin):
 
 
 site.register(Receiver)
-
+site.register(IssuerTax)
