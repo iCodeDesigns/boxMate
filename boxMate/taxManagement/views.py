@@ -434,12 +434,20 @@ def get_one_invoice(invoice_id):
     return invoice
 
 
-def get_submition_response(submission_id):
+def get_submission_response(submission_id):
+    '''
+    This function is used to check and save the overall status of the submission ,
+    doc number,doc_uuid,doc_count and time received.
+
+    :param submission_id: the subm_id of the invoice to save its submission data
+    :return: response object from the gov api
+    '''
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documentSubmissions/' + \
           submission_id + '?PageSize=1'
     response = requests.get(url, verify=False,
                             headers={'Authorization': 'Bearer ' + auth_token, }
                             )
+    # if token is expired
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.get(url, verify=False,
@@ -447,34 +455,39 @@ def get_submition_response(submission_id):
                                     'Authorization': 'Bearer ' + auth_token, }
                                 )
 
+    # in case of network error
+    # TODO handle connection issues with the gov api
     if (response.status_code != status.HTTP_200_OK):
-        time.sleep(20)
+        time.sleep(20) # wait some time and try again
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
                                 )
     response_code = response
     response_json = response_code.json()
-    documentCount = response_json['documentCount']
-    dateTimeReceived = response_json['dateTimeReceived']
-    overallStatus = response_json['overallStatus']
 
-    documentSummary = response_json['documentSummary']
-    uuid = documentSummary[0]['uuid']
     submission = Submission.objects.get(subm_id=submission_id)
-    submission.subm_uuid = uuid
-    submission.document_count = documentCount
-    submission.date_time_received = dateTimeReceived
-    submission.over_all_status = overallStatus
+
+    submission.subm_uuid = response_json['documentSummary'][0]['uuid'] # document uuid
+    submission.document_count = response_json['documentCount']
+    submission.date_time_received = response_json['dateTimeReceived']
+    submission.over_all_status = response_json['overallStatus']
     submission.save()
 
     return response
 
 
-def save_submition_response(invoice_id, submission_id,status):
-
+def save_submission_response(invoice_id, submission_id, status):
+    '''
+    :param invoice_id: the internal id of the invoice to save its submission
+    :param submission_id: the submission id coming from submitting an invoice
+    :param status: the status is not None in case the submission id is null else the status is None
+    :return: no return
+    # TODO the function should return if save is successful or not
+    '''
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     try:
+        # if an old submission already exists update it
         old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
         old_submission.subm_id = submission_id
         if submission_id is None or status == "Invalid":
@@ -488,26 +501,36 @@ def save_submition_response(invoice_id, submission_id,status):
         submission_obj = Submission(
             invoice=invoice,
             subm_id=submission_id,
-            over_all_status = status,
+            over_all_status=status,
         )
         submission_obj.save()
+    # if submission id is not None , call a function to check the submission of the invoice from gov api
     if submission_id is not None:
-        time.sleep(10)
-        get_submition_response(submission_id)
-    else:
-        pass
+        time.sleep(10)  # wait sometime until the status is updated at the gov side
+        get_submission_response(submission_id)
 
 
 def submit_invoice(request, invoice_id):
-    invoice = get_one_invoice(invoice_id)
-    json_data = json.dumps({"documents": [invoice]})
-    data = decode(json_data)
+    '''
+    This function is used to submit an invoice to the governmental api, it calls another function to
+    save the submission response
+
+    :param request: the request from the user
+    :param invoice_id: the internal id of the invoice to be submitted
+    :return: redirects to the page that lists all invoices
+    '''
+    invoice = get_one_invoice(invoice_id)  # function that gets the invoice data in JSON format
+    json_data = json.dumps({"documents": [invoice]})  # this format is required by the gov api
+    data = decode(
+        json_data)  # to make a good json out of a bad json ,for more info refer to https://github.com/dmeranda/demjson
     print(data)
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + auth_token},
                              json=data)
+    # if token is expired
+    # TODO need to save the token in a session
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.post(url, verify=False,
@@ -515,20 +538,21 @@ def submit_invoice(request, invoice_id):
                                           'Authorization': 'Bearer ' + auth_token},
                                  json=data)
     over_all_status = None
+    # in case of network error
     if response is None:
         submissionId = None
         over_all_status = "Network Error"
-        # return redirect('taxManagement:get-all-invoice-headers')
 
     else:
         response_json = response.json()
         submissionId = response_json['submissionId']
 
+    # case of invalid invoice with submission id is null
     if submissionId is None and response is not None:
         over_all_status = "Invalid"
 
-    save_submition_response(invoice_id, submissionId, status=over_all_status)
-    print(response.json())
+    # used to save the submission id
+    save_submission_response(invoice_id, submissionId, status=over_all_status)
     return redirect('taxManagement:get-all-invoice-headers')
 
 
@@ -611,6 +635,7 @@ def list_eta_invoice(request):
 
 
 def get_token():
+
     url = "https://id.preprod.eta.gov.eg/connect/token"
     client_id = "547413a4-79ee-4715-8530-a7ddbe392848"
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
