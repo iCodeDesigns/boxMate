@@ -73,8 +73,12 @@
                                              <td><span class="label label-danger">Invalid</span></td>
                                              {% elif invoice.over_all_status == 'InProgress'  %}
                                              <td><span class="label label-success">In progress</span></td>
+                                             {% elif invoice.over_all_status == 'Not Submitted'  %}
+                                             <td><span class="label label-danger">Not Submitted</span></td>
                                              {% elif invoice.over_all_status == 'Partially valid'  %}
                                              <td><span class="label label-success">Partially Valid</span></td>
+                                             {% elif invoice.over_all_status == 'Network Error'  %}
+                                             <td><span class="label label-danger">"Network Error</span></td>
                                               {% else %}
                                              <td></td>
                                              {% endif %}
@@ -82,8 +86,8 @@
                                              <td>{{ invoice.document_count }}</td>
                                              <td>{{ invoice.subm_id }}</td>
                                              <td>{{ invoice.subm_uuid }}</td>
-                                             <td><a href="{% url 'taxManagement:dec-detail' invoice.subm_uuid %}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
-                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.subm_id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
+                                             <td><a href="{% url 'taxManagement:dec-detail' invoice.invoice.id%}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
+                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.internal_id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
                                           </tr>
                                            {% endfor %}
                                        </tbody>

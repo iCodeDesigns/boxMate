@@ -251,10 +251,10 @@ class InvoiceLine(models.Model):
             self.amount = 0
 
     def calculate_net_total(self):
-          if self.amount is not None:
+        if self.amount is not None:
             self.netTotal = self.salesTotal - self.amount
             self.save()
-          else:
+        else:
             self.netTotal = self.salesTotal
             self.save()
 
@@ -270,7 +270,6 @@ class TaxLine(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="tax_line_created_by")
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
 
 
 class Submission(models.Model):
