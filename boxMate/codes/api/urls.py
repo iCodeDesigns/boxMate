@@ -10,5 +10,7 @@ urlpatterns = [
     path('unit-type/upload', views.unit_type_upload, name='upload-unit-type'),   
     path('country-code/upload', views.country_code_upload, name='upload-country-code'),   
 
+    path('activity/create/', views.add_activity_code, name='create-act'),
+    path('activity/list/', views.ActivityListView.as_view(), name='list-act'),
 
 ]
