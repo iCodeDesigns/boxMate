@@ -1,5 +1,7 @@
 import json
 import requests
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
@@ -162,7 +164,7 @@ def import_data_to_invoice():
         header_totals(header_obj)
 
 
-# Create your views here.
+@login_required(login_url='home:user-login')
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -184,28 +186,25 @@ def upload_excel_sheet(request):
         # Enter format = 'csv' for csv file
         success = MainTable.objects.all().delete()
         if not success:
+            messages.error(request, 'Failed to import Excel sheet')
             return redirect('/tax/list/uploaded-invoices')
+
         imported_data = dataset.load(data, format='xlsx')
 
-        result = main_table_resource.import_data(imported_data,
-                                                 dry_run=False,
-                                                 raise_errors=True,
-                                                 file_name=tmp_storage.name, )
+        main_table_resource.import_data(imported_data,
+                                        dry_run=False,
+                                        raise_errors=True,
+                                        file_name=tmp_storage.name, )
         tmp_storage.remove()
 
     else:
-        print(result.base_errors)
-        data = {"success": False, "error": {
-            "code": 400, "message": "Invalid Excel sheet"}}
-        return Response(data, status=status.HTTP_400_BAD_REQUEST)
-    data = {"success": True}
+        messages.error(request, 'Invalid Excel Sheet' + result.base_errors)
+        return redirect('/tax/list/uploaded-invoices')
+
     issuer_views.get_issuer_data()
     issuer_views.get_receiver_data()
     import_data_to_invoice()
-
-    context = {
-        'data': 'data'
-    }
+    messages.success(request, 'Data is imported Successfully')
     return redirect('/tax/list/uploaded-invoices')
 
 
@@ -458,7 +457,7 @@ def get_submission_response(submission_id):
     # in case of network error
     # TODO handle connection issues with the gov api
     if (response.status_code != status.HTTP_200_OK):
-        time.sleep(20) # wait some time and try again
+        time.sleep(20)  # wait some time and try again
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
@@ -468,7 +467,7 @@ def get_submission_response(submission_id):
 
     submission = Submission.objects.get(subm_id=submission_id)
 
-    submission.subm_uuid = response_json['documentSummary'][0]['uuid'] # document uuid
+    submission.subm_uuid = response_json['documentSummary'][0]['uuid']  # document uuid
     submission.document_count = response_json['documentCount']
     submission.date_time_received = response_json['dateTimeReceived']
     submission.over_all_status = response_json['overallStatus']
@@ -635,7 +634,6 @@ def list_eta_invoice(request):
 
 
 def get_token():
-
     url = "https://id.preprod.eta.gov.eg/connect/token"
     client_id = "547413a4-79ee-4715-8530-a7ddbe392848"
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
