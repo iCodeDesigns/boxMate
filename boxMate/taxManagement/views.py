@@ -345,24 +345,6 @@ def get_invoice_header(invoice_id):
         "salesOrderReference": invoice_header.sales_order_description,
         "salesOrderDescription": invoice_header.sales_order_description,
         "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-        # "payment": {
-        #     "bankName": "SomeValue",
-        #     "bankAddress": "SomeValue",
-        #     "bankAccountNo": "SomeValue",
-        #     "bankAccountIBAN": "",
-        #     "swiftCode": "",
-        #     "terms": "SomeValue"
-        # },
-        # "delivery": {
-        #     "approach": "SomeValue",
-        #     "packaging": "SomeValue",
-        #     "dateValidity": "2020-09-28T09:30:10Z",
-        #     "exportPort": "SomeValue",
-        #     "countryOfOrigin": "LS",
-        #     "grossWeight": 10.59100,
-        #     "netWeight": 20.58700,
-        #     "terms": "SomeValue"
-        # },
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
@@ -676,7 +658,6 @@ def import_data_from_db(request):
     connection_class = OracleConnection(
         address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
-    # print(data)
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(
