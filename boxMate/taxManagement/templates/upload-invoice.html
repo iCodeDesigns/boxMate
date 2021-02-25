@@ -99,7 +99,10 @@
                                     </td>
                                     </a>
                                     {% endif %}
-                                    <td><span class="glyphicon glyphicon-pencil"></span></td>
+                                    <td> 
+                                       <a href="{% url 'taxManagement:view-invoice' invoice_id=header.internal_id %}">
+                                       <span class="glyphicon glyphicon-pencil"></span></td>
+                                    </a>
                                  </tr>
                                  {% endfor %}
                               </tbody>
