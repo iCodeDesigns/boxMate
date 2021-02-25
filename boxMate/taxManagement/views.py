@@ -755,3 +755,13 @@ def calculate_all_invoice_lines(header_obj):
         tax_calculator = InoviceTaxLineCalculator(line_obj)
         tax_calculator.calculate_all_taxes_amount()
         calculate_line_total(line_obj.id, tax_calculator)
+
+
+def view_invoice(request , invoice_id):
+    invoice_header = InvoiceHeader.objects.get(internal_id = invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header = invoice_header)
+    context = {
+        "invoice_header" : invoice_header,
+        "invoice_lines" : invoice_lines,
+    }
+    return render(request , 'view-invoice.html' , context)
