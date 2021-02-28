@@ -6,7 +6,7 @@
    <!-- Content Header (Page header) -->
    <section class="content-header">
       <h1>
-         Upload Invoice
+         Create Company
          <!-- <small>Optional description</small> -->
       </h1>
 
@@ -61,12 +61,19 @@
                            <br>
                            {{ issuer_form.activity_code}}
                          </div>
+                         
                         </div>
 
+                        <div class="form-row">
+                          <div class="form-group col-md-12">
+                           <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                          </div>
+                        </div>
 
                            <div class="form-row">
                             <h2>Address</h2>
                               <div class="form-group col-md-4">
+
                                 <label for="inputCity">Branch</label>
                                 <br>
                                 {{ address_form.branch_id}}
@@ -143,7 +150,7 @@
                         
                            <br>
                            <div class="form-group col-md-4">
-                           <button type="submit" class="btn btn-primary">Save and go to Taxs</button>
+                           <button type="submit"  class="btn btn-primary">Save and go to Taxs</button>
                            </div>
                          </form>
                          </div>
