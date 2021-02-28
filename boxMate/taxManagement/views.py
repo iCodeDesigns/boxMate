@@ -184,6 +184,7 @@ def upload_excel_sheet(request):
         # data = force_str(data, "utf-8")
         dataset = Dataset()
         # Enter format = 'csv' for csv file
+        # TODO delete only the data of the issuer
         success = MainTable.objects.all().delete()
         if not success:
             messages.error(request, 'Failed to import Excel sheet')
