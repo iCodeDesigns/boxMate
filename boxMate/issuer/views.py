@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from issuer.forms import *
 from datetime import date
-from codes.models import TaxSubtypes
+from codes.models import TaxSubtypes , CountryCode
 import json
+from django.http import JsonResponse
 from array import *
 
 
@@ -164,11 +165,9 @@ def list_uploaded_invoice(request):
 def create_issuer(request):
     issuer_form = IssuerForm()
     address_form = AddressForm()
-    issuer_tax_form = IssuerTaxForm()
     if request.method == 'POST':
         issuer_form = IssuerForm(request.POST)
         address_form = AddressForm(request.POST)
-        issuer_tax_form = IssuerTaxForm(request.POST)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
             issuer_obj.created_at = date.today()
@@ -192,7 +191,21 @@ def create_issuer(request):
             'address_form': address_form,})
 
 
-def create_issuer_view(request, issuer_id):
+
+def view_issuer(request, issuer_id):
+    issuer = Issuer.objects.get(id = issuer_id)
+    address = Address.objects.get(issuer = issuer_id)
+    country = CountryCode.objects.get(code = address.country )
+    codes = IssuerTax.objects.filter(issuer = issuer_id)
+    return render(request , 'view-issuer.html' , {
+            'issuer' :issuer,
+            'address' :address,
+            'codes' : codes,
+            'country' : country
+            })   
+
+
+def create_issuer_tax_view(request, issuer_id):
     sub_taxs = TaxSubtypes.objects.all()
     issuer_id =issuer_id
 
@@ -200,19 +213,27 @@ def create_issuer_view(request, issuer_id):
             'issuer_id' :issuer_id,
             'sub_taxs' :sub_taxs,})
 
+         
+
 def create_issuer_tax(request):
     issuer = request.GET.get('issuer')
-    issuer_id = Issuer.objects.get(id= issuer)
     codes = request.GET.getlist("codes_arr[]")
-    for code in codes:
-        print(code)
-        subtax = TaxSubtypes.objects.get(code=code)
-        issuer_tax_obj= IssuerTax(
-            issuer = issuer_id,
-            tax_sub_type = subtax,
-            start_date = date.today(),
-            is_enabled = True,
-        )
-        issuer_tax_obj.save()
+    try:
+        issuer_id = Issuer.objects.get(id= issuer)
+        for code in codes:
+            subtax = TaxSubtypes.objects.get(code=code)
+            issuer_tax_obj= IssuerTax(
+                issuer = issuer_id,
+                tax_sub_type = subtax,
+                start_date = date.today(),
+                is_enabled = True,
+            )
+            issuer_tax_obj.save()
+        message = ' taxs added to your company' 
 
-    #return JsonResponse(data)
+    except Issuer.DoesNotExist as e:
+        message =  'not added to your company '
+
+    data = {
+        'message' : message}
+    return JsonResponse(data)

@@ -9,13 +9,13 @@
          Add  Taxs
          <!-- <small>Optional description</small> -->
       </h1>
-
    </section>
    <!-- Main content -->
    <section class="content">
             <div class="box">
                <!-- /.box-header -->
                <div class="container-fluid">
+                 <br>
                <table class="table table-striped table-bordered" id="dataTable"  width="100%">
                 <tr>
                                             <th scope="col">Code</th>
@@ -40,7 +40,20 @@
                                 </table>
 
                               <br>
+                              <div class="col-md-4">
                            <button type="submit"  onclick="myFunction2()" class="btn btn-primary">Save</button>
+                           <a href="{% url 'issuer:view-issuer' issuer_id=issuer_id %}"
+                           button type="button"
+                           style="text-align: center;" class="btn btn-success">View issuer
+                           </a>
+                              </div>
+                              <br>
+                              <br>
+                          <h2 id="message" style="color:black;"
+                           style="display: none;" style="font-style: oblique;"></h2>
+
+
+
 
      
 </div>
@@ -62,15 +75,13 @@
     {codes_arr.pop(code)}
     else{codes_arr.push(code)}
 
-    console.log(codes_arr)
-    console.log(issuer)
+    
 
     return codes_arr
    }
   function myFunction2(){
     codes_arr 
     issuer = {{issuer_id}}
-    console.log(issuer)
     
   $.ajax({
             url: '/issuer/create/issuer/tax',
@@ -81,7 +92,14 @@
             },
             dataType : 'json',
             success: function(data){
-                    alert(data.error_message);
+                    message2= codes_arr.join()
+                    message3 = message2 + "" + data.message 
+
+                    message = document.getElementById('message')
+                    message.innerHTML = message3
+                    message.style.display = 'block'
+                    message.style.textAlign = 'center'
+                    
                 
             }
   
