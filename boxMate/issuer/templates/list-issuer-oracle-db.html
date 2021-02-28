@@ -1,0 +1,132 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            Orarcle DB Connections
+            <!-- <small>Optional description</small> -->
+        </h1>
+
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">{{issuer.name}}</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                            <div class="col-sm-6">
+                                <button type="button" class="btn btn-primary margin-bottom" data-toggle="modal"
+                                    data-target="#exampleModal">
+                                    Add New DB Connection
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table id="example1" class="table table-bordered table-striped dataTable"
+                                        role="grid" aria-describedby="example1_info">
+                                        <thead>
+                                            <tr role="row">
+                                                <th>#</th>
+                                                <th>IP Address</th>
+                                                <th>Port Number</th>
+                                                <th>Service Number</th>
+                                                <th>Username</th>
+                                                <th>Edit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for connection in connections %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ connection.ip_address }}</td>
+                                                <td>{{ connection.port_number }}</td>
+                                                <td>{{ connection.service_number }}</td>
+                                                <td>{{ connection.username }}</td>
+                                                <td>
+                                                    <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}">
+                                                        <span class="glyphicon glyphicon-pencil"></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </section>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New DB Connection</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form method="POST" id="myform" action="{% url 'issuer:create-issuer-db-connection' %}">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-group col-md-4">IP Address</label>
+                            {{ db_form.ip_address}}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-group col-md-4">Port Number</label>
+                            {{ db_form.port_number}}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-group col-md-4">Service Number</label>
+                            {{ db_form.service_number}}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-group col-md-4">User Name</label>
+                            {{ db_form.username}}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-group col-md-4">Password</label>
+                            {{ db_form.password}}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-secondary" data-dismiss="modal"
+                    onclick="document.getElementById('myform').submit();">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock body %}

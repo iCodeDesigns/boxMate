@@ -216,3 +216,46 @@ def create_issuer_tax(request):
         issuer_tax_obj.save()
 
     #return JsonResponse(data)
+
+def issuer_oracle_DB_create(request):
+    issuer_oracle_DB_form = IssuerOracleDBForm()
+    # issuer = Issuer.objects.get(id = request.user.issuer)
+    issuer = Issuer.objects.get(id = 1)
+    if request.method == 'POST':
+        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
+        if issuer_oracle_DB_form.is_valid():
+            db_obj = issuer_oracle_DB_form.save(commit = False)
+            print("********************")
+            print(db_obj.ip_address)
+            db_obj.issuer = issuer
+            db_obj.save()
+            return redirect('issuer:list-issuer-db-connection')
+    context= {
+        "db_form" : issuer_oracle_DB_form,
+    }
+    return render(request , "create-issuer-oracle-db.html" , context)
+
+def issuer_oracle_DB_list(request):
+    issuer_oracle_DB_form = IssuerOracleDBForm()
+    # issuer = Issuer.objects.get(id = request.user.issuer)
+    issuer = Issuer.objects.get(id = 1)
+    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer = issuer)
+    context ={
+        'issuer' : issuer,
+        'connections':oracle_DB_connections,
+        'db_form': issuer_oracle_DB_form,
+    }
+    return render(request , "list-issuer-oracle-db.html" , context)
+
+def issuer_oracle_DB_update(request , id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+    issuer_oracle_DB_form = IssuerOracleDBForm(is_update = True,instance=oracle_DB_connection)
+    if request.method == 'POST':
+        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST , instance=oracle_DB_connection)
+        if issuer_oracle_DB_form.is_valid():
+            db_obj = issuer_oracle_DB_form.save()
+            return redirect('issuer:list-issuer-db-connection')
+    context= {
+        "db_form" : issuer_oracle_DB_form,
+    }
+    return render(request , "create-issuer-oracle-db.html" , context)

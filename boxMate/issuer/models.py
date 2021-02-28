@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, date
 from django.utils import timezone
 from django.db import models
-from codes.models import CountryCode, TaxTypes, ActivityType , TaxSubtypes
+from codes.models import CountryCode, TaxTypes, ActivityType
 
 
 # Create your models here.
@@ -63,7 +63,7 @@ class Address(models.Model):
 
 class IssuerTax(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax')
-    tax_sub_type = models.ForeignKey(TaxSubtypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
+    tax_type = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
     start_date = models.DateField(default=timezone.now, null=True, blank=True)
     end_date = models.DateField(auto_now_add=True, null=True, blank=True)
     is_enabled = models.BooleanField()
@@ -76,3 +76,11 @@ class IssuerTax(models.Model):
 
     def __str__(self):
         return self.issuer.name
+
+class IssuerOracleDB(models.Model):
+    issuer = models.ForeignKey(Issuer,on_delete=models.CASCADE)
+    ip_address = models.CharField(max_length=20)
+    port_number = models.CharField(max_length=10)
+    service_number = models.CharField(max_length=10)
+    username = models.CharField(max_length=30)
+    password = models.CharField(max_length=100)
