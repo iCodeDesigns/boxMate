@@ -7,6 +7,7 @@ from django.views.decorators.cache import never_cache
 from django.shortcuts import render, reverse, redirect
 
 from taxManagement.models import Submission, InvoiceHeader
+from taxManagement.java import call_java
 from home.forms import CustomUserCreationForm
 
 
@@ -59,11 +60,14 @@ def home_page(request):
 
     for invoice in total_submited_invoice:
         total_submited_invoice_count += invoice['total']
-    total_not_submited_invoice_count = total_invoice_count - total_submited_invoice_count
+    total_not_submited_invoice_count = total_invoice_count-total_submited_invoice_count
+
+    jar = call_java.java_func("test" ,"Dreem", "08268939")
     dashboard_context = {
-        "total_invoice_count": total_invoice_count,
-        "total_submited_invoice_count": total_submited_invoice_count,
-        "total_not_submited_invoice_count": total_not_submited_invoice_count
+        "total_invoice_count":total_invoice_count,
+        "total_submited_invoice_count":total_submited_invoice_count,
+        "total_not_submited_invoice_count":total_not_submited_invoice_count,
+        "jar":jar
     }
     return render(request, 'index.html', dashboard_context)
 

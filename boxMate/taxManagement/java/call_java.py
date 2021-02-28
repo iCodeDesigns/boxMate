@@ -1,14 +1,11 @@
-# from py4j.java_gateway import JavaGateway
 import os
 import subprocess
 
-# gateway = JavaGateway()
-#
-# stack = gateway.entry_point.getStack()
-
-def func_call_jar():
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    jar = os.path.join(BASE_DIR, "taxManagement",'final_adflib.jar' )
-    xxx = subprocess.call(['java', '-jar', jar])
-    print(xxx)
-    return xxx
+def java_func(json_str, client_name, client_id):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    print("#######################################################################")
+    print(BASE_DIR)
+    file_dir = os.path.join(BASE_DIR,'EtaInvoiceSubmission_Model_adflib.jar')
+    call_jar_file = subprocess.Popen(['java', '-jar', file_dir], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, stderr = call_jar_file.communicate(input=[json_str, client_name, client_id])
+    return stdout

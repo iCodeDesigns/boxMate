@@ -353,24 +353,6 @@ def get_invoice_header(invoice_id):
         "salesOrderReference": invoice_header.sales_order_description,
         "salesOrderDescription": invoice_header.sales_order_description,
         "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-        # "payment": {
-        #     "bankName": "SomeValue",
-        #     "bankAddress": "SomeValue",
-        #     "bankAccountNo": "SomeValue",
-        #     "bankAccountIBAN": "",
-        #     "swiftCode": "",
-        #     "terms": "SomeValue"
-        # },
-        # "delivery": {
-        #     "approach": "SomeValue",
-        #     "packaging": "SomeValue",
-        #     "dateValidity": "2020-09-28T09:30:10Z",
-        #     "exportPort": "SomeValue",
-        #     "countryOfOrigin": "LS",
-        #     "grossWeight": 10.59100,
-        #     "netWeight": 20.58700,
-        #     "terms": "SomeValue"
-        # },
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
@@ -675,7 +657,6 @@ def import_data_from_db(request):
     connection_class = OracleConnection(
         address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
-    # print(data)
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(
@@ -773,3 +754,13 @@ def calculate_all_invoice_lines(header_obj):
         tax_calculator = InoviceTaxLineCalculator(line_obj)
         tax_calculator.calculate_all_taxes_amount()
         calculate_line_total(line_obj.id, tax_calculator)
+
+
+def view_invoice(request , invoice_id):
+    invoice_header = InvoiceHeader.objects.get(internal_id = invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header = invoice_header)
+    context = {
+        "invoice_header" : invoice_header,
+        "invoice_lines" : invoice_lines,
+    }
+    return render(request , 'view-invoice.html' , context)

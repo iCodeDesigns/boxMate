@@ -14,5 +14,6 @@ urlpatterns = [
     path('document-detail/<slug:internal_id>/', views.get_decument_detail_after_submit , name='dec-detail'),
     path('upload-excel-sheet/' , views.upload_excel_sheet, name='upload-excel-sheet'),
     path('resubmit-invoice/<slug:invoice_id>', views.resubmit, name='resubmit-invoice'),
+    path('view-invoice/<slug:invoice_id>' , views.view_invoice , name = 'view-invoice')
 
 ]
