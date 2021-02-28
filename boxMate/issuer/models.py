@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, date
 from django.utils import timezone
 from django.db import models
-from codes.models import CountryCode, TaxTypes, ActivityType
+from codes.models import CountryCode, TaxTypes, ActivityType , TaxSubtypes
 
 
 # Create your models here.
@@ -63,7 +63,7 @@ class Address(models.Model):
 
 class IssuerTax(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax')
-    tax_type = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
+    tax_sub_type = models.ForeignKey(TaxSubtypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
     start_date = models.DateField(default=timezone.now, null=True, blank=True)
     end_date = models.DateField(auto_now_add=True, null=True, blank=True)
     is_enabled = models.BooleanField()
