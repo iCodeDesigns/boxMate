@@ -4,10 +4,18 @@ from issuer.api.serializers import IssuerSerializer
 from taxManagement.models import *
 from django.db.models import Count
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect , HttpResponseRedirect
 from codes.models import CountryCode
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from issuer.forms import *
+from datetime import date
+from codes.models import TaxSubtypes
+import json
+from array import *
+
+
+
 
 
 
@@ -151,3 +159,60 @@ def get_receiver_data():
 
 def list_uploaded_invoice(request):
     return render(request, 'upload-invoice.html')
+
+
+def create_issuer(request):
+    issuer_form = IssuerForm()
+    address_form = AddressForm()
+    issuer_tax_form = IssuerTaxForm()
+    if request.method == 'POST':
+        issuer_form = IssuerForm(request.POST)
+        address_form = AddressForm(request.POST)
+        issuer_tax_form = IssuerTaxForm(request.POST)
+        if issuer_form.is_valid() and address_form.is_valid():
+            issuer_obj = issuer_form.save(commit=False)
+            issuer_obj.created_at = date.today()
+            issuer_obj.save()
+
+            address_obj = address_form.save(commit=False)
+            address_obj.issuer = issuer_obj
+            address_obj.created_at = date.today()
+            address_obj.save()
+            
+        else:
+            print(IssuerForm.errors) 
+            print(AddressForm.errors)
+
+        return redirect('issuer:create-tax',
+         issuer_id = issuer_obj.id) 
+
+    else:
+        return render(request , 'create-issuer.html' , {
+            'issuer_form': issuer_form,
+            'address_form': address_form,})
+
+
+def create_issuer_view(request, issuer_id):
+    sub_taxs = TaxSubtypes.objects.all()
+    issuer_id =issuer_id
+
+    return render(request , 'create-issuer-tax.html' , {
+            'issuer_id' :issuer_id,
+            'sub_taxs' :sub_taxs,})
+
+def create_issuer_tax(request):
+    issuer = request.GET.get('issuer')
+    issuer_id = Issuer.objects.get(id= issuer)
+    codes = request.GET.getlist("codes_arr[]")
+    for code in codes:
+        print(code)
+        subtax = TaxSubtypes.objects.get(code=code)
+        issuer_tax_obj= IssuerTax(
+            issuer = issuer_id,
+            tax_sub_type = subtax,
+            start_date = date.today(),
+            is_enabled = True,
+        )
+        issuer_tax_obj.save()
+
+    #return JsonResponse(data)

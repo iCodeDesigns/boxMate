@@ -654,6 +654,7 @@ def resubmit(request, invoice_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
+
 def calculate_line_total(invoice_line_id, tax_calculator):
     invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
     t3_amount = tax_calculator.t3
