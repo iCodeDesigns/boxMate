@@ -10,8 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 
-def get_issuer_data():
-    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None)).values(
+def get_issuer_data(user):
+    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None) & Q(user=user)).values(
         'issuer_type',
         'issuer_registration_num',
         'issuer_name',
@@ -34,7 +34,7 @@ def get_issuer_data():
         try:
             issuer_id = Issuer.objects.get(reg_num=issuer_code)
             try:
-                address_id = Address.objects.get(branch_id=address)
+                address_id = Address.objects.get(issuer=issuer_id, branch_id=address)
             except Address.DoesNotExist as e:
                 country_code = data['issuer_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
@@ -81,8 +81,8 @@ def get_issuer_data():
             address_obj.save()
 
 
-def get_receiver_data():
-    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
+def get_receiver_data(user):
+    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
         'receiver_type',
         'receiver_registration_num',
         'receiver_name',
@@ -103,7 +103,7 @@ def get_receiver_data():
         room = data['receiver_room']
         try:
             receiver_id = Receiver.objects.get(reg_num=receiver_code)
-            address = Address.objects.filter(buildingNumber=building_num, floor=floor, room=room)
+            address = Address.objects.filter(receiver=receiver_id, buildingNumber=building_num, floor=floor, room=room)
             if len(address) == 0:
                 country_code = data['receiver_country']
                 code_obj = CountryCode.objects.get(pk=country_code)

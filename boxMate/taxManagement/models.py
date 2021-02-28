@@ -14,6 +14,7 @@ from django.conf import settings
 
 
 class MainTable(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     # Core
     document_type = models.CharField(max_length=20, blank=True, null=True)
     document_type_version = models.CharField(max_length=20, blank=True, null=True)
