@@ -293,7 +293,6 @@ class TaxLine(models.Model):
     last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
 
-
 class Submission(models.Model):
     invoice = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     subm_id = models.CharField(max_length=30, blank=True, null=True, unique=True)
