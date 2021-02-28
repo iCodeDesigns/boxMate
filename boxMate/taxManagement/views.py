@@ -1,5 +1,7 @@
 import json
 import requests
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
@@ -44,26 +46,34 @@ def write_to_tmp_storage(import_file):
 
 
 # @api_view(['POST', ])
-def import_data_to_invoice():
-    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
-                                                                    'date_time_issued', 'taxpayer_activity_code',
-                                                                    'internal_id',
-                                                                    'purchase_order_reference',
-                                                                    'purchase_order_description',
-                                                                    'sales_order_reference',
-                                                                    'sales_order_description',
-                                                                    'proforma_invoice_number', 'total_sales_amount',
-                                                                    'total_discount_amount', 'net_amount',
-                                                                    'total_amount', 'total_items_discount_amount',
-                                                                    'extra_discount_amount', 'issuer_registration_num',
-                                                                    'receiver_registration_num',
-                                                                    'signature_type', 'signature_value',
-                                                                    'issuer_branch_id', 'receiver_building_num',
-                                                                    'receiver_floor', 'receiver_room').annotate(
+def import_data_to_invoice(user):
+    headers = MainTable.objects.filter(~Q(internal_id=None) & Q(user=user)).values('document_type',
+                                                                                   'document_type_version',
+                                                                                   'date_time_issued',
+                                                                                   'taxpayer_activity_code',
+                                                                                   'internal_id',
+                                                                                   'purchase_order_reference',
+                                                                                   'purchase_order_description',
+                                                                                   'sales_order_reference',
+                                                                                   'sales_order_description',
+                                                                                   'proforma_invoice_number',
+                                                                                   'total_sales_amount',
+                                                                                   'total_discount_amount',
+                                                                                   'net_amount',
+                                                                                   'total_amount',
+                                                                                   'total_items_discount_amount',
+                                                                                   'extra_discount_amount',
+                                                                                   'issuer_registration_num',
+                                                                                   'receiver_registration_num',
+                                                                                   'signature_type', 'signature_value',
+                                                                                   'issuer_branch_id',
+                                                                                   'receiver_building_num',
+                                                                                   'receiver_floor',
+                                                                                   'receiver_room').annotate(
         Count('internal_id'))
     for header in headers:
         try:
-            old_header = InvoiceHeader.objects.get(
+            old_header = InvoiceHeader.objects.filter(issuer=user.issuer).get(
                 internal_id=header["internal_id"])
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
@@ -162,7 +172,7 @@ def import_data_to_invoice():
         header_totals(header_obj)
 
 
-# Create your views here.
+@login_required(login_url='home:user-login')
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -173,7 +183,7 @@ def upload_excel_sheet(request):
     imported_data = dataset.load(import_file.read(), format='xlsx')
     #
     result = main_table_resource.import_data(
-        imported_data, dry_run=False)  # Test the data import
+        imported_data, dry_run=True, user=request.user)  # Test the data import
     tmp_storage = write_to_tmp_storage(import_file)
     if not result.has_errors() and not result.has_validation_errors():
         tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
@@ -182,30 +192,28 @@ def upload_excel_sheet(request):
         # data = force_str(data, "utf-8")
         dataset = Dataset()
         # Enter format = 'csv' for csv file
-        success = MainTable.objects.all().delete()
+        # TODO delete only the data of the issuer
+        success = MainTable.objects.filter(user=request.user).delete()
         if not success:
+            messages.error(request, 'Failed to import Excel sheet')
             return redirect('/tax/list/uploaded-invoices')
+
         imported_data = dataset.load(data, format='xlsx')
 
-        result = main_table_resource.import_data(imported_data,
-                                                 dry_run=False,
-                                                 raise_errors=True,
-                                                 file_name=tmp_storage.name, )
+        main_table_resource.import_data(imported_data,
+                                        dry_run=False,
+                                        raise_errors=True,
+                                        file_name=tmp_storage.name, user=request.user)
         tmp_storage.remove()
 
     else:
-        print(result.base_errors)
-        data = {"success": False, "error": {
-            "code": 400, "message": "Invalid Excel sheet"}}
-        return Response(data, status=status.HTTP_400_BAD_REQUEST)
-    data = {"success": True}
-    issuer_views.get_issuer_data()
-    issuer_views.get_receiver_data()
-    import_data_to_invoice()
+        messages.error(request, 'Invalid Excel Sheet ' + str(result.base_errors))
+        return redirect('/tax/list/uploaded-invoices')
 
-    context = {
-        'data': 'data'
-    }
+    issuer_views.get_issuer_data(request.user)
+    issuer_views.get_receiver_data(request.user)
+    import_data_to_invoice(request.user)
+    messages.success(request, 'Data is imported Successfully')
     return redirect('/tax/list/uploaded-invoices')
 
 
@@ -440,7 +448,7 @@ def get_submission_response(submission_id):
     # in case of network error
     # TODO handle connection issues with the gov api
     if (response.status_code != status.HTTP_200_OK):
-        time.sleep(20) # wait some time and try again
+        time.sleep(20)  # wait some time and try again
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
@@ -450,7 +458,7 @@ def get_submission_response(submission_id):
 
     submission = Submission.objects.get(subm_id=submission_id)
 
-    submission.subm_uuid = response_json['documentSummary'][0]['uuid'] # document uuid
+    submission.subm_uuid = response_json['documentSummary'][0]['uuid']  # document uuid
     submission.document_count = response_json['documentCount']
     submission.date_time_received = response_json['dateTimeReceived']
     submission.over_all_status = response_json['overallStatus']
@@ -465,7 +473,7 @@ def save_submission_response(invoice_id, submission_id, status):
     :param submission_id: the submission id coming from submitting an invoice
     :param status: the status is not None in case the submission id is null else the status is None
     :return: no return
-    # TODO the function should return if save is successful or not
+    TODO the function should return if save is successful or not
     '''
     invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
     try:
@@ -538,18 +546,10 @@ def submit_invoice(request, invoice_id):
     return redirect('taxManagement:get-all-invoice-headers')
 
 
-def submission_list(request):
-    submissions = Submission.objects.all()
-    context = {
-        'submissions': 'submissions'
-    }
-    return render(request, 'list-submissions.html', context=context)
-
-
 ##### get all invoices ######
 
 def get_all_invoice_headers(request):
-    invoice_headers = InvoiceHeader.objects.all()
+    invoice_headers = InvoiceHeader.objects.filter(issuer=request.user.issuer)
     count = 0
     for invoice_header in invoice_headers:
         submissions = Submission.objects.filter(invoice=invoice_header).last()
@@ -609,7 +609,7 @@ def get_decument_detail_after_submit(request, internal_id):
 
 
 def list_eta_invoice(request):
-    eta_invoice_list = Submission.objects.filter()
+    eta_invoice_list = Submission.objects.filter(invoice__issuer=request.user.issuer)
     eta_context = {
         "eta_invoice_list": eta_invoice_list,
     }
@@ -617,7 +617,6 @@ def list_eta_invoice(request):
 
 
 def get_token():
-
     url = "https://id.preprod.eta.gov.eg/connect/token"
     client_id = "547413a4-79ee-4715-8530-a7ddbe392848"
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"

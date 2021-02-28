@@ -7,12 +7,14 @@ from issuer.models import Issuer, Receiver, Address
 from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
 from datetime import datetime
+from django.conf import settings
 
 
 # Create your models here.
 
 
 class MainTable(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     # Core
     document_type = models.CharField(max_length=20, blank=True, null=True)
     document_type_version = models.CharField(max_length=20, blank=True, null=True)
@@ -228,9 +230,9 @@ class InvoiceLine(models.Model):
                                               'to simplify references back to existing solution.')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="line_created_by")
-    last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     # for TaxLine totals
     def get_amount_egp(self):
@@ -267,9 +269,9 @@ class TaxLine(models.Model):
     rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="tax_line_created_by")
-    last_updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Submission(models.Model):

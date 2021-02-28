@@ -10,9 +10,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 
-
-def get_issuer_data():
-    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None)).values(
+def get_issuer_data(user):
+    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None) & Q(user=user)).values(
         'issuer_type',
         'issuer_registration_num',
         'issuer_name',
@@ -31,27 +30,27 @@ def get_issuer_data():
     for data in issuer_data:
         issuer_code = data['issuer_registration_num']
         address = data['issuer_branch_id']
-        print("**************",address)
+        print("**************", address)
         try:
             issuer_id = Issuer.objects.get(reg_num=issuer_code)
             try:
-                address_id = Address.objects.get(branch_id=address)
+                address_id = Address.objects.get(issuer=issuer_id, branch_id=address)
             except Address.DoesNotExist as e:
                 country_code = data['issuer_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
                 address_obj = Address(
-                    issuer = issuer_id,
-                    branch_id = data['issuer_branch_id'],
-                    country = code_obj,
-                    governate = data['issuer_governate'],
-                    regionCity = data['issuer_region_city'],
-                    street = data['issuer_street'],
-                    buildingNumber = data['issuer_building_num'],
-                    postalCode = data['issuer_postal_code'],
-                    floor = data['issuer_floor'],
-                    room = data['issuer_room'],
-                    landmark = data['issuer_land_mark'],
-                    additionalInformation = data['issuer_additional_information']
+                    issuer=issuer_id,
+                    branch_id=data['issuer_branch_id'],
+                    country=code_obj,
+                    governate=data['issuer_governate'],
+                    regionCity=data['issuer_region_city'],
+                    street=data['issuer_street'],
+                    buildingNumber=data['issuer_building_num'],
+                    postalCode=data['issuer_postal_code'],
+                    floor=data['issuer_floor'],
+                    room=data['issuer_room'],
+                    landmark=data['issuer_land_mark'],
+                    additionalInformation=data['issuer_additional_information']
                 )
                 address_obj.save()
         except Issuer.DoesNotExist as e:
@@ -80,10 +79,10 @@ def get_issuer_data():
                 additionalInformation=data['issuer_additional_information']
             )
             address_obj.save()
-        
 
-def get_receiver_data():
-    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
+
+def get_receiver_data(user):
+    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
         'receiver_type',
         'receiver_registration_num',
         'receiver_name',
@@ -104,7 +103,7 @@ def get_receiver_data():
         room = data['receiver_room']
         try:
             receiver_id = Receiver.objects.get(reg_num=receiver_code)
-            address = Address.objects.filter(buildingNumber=building_num, floor=floor, room=room)
+            address = Address.objects.filter(receiver=receiver_id, buildingNumber=building_num, floor=floor, room=room)
             if len(address) == 0:
                 country_code = data['receiver_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
@@ -146,7 +145,6 @@ def get_receiver_data():
                 additionalInformation=data['receiver_additional_information']
             )
             address_obj.save()
-    
 
 
 def list_uploaded_invoice(request):

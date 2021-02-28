@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en" dir="ltr" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <title>BooksMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="{% static 'src/font/iconsmind-s/css/iconsminds.css' %}"/>
+    <link rel="stylesheet" href="{% static 'src/font/simple-line-icons/css/simple-line-icons.css' %}"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+
+</head>
+<div class="container">
+<div class="card bg-light">
+    <article class="card-body mx-auto" style="max-width: 400px;">
+        <h4 class="card-title mt-3 text-center">Create Account</h4>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ register_form.username.label_tag }}<br>
+            <div class="form-group input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                </div>
+                    {{register_form.username}}
+                    <small style="color: grey">{{ register_form.username.help_text }}</small>
+                    {% for error in register_form.username.errors %}
+                         <p style="color: red">{{ error }}</p>
+                    {% endfor %}
+            </div> <!-- form-group// -->
+            {{ register_form.password1.label_tag }}<br>
+            <div class="form-group input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+                </div>
+                {{register_form.password1}}
+                <small style="color: grey">{{ register_form.password1.help_text }}</small>
+                 {% for error in register_form.password1.errors %}
+                         <p style="color: red">{{ error }}</p>
+                {% endfor %}
+
+            </div> <!-- form-group// -->
+            {{ register_form.password2.label_tag }}<br>
+            <div class="form-group input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+                </div>
+                {{register_form.password2}}
+                <p class="help-block" style="color: grey">{{ register_form.password2.help_text }}</p>
+                {% for error in register_form.password2.errors %}
+                         <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            </div> <!-- form-group// -->
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block"> Create Account</button>
+            </div> <!-- form-group// -->
+            <p class="text-center">Have an account? <a href="{% url 'home:user-login' %}">Log In</a></p>
+
+        </form>
+    </article>
+
+</div>
+</div>
+</html>
