@@ -16,18 +16,20 @@
                <!-- /.box-header -->
                <div class="container-fluid">
                  <br>
-               <table class="table table-striped table-bordered" id="dataTable"  width="100%">
-                <tr>
-                                            <th scope="col">Code</th>
-                                            <th scope="col">Description</th>
-                                            <th scope="col">Check to use</th>
-                                          </tr>
-                                        </thead>
-                                    <tbody>
-                                        {% for sub_tax in sub_taxs %}
-                                      <tr>
-                                        <td>{{sub_tax.code}}</td>
-                                        <td>{{sub_tax.desc_en}}</td>
+                 <table id="example" class="display" style="width:100%">
+
+                  <thead>
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Check to use</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub_tax in sub_taxs %}
+                            <tr>
+                              <td>{{sub_tax.code}}</td>
+                              <td>{{sub_tax.desc_en}}</td>
                                         <td>
                                             <input type="checkbox" onclick="myFunction({{sub_tax}})" type="checkbox"  name="checkbox" id="checkbox">
                                             &nbsp; 
@@ -48,7 +50,7 @@
                            </a>
                               </div>
                               <br>
-                              <br>
+                               <br>
                           <h2 id="message" style="color:black;"
                            style="display: none;" style="font-style: oblique;"></h2>
 
@@ -61,6 +63,7 @@
 </section>
 </div>
 
+ 
 <script>
   var codes_arr =[]
   console.log ( Array.isArray(codes_arr))
