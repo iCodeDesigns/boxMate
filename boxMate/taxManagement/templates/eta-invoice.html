@@ -87,7 +87,7 @@
                                              <td>{{ invoice.subm_id }}</td>
                                              <td>{{ invoice.subm_uuid }}</td>
                                              <td><a href="{% url 'taxManagement:dec-detail' invoice.invoice.id%}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
-                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.internal_id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
+                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
                                           </tr>
                                            {% endfor %}
                                        </tbody>

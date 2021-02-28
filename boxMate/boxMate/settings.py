@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'custom_user.apps.CustomUserConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,6 +82,9 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = 'custom_user.User'
+
+
 WSGI_APPLICATION = 'boxMate.wsgi.application'
 
 # Database
@@ -92,7 +96,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-AUTH_USER_MODEL = 'home.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

@@ -62,12 +62,12 @@ def home_page(request):
         total_submited_invoice_count += invoice['total']
     total_not_submited_invoice_count = total_invoice_count-total_submited_invoice_count
 
-    jar = call_java.java_func("test" ,"Dreem", "08268939")
+    #jar = call_java.java_func("test" ,"Dreem", "08268939")
     dashboard_context = {
         "total_invoice_count":total_invoice_count,
         "total_submited_invoice_count":total_submited_invoice_count,
         "total_not_submited_invoice_count":total_not_submited_invoice_count,
-        "jar":jar
+      #  "jar":jar
     }
     return render(request, 'index.html', dashboard_context)
 
