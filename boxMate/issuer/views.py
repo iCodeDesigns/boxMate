@@ -246,8 +246,7 @@ def create_issuer_tax(request):
 
 def issuer_oracle_DB_create(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
-    # issuer = Issuer.objects.get(id = request.user.issuer)
-    issuer = Issuer.objects.get(id = 1)
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
     if request.method == 'POST':
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
         if issuer_oracle_DB_form.is_valid():
@@ -262,9 +261,9 @@ def issuer_oracle_DB_create(request):
 
 def issuer_oracle_DB_list(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
-    # issuer = Issuer.objects.get(id = request.user.issuer)
-    issuer = Issuer.objects.get(id = 1)
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
     oracle_DB_connections = IssuerOracleDB.objects.filter(issuer = issuer)
+    print(oracle_DB_connections)
     context ={
         'issuer' : issuer,
         'connections':oracle_DB_connections,

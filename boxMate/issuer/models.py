@@ -93,5 +93,5 @@ class IssuerOracleDB(models.Model):
             return super(IssuerOracleDB, self).save(*args, **kwargs)
         with transaction.atomic():
             IssuerOracleDB.objects.filter(
-                is_active=True).update(is_active=False)
+                is_active=True , issuer=self.issuer).update(is_active=False)
             return super(IssuerOracleDB, self).save(*args, **kwargs)
