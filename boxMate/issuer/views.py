@@ -224,7 +224,7 @@ def create_issuer_tax(request):
             subtax = TaxSubtypes.objects.get(code=code)
             issuer_tax_obj= IssuerTax(
                 issuer = issuer_id,
-                tax_sub_type = subtax,
+                issuer_sub_tax = subtax,
                 start_date = date.today(),
                 is_enabled = True,
             )
