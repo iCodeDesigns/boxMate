@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'custom_user.apps.CustomUserConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -80,6 +81,9 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL = 'custom_user.User'
+
 
 WSGI_APPLICATION = 'boxMate.wsgi.application'
 

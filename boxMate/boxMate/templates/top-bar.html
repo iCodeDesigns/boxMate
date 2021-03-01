@@ -1,70 +1,66 @@
 {% load static %}
 <nav class="navbar navbar-static-top" role="navigation">
-               <!-- Sidebar toggle button-->
-               <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-               <span class="sr-only">Toggle navigation</span>
-               </a>
-               <div class="navbar-custom-menu">
-                  <ul class="nav navbar-nav">
-                     <!-- User Account: style can be found in dropdown.less -->
-                     <li class="dropdown tasks-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-language"></i>
-                        </a>
-                        <ul class="dropdown-menu" style="overflow: hidden; width: 100%; height: 175px;" >
-                           <li class="header">Select Language:</li>
-                           <li>
-                              <!-- inner menu: contains the actual data -->
-                              <ul class="menu">
-                                 <li>
-                                    <!-- Task item -->
-                                    <a href="#">
-                                       <h3>
-                                          English
-                                       </h3>
-                                    </a>
-                                 </li>
-                                 <!-- end task item -->
-                                 <li>
-                                    <!-- Task item -->
-                                    <a href="#">
-                                       <h3>
-                                          Arabic
-                                       </h3>
-                                    </a>
-                                 </li>
-                                 <!-- end task item -->
-                              </ul>
-                           </li>
+    <!-- Sidebar toggle button-->
+    <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+    </a>
+    <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+            <!-- User Account: style can be found in dropdown.less -->
+            <li class="dropdown tasks-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <i class="fa fa-language"></i>
+                </a>
+                <ul class="dropdown-menu" style="overflow: hidden; width: 100%; height: 175px;">
+                    <li class="header">Select Language:</li>
+                    <li>
+                        <!-- inner menu: contains the actual data -->
+                        <ul class="menu">
+                            <li>
+                                <!-- Task item -->
+                                <a href="#">
+                                    <h3>
+                                        English
+                                    </h3>
+                                </a>
+                            </li>
+                            <!-- end task item -->
+                            <li>
+                                <!-- Task item -->
+                                <a href="#">
+                                    <h3>
+                                        Arabic
+                                    </h3>
+                                </a>
+                            </li>
+                            <!-- end task item -->
                         </ul>
-                     </li>
-                     <li class="dropdown user user-menu">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <span class="hidden-xs">Welcome: </span>
-                        <span class="hidden-xs">{{ request.user|upper }}</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                           <!-- User image -->
-                           <li class="user-header">
-                              <img src="{% static 'dist/img/teacher.jpeg' %}" class="img-circle" alt="User Image" />
-                              <p>
-                                 Nada Sharshera - Brand Designer
-                                 <small>Member since Nov. 2012</small>
-                              </p>
-                           </li>
-                           <li class="user-footer">
-                              <div class="pull-left">
-                                 <a href="#" class="btn btn-default btn-flat">Profile</a>
-                              </div>
-                              <div class="pull-right">
-                                 <a href="#" class="btn btn-default btn-flat">Sign out</a>
-                              </div>
-                           </li>
-                        </ul>
-                     </li>
-                  </ul>
-               </div>
-            </nav>
-
-
-         
+                    </li>
+                </ul>
+            </li>
+            <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <span class="hidden-xs">Welcome: </span>
+                    <span class="hidden-xs">{{ request.user|capfirst }}</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <!-- User image -->
+                    <li class="user-header">
+                        <img src="{% static 'dist/img/teacher.jpeg' %}" class="img-circle" alt="User Image"/>
+                        <p>
+                            {{ request.user.username|capfirst }}
+                        </p>
+                    </li>
+                    <li class="user-footer">
+                        <div class="pull-left">
+                            <a href="#" class="btn btn-default btn-flat">Profile</a>
+                        </div>
+                        <div class="pull-right">
+                            <a href="{% url 'home:logout' %}" class="btn btn-default btn-flat">Log out</a>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
