@@ -655,11 +655,13 @@ def calculate_line_total(invoice_line_id, tax_calculator):
 
 @login_required(login_url='home:user-login')
 def import_data_from_db(request):
-    address = '156.4.58.40'
-    port = '1521'
-    service_nm = 'prod'
-    username = 'apps'
-    password = 'applmgr_42'
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
+    db_credintials = IssuerOracleDB.objects.get(issuer=issuer , is_active=True)
+    address = db_credintials.ip_address
+    port = db_credintials.port_number
+    service_nm = db_credintials.service_number
+    username = db_credintials.username
+    password = db_credintials.password
     connection_class = OracleConnection(
         address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()

@@ -6,7 +6,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Create New DB Connection
+            Update DB Connection
             <!-- <small>Optional description</small> -->
         </h1>
 
@@ -19,6 +19,10 @@
                     {% csrf_token %}
                     <div class="form-row">
                         <label class="form-group col-md-12"></label>
+                        <div class="form-group col-md-12">
+                            <label class="form-group col-md-4">Database Name</label>
+                            {{ db_form.database_name}}
+                        </div>
                         <div class="form-group col-md-12">
                             <label class="form-group col-md-4">IP Address</label>
                             {{ db_form.ip_address}}
@@ -38,6 +42,10 @@
                         <div class="form-group col-md-12">
                             <label class="form-group col-md-4">Password</label>
                             {{ db_form.password}}
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label class="form-group col-md-4">Is Active</label>
+                            {{ db_form.is_active}}
                         </div>
                         <div style="float:right; margin-bottom: 10px;">
                             <button type="submit" class="btn btn-primary">Save</button>

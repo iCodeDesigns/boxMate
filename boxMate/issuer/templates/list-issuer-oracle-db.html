@@ -35,10 +35,12 @@
                                         <thead>
                                             <tr role="row">
                                                 <th>#</th>
+                                                <th>Database Name</th>
                                                 <th>IP Address</th>
                                                 <th>Port Number</th>
                                                 <th>Service Number</th>
                                                 <th>Username</th>
+                                                <th>Is Active</th>
                                                 <th>Edit</th>
                                             </tr>
                                         </thead>
@@ -46,10 +48,22 @@
                                             {% for connection in connections %}
                                             <tr>
                                                 <td>{{ forloop.counter }}</td>
+                                                <td>{{ connection.database_name }}</td>
                                                 <td>{{ connection.ip_address }}</td>
                                                 <td>{{ connection.port_number }}</td>
                                                 <td>{{ connection.service_number }}</td>
                                                 <td>{{ connection.username }}</td>
+                                                {% if connection.is_active %}
+                                                <td>Active
+                                                    <span class="glyphicon glyphicon-ok-sign" style="color: #28a745;"></span>
+                                                </td>
+                                                {% else %}
+                                                <td>
+                                                    <a class="btn btn-primary" href="{% url 'issuer:activate-db' id=connection.id %}">
+                                                        <span>Activate</span>
+                                                    </a>
+                                                </td>
+                                                {% endif %}
                                                 <td>
                                                     <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}">
                                                         <span class="glyphicon glyphicon-pencil"></span>
@@ -93,6 +107,10 @@
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="form-group col-md-4">Database Name</label>
+                            {{ db_form.database_name}}
+                        </div>
+                        <div class="form-group">
                             <label class="form-group col-md-4">IP Address</label>
                             {{ db_form.ip_address}}
                         </div>
@@ -114,6 +132,10 @@
                         <div class="form-group">
                             <label class="form-group col-md-4">Password</label>
                             {{ db_form.password}}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-group col-md-4">Is Active</label>
+                            {{ db_form.is_active}}
                         </div>
                     </div>
                 </form>

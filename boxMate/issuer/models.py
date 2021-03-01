@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, date
 from django.utils import timezone
 from django.db import models
+from django.db import transaction
 from codes.models import CountryCode, TaxTypes, ActivityType , TaxSubtypes
 from django.conf import settings
 
@@ -84,3 +85,13 @@ class IssuerOracleDB(models.Model):
     service_number = models.CharField(max_length=10)
     username = models.CharField(max_length=30)
     password = models.CharField(max_length=100)
+    database_name = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.is_active:
+            return super(IssuerOracleDB, self).save(*args, **kwargs)
+        with transaction.atomic():
+            IssuerOracleDB.objects.filter(
+                is_active=True , issuer=self.issuer).update(is_active=False)
+            return super(IssuerOracleDB, self).save(*args, **kwargs)
