@@ -14,7 +14,7 @@
                 <div class="box-header">
                     <h2 class="box-title" style="font-weight: bolder;">Invoice #{{ invoice_header.internal_id }}</h2>
                     <br>
-                    <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.internal_id %}">
+                    <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
                         <span style="font-weight: bolder; margin-right: 1%;">Submit Invoice</span>
                         <span class="glyphicon glyphicon-cloud-upload"></span>
                     </a>
