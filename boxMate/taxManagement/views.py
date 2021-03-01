@@ -77,9 +77,8 @@ def import_data_to_invoice(user):
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
             pass
-        issuer = Issuer.objects.get(reg_num=header['issuer_registration_num'])
-        issuer_address = Address.objects.get(
-            branch_id=header['issuer_branch_id'], issuer=issuer)
+        issuer = user.issuer
+        issuer_address = Address.objects.get(issuer = issuer)
         receiver = Receiver.objects.get(
             reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
@@ -214,7 +213,7 @@ def upload_excel_sheet(request):
         messages.error(request, 'Invalid Excel Sheet ' + str(result.base_errors))
         return redirect('/tax/list/uploaded-invoices')
 
-    issuer_views.get_issuer_data(request.user)
+    #issuer_views.get_issuer_data(request.user)
     issuer_views.get_receiver_data(request.user)
     import_data_to_invoice(request.user)
     messages.success(request, 'Data is imported Successfully')

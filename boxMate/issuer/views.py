@@ -21,7 +21,7 @@ from django.contrib import messages
 
 
 
-
+"""
 def get_issuer_data(user):
     issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None) & Q(user=user)).values(
         'issuer_type',
@@ -66,32 +66,32 @@ def get_issuer_data(user):
                 )
                 address_obj.save()
         except Issuer.DoesNotExist as e:
-            issuer_obj = Issuer(
-                type=data['issuer_type'],
-                reg_num=data['issuer_registration_num'],
-                name=data['issuer_name']
+        issuer_obj = Issuer(
+                type=issuer.type,
+                reg_num=issuer.reg_num,
+                name=issuer.name
             )
-            issuer_obj.save()
-            issuer_id = issuer_obj
-            country_code = data['issuer_country']
-            code_obj = CountryCode.objects.get(pk=country_code)
-            address = data['issuer_branch_id']
-            address_obj = Address(
-                issuer=issuer_id,
-                branch_id=data['issuer_branch_id'],
-                country=code_obj,
-                governate=data['issuer_governate'],
-                regionCity=data['issuer_region_city'],
-                street=data['issuer_street'],
-                buildingNumber=data['issuer_building_num'],
-                postalCode=data['issuer_postal_code'],
-                floor=data['issuer_floor'],
-                room=data['issuer_room'],
-                landmark=data['issuer_land_mark'],
-                additionalInformation=data['issuer_additional_information']
-            )
-            address_obj.save()
-
+        issuer_obj.save()
+        issuer_id = issuer_obj
+        country_code = 
+        code_obj = CountryCode.objects.get(pk=country_code)
+        address = data['issuer_branch_id']
+        address_obj = Address(
+            issuer=issuer_id,
+            branch_id=data['issuer_branch_id'],
+            country=code_obj,
+            governate=data['issuer_governate'],
+            regionCity=data['issuer_region_city'],
+            street=data['issuer_street'],
+            buildingNumber=data['issuer_building_num'],
+            postalCode=data['issuer_postal_code'],
+            floor=data['issuer_floor'],
+            room=data['issuer_room'],
+            landmark=data['issuer_land_mark'],
+            additionalInformation=data['issuer_additional_information']
+        )
+        address_obj.save()
+"""
 
 def get_receiver_data(user):
     receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
@@ -188,7 +188,9 @@ def create_issuer(request):
         else:
             print(issuer_form.errors) 
             print(address_form.errors)
-            return redirect('issuer:create-issuer')
+            return render(request , 'create-issuer.html' , {
+                'issuer_form': issuer_form,
+                'address_form': address_form,})
                         
     else:
         return render(request , 'create-issuer.html' , {

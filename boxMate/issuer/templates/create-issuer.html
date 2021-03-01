@@ -15,22 +15,23 @@
    <section class="content">
             <div class="box">
                <!-- /.box-header -->
+	<!-- Error messaging -->
+  {% if issuer_form.errors %}
+    {% for field in issuer_form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in issuer_form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+	<!-- /Error messaging -->
                <div class="container-fluid">
-                {% if issuer_form.errors %}
-                {% for field in issuer_form %}
-                    {% for error in field.errors %}
-                        <div class="alert alert-danger">
-                            <strong>{{ error|escape }}</strong>
-                        </div>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in issuer_form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        <strong>{{ error|escape }}</strong>
-                    </div>
-                {% endfor %}
-            {% endif %}
-            
                   <form method="POST" id="myform">
                     {% csrf_token %}        
                     <div class="form-row">
