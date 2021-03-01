@@ -1,5 +1,7 @@
 import json
 import requests
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from requests.auth import HTTPBasicAuth
 from rest_framework import status
@@ -44,27 +46,34 @@ def write_to_tmp_storage(import_file):
 
 
 # @api_view(['POST', ])
-def import_data_to_invoice():
-    headers = MainTable.objects.filter(~Q(internal_id=None)).values('document_type', 'document_type_version',
-                                                                    'date_time_issued', 'taxpayer_activity_code',
-                                                                    'internal_id',
-                                                                    'purchase_order_reference',
-                                                                    'purchase_order_description',
-                                                                    'sales_order_reference',
-                                                                    'sales_order_description',
-                                                                    'proforma_invoice_number', 'total_sales_amount',
-                                                                    'total_discount_amount', 'net_amount',
-                                                                    'total_amount', 'total_items_discount_amount',
-                                                                    'extra_discount_amount', 'issuer_registration_num',
-                                                                    'receiver_registration_num',
-                                                                    'signature_type', 'signature_value',
-                                                                    'issuer_branch_id', 'receiver_building_num',
-                                                                    'receiver_floor', 'receiver_room').annotate(
+def import_data_to_invoice(user):
+    headers = MainTable.objects.filter(~Q(internal_id=None) & Q(user=user)).values('document_type',
+                                                                                   'document_type_version',
+                                                                                   'date_time_issued',
+                                                                                   'taxpayer_activity_code',
+                                                                                   'internal_id',
+                                                                                   'purchase_order_reference',
+                                                                                   'purchase_order_description',
+                                                                                   'sales_order_reference',
+                                                                                   'sales_order_description',
+                                                                                   'proforma_invoice_number',
+                                                                                   'total_sales_amount',
+                                                                                   'total_discount_amount',
+                                                                                   'net_amount',
+                                                                                   'total_amount',
+                                                                                   'total_items_discount_amount',
+                                                                                   'extra_discount_amount',
+                                                                                   'issuer_registration_num',
+                                                                                   'receiver_registration_num',
+                                                                                   'signature_type', 'signature_value',
+                                                                                   'issuer_branch_id',
+                                                                                   'receiver_building_num',
+                                                                                   'receiver_floor',
+                                                                                   'receiver_room').annotate(
         Count('internal_id'))
     for header in headers:
         try:
-            old_header = InvoiceHeader.objects.get(
-                internal_id=header["internal_id"])
+            old_header = InvoiceHeader.objects.filter(issuer=user.issuer).get(internal_id=header['internal_id'])
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
             pass
@@ -108,14 +117,19 @@ def import_data_to_invoice():
         )
         signature_obj.save()
         ####### create lines per invoice header #######
-        lines = MainTable.objects.filter(~Q(item_code=None)).values('description', 'item_code', 'item_type',
-                                                                    'unit_type', 'quantity', 'sales_total',
-                                                                    'currency_sold', 'amount_egp',
-                                                                    'amount_sold', 'currency_exchange_rate', 'total',
-                                                                    'value_difference',
-                                                                    'total_taxable_fees', 'items_discount', 'net_total',
-                                                                    'discount_rate',
-                                                                    'discount_amount', 'internal_code').annotate(
+        lines = MainTable.objects.filter(~Q(item_code=None) & Q(user=user)).values('description', 'item_code',
+                                                                                   'item_type',
+                                                                                   'unit_type', 'quantity',
+                                                                                   'sales_total',
+                                                                                   'currency_sold', 'amount_egp',
+                                                                                   'amount_sold',
+                                                                                   'currency_exchange_rate', 'total',
+                                                                                   'value_difference',
+                                                                                   'total_taxable_fees',
+                                                                                   'items_discount', 'net_total',
+                                                                                   'discount_rate',
+                                                                                   'discount_amount',
+                                                                                   'internal_code').annotate(
             Count('item_code'))
         for line in lines:
             line_obj = InvoiceLine(
@@ -162,7 +176,7 @@ def import_data_to_invoice():
         header_totals(header_obj)
 
 
-# Create your views here.
+@login_required(login_url='home:user-login')
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -173,7 +187,7 @@ def upload_excel_sheet(request):
     imported_data = dataset.load(import_file.read(), format='xlsx')
     #
     result = main_table_resource.import_data(
-        imported_data, dry_run=False)  # Test the data import
+        imported_data, dry_run=True, user=request.user)  # Test the data import
     tmp_storage = write_to_tmp_storage(import_file)
     if not result.has_errors() and not result.has_validation_errors():
         tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
@@ -182,35 +196,33 @@ def upload_excel_sheet(request):
         # data = force_str(data, "utf-8")
         dataset = Dataset()
         # Enter format = 'csv' for csv file
-        success = MainTable.objects.all().delete()
+        # TODO delete only the data of the issuer
+        success = MainTable.objects.filter(user=request.user).delete()
         if not success:
+            messages.error(request, 'Failed to import Excel sheet')
             return redirect('/tax/list/uploaded-invoices')
+
         imported_data = dataset.load(data, format='xlsx')
 
-        result = main_table_resource.import_data(imported_data,
-                                                 dry_run=False,
-                                                 raise_errors=True,
-                                                 file_name=tmp_storage.name, )
+        main_table_resource.import_data(imported_data,
+                                        dry_run=False,
+                                        raise_errors=True,
+                                        file_name=tmp_storage.name, user=request.user)
         tmp_storage.remove()
 
     else:
-        print(result.base_errors)
-        data = {"success": False, "error": {
-            "code": 400, "message": "Invalid Excel sheet"}}
-        return Response(data, status=status.HTTP_400_BAD_REQUEST)
-    data = {"success": True}
-    issuer_views.get_issuer_data()
-    issuer_views.get_receiver_data()
-    import_data_to_invoice()
+        messages.error(request, 'Invalid Excel Sheet ' + str(result.base_errors))
+        return redirect('/tax/list/uploaded-invoices')
 
-    context = {
-        'data': 'data'
-    }
+    issuer_views.get_issuer_data(request.user)
+    issuer_views.get_receiver_data(request.user)
+    import_data_to_invoice(request.user)
+    messages.success(request, 'Data is imported Successfully')
     return redirect('/tax/list/uploaded-invoices')
 
 
 def get_issuer_body(invoice_id):
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice = InvoiceHeader.objects.get(id=invoice_id)
     issuer_id = invoice.issuer
     issuer = Issuer.objects.get(id=issuer_id.id)
 
@@ -229,7 +241,7 @@ def get_issuer_body(invoice_id):
 
 
 def get_receiver_body(invoice_id):
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice = InvoiceHeader.objects.get(id=invoice_id)
     receiver_id = invoice.receiver
     receiver = Receiver.objects.get(id=receiver_id.id)
 
@@ -248,7 +260,7 @@ def get_receiver_body(invoice_id):
 
 
 def get_issuer_address(invoice_id):
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice = InvoiceHeader.objects.get(id=invoice_id)
     address_id = invoice.issuer_address
     address = Address.objects.get(id=address_id.id)
     country_id = address.country
@@ -281,7 +293,7 @@ def get_issuer_address(invoice_id):
 
 
 def get_receiver_address(invoice_id):
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice = InvoiceHeader.objects.get(id=invoice_id)
     address_id = invoice.receiver_address
     address = Address.objects.filter(id=address_id.id)[0]
     #
@@ -315,7 +327,7 @@ def get_receiver_address(invoice_id):
 
 
 def get_invoice_header(invoice_id):
-    invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice_header = InvoiceHeader.objects.get(id=invoice_id)
     signatures = Signature.objects.filter(invoice_header=invoice_header)
     taxtotals = HeaderTaxTotal.objects.filter(header=invoice_header)
     tax_total_list = []
@@ -345,24 +357,6 @@ def get_invoice_header(invoice_id):
         "salesOrderReference": invoice_header.sales_order_description,
         "salesOrderDescription": invoice_header.sales_order_description,
         "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-        # "payment": {
-        #     "bankName": "SomeValue",
-        #     "bankAddress": "SomeValue",
-        #     "bankAccountNo": "SomeValue",
-        #     "bankAccountIBAN": "",
-        #     "swiftCode": "",
-        #     "terms": "SomeValue"
-        # },
-        # "delivery": {
-        #     "approach": "SomeValue",
-        #     "packaging": "SomeValue",
-        #     "dateValidity": "2020-09-28T09:30:10Z",
-        #     "exportPort": "SomeValue",
-        #     "countryOfOrigin": "LS",
-        #     "grossWeight": 10.59100,
-        #     "netWeight": 20.58700,
-        #     "terms": "SomeValue"
-        # },
         "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
         "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
         "netAmount": invoice_header.net_amount.__float__(),
@@ -377,7 +371,7 @@ def get_invoice_header(invoice_id):
 
 def get_invoice_lines(invoice_id):
     invoice_lines = InvoiceLine.objects.filter(
-        invoice_header__internal_id=invoice_id)
+        invoice_header__id=invoice_id)
     invoice_lines_list = []
     for line in invoice_lines:
         invoice_line = {
@@ -458,7 +452,7 @@ def get_submission_response(submission_id):
     # in case of network error
     # TODO handle connection issues with the gov api
     if (response.status_code != status.HTTP_200_OK):
-        time.sleep(20) # wait some time and try again
+        time.sleep(20)  # wait some time and try again
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
@@ -468,7 +462,7 @@ def get_submission_response(submission_id):
 
     submission = Submission.objects.get(subm_id=submission_id)
 
-    submission.subm_uuid = response_json['documentSummary'][0]['uuid'] # document uuid
+    submission.subm_uuid = response_json['documentSummary'][0]['uuid']  # document uuid
     submission.document_count = response_json['documentCount']
     submission.date_time_received = response_json['dateTimeReceived']
     submission.over_all_status = response_json['overallStatus']
@@ -479,16 +473,16 @@ def get_submission_response(submission_id):
 
 def save_submission_response(invoice_id, submission_id, status):
     '''
-    :param invoice_id: the internal id of the invoice to save its submission
+    :param invoice_id: the id of the invoice to save its submission (db id)
     :param submission_id: the submission id coming from submitting an invoice
     :param status: the status is not None in case the submission id is null else the status is None
     :return: no return
-    # TODO the function should return if save is successful or not
+    TODO the function should return if save is successful or not
     '''
-    invoice = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice = InvoiceHeader.objects.get(id=invoice_id)
     try:
         # if an old submission already exists update it
-        old_submission = Submission.objects.get(invoice__internal_id=invoice_id)
+        old_submission = Submission.objects.get(invoice__id=invoice_id)
         old_submission.subm_id = submission_id
         if submission_id is None or status == "Invalid":
             old_submission.subm_id = None
@@ -510,13 +504,14 @@ def save_submission_response(invoice_id, submission_id, status):
         get_submission_response(submission_id)
 
 
+@login_required(login_url='home:user-login')
 def submit_invoice(request, invoice_id):
     '''
     This function is used to submit an invoice to the governmental api, it calls another function to
     save the submission response
 
     :param request: the request from the user
-    :param invoice_id: the internal id of the invoice to be submitted
+    :param invoice_id: the id of the invoice to be submitted (database id)
     :return: redirects to the page that lists all invoices
     '''
     invoice = get_one_invoice(invoice_id)  # function that gets the invoice data in JSON format
@@ -554,14 +549,6 @@ def submit_invoice(request, invoice_id):
     # used to save the submission id
     save_submission_response(invoice_id, submissionId, status=over_all_status)
     return redirect('taxManagement:get-all-invoice-headers')
-
-
-def submission_list(request):
-    submissions = Submission.objects.all()
-    context = {
-        'submissions': 'submissions'
-    }
-    return render(request, 'list-submissions.html', context=context)
 
 
 ##### get all invoices ######
@@ -627,7 +614,7 @@ def get_decument_detail_after_submit(request, internal_id):
 
 
 def list_eta_invoice(request):
-    eta_invoice_list = Submission.objects.filter()
+    eta_invoice_list = Submission.objects.all()
     eta_context = {
         "eta_invoice_list": eta_invoice_list,
     }
@@ -635,7 +622,6 @@ def list_eta_invoice(request):
 
 
 def get_token():
-
     url = "https://id.preprod.eta.gov.eg/connect/token"
     client_id = "547413a4-79ee-4715-8530-a7ddbe392848"
     client_secret = "913e5e19-6119-45a1-910f-f060f15e666c"
@@ -668,6 +654,7 @@ def calculate_line_total(invoice_line_id, tax_calculator):
     invoice_line.save()
 
 
+@login_required(login_url='home:user-login')
 def import_data_from_db(request):
     address = '156.4.58.40'
     port = '1521'
@@ -677,7 +664,6 @@ def import_data_from_db(request):
     connection_class = OracleConnection(
         address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
-    # print(data)
     for invoice in data:
         try:
             old_header = InvoiceHeader.objects.get(
@@ -777,11 +763,11 @@ def calculate_all_invoice_lines(header_obj):
         calculate_line_total(line_obj.id, tax_calculator)
 
 
-def view_invoice(request , invoice_id):
-    invoice_header = InvoiceHeader.objects.get(internal_id = invoice_id)
-    invoice_lines = InvoiceLine.objects.filter(invoice_header = invoice_header)
+def view_invoice(request, invoice_id):
+    invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
     context = {
-        "invoice_header" : invoice_header,
-        "invoice_lines" : invoice_lines,
+        "invoice_header": invoice_header,
+        "invoice_lines": invoice_lines,
     }
-    return render(request , 'view-invoice.html' , context)
+    return render(request, 'view-invoice.html', context)

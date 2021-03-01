@@ -6,7 +6,7 @@
    <!-- Content Header (Page header) -->
    <section class="content-header">
       <h1>
-         Upload Invoice
+         Create Company
          <!-- <small>Optional description</small> -->
       </h1>
 
@@ -16,10 +16,25 @@
             <div class="box">
                <!-- /.box-header -->
                <div class="container-fluid">
+                {% if issuer_form.errors %}
+                {% for field in issuer_form %}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">
+                            <strong>{{ error|escape }}</strong>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in issuer_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
                   <form method="POST" id="myform">
                     {% csrf_token %}        
                     <div class="form-row">
-                      <h2>Isuuer</h2>
+                      <h2>Company</h2>
                           <div class="form-group col-md-4">
                             <label for="inputCity">Client Id</label>
                             {{ issuer_form.client_id}}
@@ -61,12 +76,19 @@
                            <br>
                            {{ issuer_form.activity_code}}
                          </div>
+                         
                         </div>
 
+                        <div class="form-row">
+                          <div class="form-group col-md-12">
+                           <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                          </div>
+                        </div>
 
                            <div class="form-row">
                             <h2>Address</h2>
                               <div class="form-group col-md-4">
+
                                 <label for="inputCity">Branch</label>
                                 <br>
                                 {{ address_form.branch_id}}
@@ -143,7 +165,7 @@
                         
                            <br>
                            <div class="form-group col-md-4">
-                           <button type="submit" class="btn btn-primary">Save And go to Taxs</button>
+                           <button type="submit"  class="btn btn-primary">Save and go to Taxs</button>
                            </div>
                          </form>
                          </div>
@@ -151,18 +173,5 @@
             </div>
             </section>
 </div>
-
-
-               <!-- /.box-body -->
-            </div>
-            <!-- /.box -->
-         </div>
-         <!-- /.col -->
-      </div>
-      <!-- /.row -->
-   </section>
-</div>
-</script>
-
 
 {% endblock body %}

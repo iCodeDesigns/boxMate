@@ -373,7 +373,7 @@ class MainTableResource(resources.ModelResource):
 
     tax_item_rate = fields.Field(
         column_name='rate17', 
-        attribute='tax_item_rate',) 
+        attribute='tax_item_rate',)
 
-
-
+    def after_import_instance(self, instance, new, **kwargs):
+        instance.user = kwargs['user']

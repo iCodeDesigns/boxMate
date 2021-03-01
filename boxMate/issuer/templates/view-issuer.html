@@ -1,0 +1,117 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+   <!-- Content Header (Page header) -->
+   <section class="content-header">
+      <h1 style="font-weight: bolder;">
+         {{issuer.name}}
+         <!-- <small>Optional description</small> -->
+      </h1>
+      <div style="text-align: center;">
+      <div  class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput"  class="form-label">Name : </label>
+         {{issuer.name}}
+       </div>
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Type : </label>
+         {{issuer.type}}
+       </div>
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Registration Num : </label>
+         {{issuer.reg_num}}
+       </div>
+      </div>
+                     <div class="form-row">
+                          <div class="form-group col-md-12">
+                           <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                          </div>
+                        </div>
+
+      <h1 style="font-weight: bolder;">
+        Address
+         <!-- <small>Optional description</small> -->
+      </h1>
+      <br>
+      <div style="text-align: center;">
+      <div  class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput" class="form-label">Branch : </label>
+         {{address.branch_id}}
+       </div>
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Country : </label>
+         {{country.desc_en}}
+       </div>
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Governate : </label>
+         {{address.governate}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Region City : </label>
+         {{address.regionCity}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Street : </label>
+         {{address.street}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Building Number : </label>
+         {{address.buildingNumber}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Postal Code : </label>
+         {{address.postalCode}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Floor : </label>
+         {{address.floor}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Room : </label>
+         {{address.room}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Landmark : </label>
+         {{address.landmark}}
+       </div>
+
+       <div class="mb-3" style="font-size: larger;">
+         <label for="formGroupExampleInput2" class="form-label">Additional Information : </label>
+         {{address.additionalInformation}}
+       </div>
+      </div>
+<div class="form-row">
+   <div class="form-group col-md-12">
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+   </div>
+ </div>
+
+<h1 style="font-weight: bolder;">
+   Taxs
+    <!-- <small>Optional description</small> -->
+ </h1>
+ <div style="text-align: center;" style="font-size: 400;">
+   <div  class="mb-3" style="font-size: larger;">
+   {% for code in codes %}
+   <span style="color: black;"  style="font-size: 600;" style="font-weight: bold;">{{code.tax_sub_type}} : </span> <span>{{code.tax_sub_type.desc_en}}</span><br>
+   {% endfor %}
+   </div>
+</div>
+<br>
+
+
+
+</section>
+</div>
+
+{% endblock body %}
+
+

@@ -5,6 +5,7 @@
 <div class="content-wrapper">
    <!-- Content Header (Page header) -->
    <section class="content-header">
+
       <h1>
          Upload Invoice
          <!-- <small>Optional description</small> -->
@@ -13,6 +14,8 @@
    </section>
    <!-- Main content -->
    <section class="content">
+                     {% include 'messages.html' %}
+
       <div class="row">
          <div class="col-xs-12">
             <div class="box">
@@ -68,7 +71,7 @@
                                     <th>Total Sales Amount</th>
                                     <th>Net Amount</th>
                                     <th>Total Amount</th>
-                                    <th>Submition ID</th>
+                                    <th>Submission ID</th>
                                     <th>Submit</th>
                                     <th>View</th>
                                  </tr>
@@ -94,7 +97,7 @@
                                     {% else %}
                                     <td></td>
                                     <td>
-                                       <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.internal_id %}">
+                                       <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id %}">
                                           <span class="glyphicon glyphicon-cloud-upload"></span>
                                     </td>
                                     </a>
