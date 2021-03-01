@@ -40,7 +40,5 @@ class IssuerOracleDBForm(forms.ModelForm):
         model = IssuerOracleDB
         fields = '__all__'
         exclude = {'issuer',}
-    def __init__(self ,is_update=False , *args , **kwargs):
+    def __init__(self , *args , **kwargs):
         super(IssuerOracleDBForm , self).__init__(*args , **kwargs)
-        if not is_update:
-            self.fields['password'].widget.attrs['type'] = 'password'

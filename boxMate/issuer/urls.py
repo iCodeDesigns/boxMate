@@ -12,6 +12,6 @@ urlpatterns = [
     path('issuerDB/create' , views.issuer_oracle_DB_create , name='create-issuer-db-connection'),
     path('issuerDB/list' , views.issuer_oracle_DB_list , name = 'list-issuer-db-connection'),
     path('issuerDB/update/<int:id>' , views.issuer_oracle_DB_update , name = 'update-issuer-db-connection'),
-
+    path('issuerDB/activate/<int:id>',views.activate_database,name='activate-db')
 ]
     

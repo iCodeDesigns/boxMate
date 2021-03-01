@@ -225,8 +225,6 @@ def issuer_oracle_DB_create(request):
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
         if issuer_oracle_DB_form.is_valid():
             db_obj = issuer_oracle_DB_form.save(commit = False)
-            print("********************")
-            print(db_obj.ip_address)
             db_obj.issuer = issuer
             db_obj.save()
             return redirect('issuer:list-issuer-db-connection')
@@ -249,7 +247,7 @@ def issuer_oracle_DB_list(request):
 
 def issuer_oracle_DB_update(request , id):
     oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
-    issuer_oracle_DB_form = IssuerOracleDBForm(is_update = True,instance=oracle_DB_connection)
+    issuer_oracle_DB_form = IssuerOracleDBForm(instance=oracle_DB_connection)
     if request.method == 'POST':
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST , instance=oracle_DB_connection)
         if issuer_oracle_DB_form.is_valid():
@@ -259,3 +257,11 @@ def issuer_oracle_DB_update(request , id):
         "db_form" : issuer_oracle_DB_form,
     }
     return render(request , "create-issuer-oracle-db.html" , context)
+
+
+def activate_database(request , id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+    oracle_DB_connection.is_active = True
+    oracle_DB_connection.save()
+    print('DOOOOONE')
+    return redirect('issuer:list-issuer-db-connection')
