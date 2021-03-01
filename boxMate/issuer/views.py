@@ -14,6 +14,9 @@ from codes.models import TaxSubtypes , CountryCode
 import json
 from django.http import JsonResponse
 from array import *
+from custom_user.models import User
+from django.contrib import messages
+
 
 
 
@@ -175,14 +178,18 @@ def create_issuer(request):
             address_obj.issuer = issuer_obj
             address_obj.created_at = date.today()
             address_obj.save()
+
+            user = User.objects.get(id= request.user.id)  
+            user.issuer = issuer_obj
+            user.save()
+            return redirect('issuer:create-tax',
+                issuer_id = issuer_obj.id) 
             
         else:
-            print(IssuerForm.errors) 
-            print(AddressForm.errors)
-
-        return redirect('issuer:create-tax',
-         issuer_id = issuer_obj.id) 
-
+            print(issuer_form.errors) 
+            print(address_form.errors)
+            return redirect('issuer:create-issuer')
+                        
     else:
         return render(request , 'create-issuer.html' , {
             'issuer_form': issuer_form,

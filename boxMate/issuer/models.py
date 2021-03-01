@@ -10,7 +10,7 @@ from django.conf import settings
 class Issuer(models.Model):
     type = models.CharField(max_length=8,
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
-    reg_num = models.CharField(max_length=20, verbose_name='reg_number')
+    reg_num = models.CharField(max_length=20, verbose_name='reg_number', unique=True)
     name = models.CharField(max_length=50, verbose_name='issuer name', blank=True, null=True)
     client_id = models.CharField(max_length=50,blank=True, null=True )
     clientSecret1 = models.CharField(max_length=50,blank=True, null=True)
