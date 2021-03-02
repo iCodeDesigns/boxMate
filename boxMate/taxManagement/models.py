@@ -148,6 +148,9 @@ class InvoiceHeader(models.Model):
                                                       default=0.0)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
 
+    class Meta:
+        unique_together = ('issuer' , 'internal_id')
+
     def calculate_header_sales_total(self):
         sales_total = InvoiceLine.objects.filter(invoice_header=self).aggregate(sales_total=Sum("salesTotal"))[
             'sales_total']

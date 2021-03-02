@@ -766,7 +766,7 @@ def calculate_all_invoice_lines(header_obj):
 
 
 def view_invoice(request, invoice_id):
-    invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice_header = InvoiceHeader.objects.get(id=invoice_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
     context = {
         "invoice_header": invoice_header,
