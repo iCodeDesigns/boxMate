@@ -18,7 +18,7 @@ from rest_framework.decorators import api_view
 from issuer.models import *
 from codes.models import *
 from django.db.models import Q
-
+import simplejson
 from pprint import pprint
 from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
@@ -26,6 +26,8 @@ from issuer import views as issuer_views
 import time
 from taxManagement.db_connection import OracleConnection
 from .tax_calculator import InoviceTaxLineCalculator
+from taxManagement.java import call_java
+
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -322,7 +324,7 @@ def get_invoice_header(invoice_id):
     for total in taxtotals:
         tax_total_object = {
             "taxType": total.tax.code,
-            "amount": total.total.__float__()
+            "amount": Decimal(format(total.total,'.5f'))
         }
         tax_total_list.append(tax_total_object)
     signature_list = []
@@ -336,8 +338,8 @@ def get_invoice_header(invoice_id):
     data = {
         "documentType": invoice_header.document_type,
         "documentTypeVersion": invoice_header.document_type_version,
-        # "dateTimeIssued": "2021-02-15T15:37:51Z",
-        "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",
+        "dateTimeIssued": "2021-03-01T15:37:51Z",
+        # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",
         "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
         "internalID": invoice_header.internal_id,
         "purchaseOrderReference": invoice_header.purchase_order_reference,
@@ -345,14 +347,14 @@ def get_invoice_header(invoice_id):
         "salesOrderReference": invoice_header.sales_order_description,
         "salesOrderDescription": invoice_header.sales_order_description,
         "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-        "totalDiscountAmount": invoice_header.total_discount_amount.__float__(),
-        "totalSalesAmount": invoice_header.total_sales_amount.__float__(),
-        "netAmount": invoice_header.net_amount.__float__(),
+        "totalDiscountAmount": Decimal(format(invoice_header.total_discount_amount,'.5f')),
+        "totalSalesAmount":Decimal(format(invoice_header.total_sales_amount,'.5f')),
+        "netAmount": Decimal(format(invoice_header.net_amount,'.5f')),
         "taxTotals": tax_total_list,
-        "totalAmount": invoice_header.total_amount.__float__(),
-        "extraDiscountAmount": invoice_header.extra_discount_amount.__float__(),
-        "totalItemsDiscountAmount": invoice_header.total_items_discount_amount.__float__(),
-        "signatures": signature_list
+        "totalAmount": Decimal(format(invoice_header.total_amount,'.5f')),
+        "extraDiscountAmount": Decimal(format(invoice_header.extra_discount_amount,'.5f')),
+        "totalItemsDiscountAmount": Decimal(format(invoice_header.total_items_discount_amount,'.5f'))
+        # "signatures": signature_list
     }
     return data
 
@@ -367,21 +369,22 @@ def get_invoice_lines(invoice_id):
             "itemType": line.itemType,
             "itemCode": line.itemCode,
             "unitType": line.unitType,
-            "quantity": line.quantity.__float__(),
+            "quantity": Decimal(line.quantity),
             "internalCode": line.internalCode,
-            "salesTotal": line.salesTotal.__float__(),
-            "total": line.total.__float__(),
-            "valueDifference": line.valueDifference.__float__(),
-            "totalTaxableFees": line.totalTaxableFees.__float__(),
-            "netTotal": line.netTotal.__float__(),
-            "itemsDiscount": line.itemsDiscount.__float__(),
+            "salesTotal": Decimal(format(line.salesTotal,'.5f')),
+            "total": Decimal(format(line.total,'.5f')),
+            "valueDifference": Decimal(format(line.valueDifference,'.5f')),
+            "totalTaxableFees": Decimal(format(line.totalTaxableFees,'.5f')),
+            "netTotal": Decimal(format(line.netTotal,'.5f')),
+            "itemsDiscount":Decimal(format( line.itemsDiscount,'.5f')),
             "unitValue": {
-                "amountEGP": line.amountEGP.__float__(),
-                "amountSold": line.amountSold.__float__(),
-                "currencyExchangeRate": line.currencyExchangeRate.__float__(),
+                "amountEGP": Decimal(format(line.amountEGP,'.5f')),
+                "amountSold": Decimal(format(line.amountSold,'.5f')),
+                "currencyExchangeRate": Decimal(format(line.currencyExchangeRate,'.5f')),
                 "currencySold": line.currencySold},
-            "discount": {"rate": line.rate.__float__(),
-                         "amount": line.amount.__float__()}
+            "discount": {"rate": Decimal(format(line.rate,'.2f')),
+                         "amount": Decimal(format(line.amount,'.5f'))
+                         }
         }
 
         taxable_lines = get_taxable_lines(line.id)
@@ -394,8 +397,8 @@ def get_taxable_lines(invoice_line_id):
     tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
     tax_lines_list = []
     for line in tax_lines:
-        tax_line = {"taxType": line.taxType.code, "amount": line.amount.__float__(),
-                    "subType": line.subType.code, "rate": line.rate.__float__()}
+        tax_line = {"taxType": line.taxType.code, "amount": Decimal(format(line.amount,'.5f')),
+                    "subType": line.subType.code, "rate":  Decimal(format(line.rate,'.2f'))}
         tax_lines_list.append(tax_line)
     return tax_lines_list
 
@@ -502,10 +505,16 @@ def submit_invoice(request, invoice_id):
     :return: redirects to the page that lists all invoices
     '''
     invoice = get_one_invoice(invoice_id)  # function that gets the invoice data in JSON format
-    json_data = json.dumps({"documents": [invoice]})  # this format is required by the gov api
-    data = decode(
-        json_data)  # to make a good json out of a bad json ,for more info refer to https://github.com/dmeranda/demjson
-    print(data)
+    json_data = simplejson.dumps(invoice)  # this format is required by the gov api
+    print("************8")
+    print(json_data)
+    # json_data = json.dumps({"documents": [invoice]})  # this format is required by the gov api
+    #data = decode(json_data)  # to make a good json out of a bad json ,for more info refer to https://github.com/dmeranda/demjson
+    jar = call_java.java_func(json_data, "Dreem", "08268939")
+    #print(jar)
+    data = decode(jar)
+    #print(data)
+
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
@@ -527,6 +536,7 @@ def submit_invoice(request, invoice_id):
 
     else:
         response_json = response.json()
+        print(response_json)
         submissionId = response_json['submissionId']
 
     # case of invalid invoice with submission id is null
@@ -689,7 +699,7 @@ def import_data_from_db(request):
             receiver=receiver,
             receiver_address=receiver_add,
             document_type=invoice['INVOICE_TYPE'],
-            document_type_version="0.9",
+            document_type_version="1.0",
             taxpayer_activity_code=taxpayer_activity_code,
             internal_id=invoice["INTERNAL_ID"],
             purchase_order_reference=invoice['PURCHASE_ORDER'],
