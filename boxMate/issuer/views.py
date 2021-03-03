@@ -4,15 +4,26 @@ from issuer.api.serializers import IssuerSerializer
 from taxManagement.models import *
 from django.db.models import Count
 from django.utils import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect , HttpResponseRedirect
 from codes.models import CountryCode
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from issuer.forms import *
+from datetime import date
+from codes.models import TaxSubtypes , CountryCode
+import json
+from django.http import JsonResponse
+from array import *
+from custom_user.models import User
+from django.contrib import messages
 
 
 
-def get_issuer_data():
-    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None)).values(
+
+
+"""
+def get_issuer_data(user):
+    issuer_data = MainTable.objects.filter(~Q(issuer_registration_num=None) & Q(user=user)).values(
         'issuer_type',
         'issuer_registration_num',
         'issuer_name',
@@ -31,59 +42,59 @@ def get_issuer_data():
     for data in issuer_data:
         issuer_code = data['issuer_registration_num']
         address = data['issuer_branch_id']
-        print("**************",address)
+        print("**************", address)
         try:
             issuer_id = Issuer.objects.get(reg_num=issuer_code)
             try:
-                address_id = Address.objects.get(branch_id=address)
+                address_id = Address.objects.get(issuer=issuer_id, branch_id=address)
             except Address.DoesNotExist as e:
                 country_code = data['issuer_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
                 address_obj = Address(
-                    issuer = issuer_id,
-                    branch_id = data['issuer_branch_id'],
-                    country = code_obj,
-                    governate = data['issuer_governate'],
-                    regionCity = data['issuer_region_city'],
-                    street = data['issuer_street'],
-                    buildingNumber = data['issuer_building_num'],
-                    postalCode = data['issuer_postal_code'],
-                    floor = data['issuer_floor'],
-                    room = data['issuer_room'],
-                    landmark = data['issuer_land_mark'],
-                    additionalInformation = data['issuer_additional_information']
+                    issuer=issuer_id,
+                    branch_id=data['issuer_branch_id'],
+                    country=code_obj,
+                    governate=data['issuer_governate'],
+                    regionCity=data['issuer_region_city'],
+                    street=data['issuer_street'],
+                    buildingNumber=data['issuer_building_num'],
+                    postalCode=data['issuer_postal_code'],
+                    floor=data['issuer_floor'],
+                    room=data['issuer_room'],
+                    landmark=data['issuer_land_mark'],
+                    additionalInformation=data['issuer_additional_information']
                 )
                 address_obj.save()
         except Issuer.DoesNotExist as e:
-            issuer_obj = Issuer(
-                type=data['issuer_type'],
-                reg_num=data['issuer_registration_num'],
-                name=data['issuer_name']
+        issuer_obj = Issuer(
+                type=issuer.type,
+                reg_num=issuer.reg_num,
+                name=issuer.name
             )
-            issuer_obj.save()
-            issuer_id = issuer_obj
-            country_code = data['issuer_country']
-            code_obj = CountryCode.objects.get(pk=country_code)
-            address = data['issuer_branch_id']
-            address_obj = Address(
-                issuer=issuer_id,
-                branch_id=data['issuer_branch_id'],
-                country=code_obj,
-                governate=data['issuer_governate'],
-                regionCity=data['issuer_region_city'],
-                street=data['issuer_street'],
-                buildingNumber=data['issuer_building_num'],
-                postalCode=data['issuer_postal_code'],
-                floor=data['issuer_floor'],
-                room=data['issuer_room'],
-                landmark=data['issuer_land_mark'],
-                additionalInformation=data['issuer_additional_information']
-            )
-            address_obj.save()
-        
+        issuer_obj.save()
+        issuer_id = issuer_obj
+        country_code = 
+        code_obj = CountryCode.objects.get(pk=country_code)
+        address = data['issuer_branch_id']
+        address_obj = Address(
+            issuer=issuer_id,
+            branch_id=data['issuer_branch_id'],
+            country=code_obj,
+            governate=data['issuer_governate'],
+            regionCity=data['issuer_region_city'],
+            street=data['issuer_street'],
+            buildingNumber=data['issuer_building_num'],
+            postalCode=data['issuer_postal_code'],
+            floor=data['issuer_floor'],
+            room=data['issuer_room'],
+            landmark=data['issuer_land_mark'],
+            additionalInformation=data['issuer_additional_information']
+        )
+        address_obj.save()
+"""
 
-def get_receiver_data():
-    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None)).values(
+def get_receiver_data(user):
+    receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
         'receiver_type',
         'receiver_registration_num',
         'receiver_name',
@@ -104,7 +115,7 @@ def get_receiver_data():
         room = data['receiver_room']
         try:
             receiver_id = Receiver.objects.get(reg_num=receiver_code)
-            address = Address.objects.filter(buildingNumber=building_num, floor=floor, room=room)
+            address = Address.objects.filter(receiver=receiver_id, buildingNumber=building_num, floor=floor, room=room)
             if len(address) == 0:
                 country_code = data['receiver_country']
                 code_obj = CountryCode.objects.get(pk=country_code)
@@ -146,8 +157,139 @@ def get_receiver_data():
                 additionalInformation=data['receiver_additional_information']
             )
             address_obj.save()
-    
 
 
 def list_uploaded_invoice(request):
     return render(request, 'upload-invoice.html')
+
+
+def create_issuer(request):
+    issuer_form = IssuerForm()
+    address_form = AddressForm()
+    if request.method == 'POST':
+        issuer_form = IssuerForm(request.POST)
+        address_form = AddressForm(request.POST)
+        if issuer_form.is_valid() and address_form.is_valid():
+            issuer_obj = issuer_form.save(commit=False)
+            issuer_obj.created_at = date.today()
+            issuer_obj.save()
+
+            address_obj = address_form.save(commit=False)
+            address_obj.issuer = issuer_obj
+            address_obj.created_at = date.today()
+            address_obj.save()
+
+            user = User.objects.get(id= request.user.id)  
+            user.issuer = issuer_obj
+            user.save()
+            return redirect('issuer:create-tax',
+                issuer_id = issuer_obj.id) 
+            
+        else:
+            print(issuer_form.errors) 
+            print(address_form.errors)
+            return render(request , 'create-issuer.html' , {
+                'issuer_form': issuer_form,
+                'address_form': address_form,})
+                        
+    else:
+        return render(request , 'create-issuer.html' , {
+            'issuer_form': issuer_form,
+            'address_form': address_form,})
+
+
+
+def view_issuer(request, issuer_id):
+    issuer = Issuer.objects.get(id = issuer_id)
+    address = Address.objects.get(issuer = issuer_id)
+    country = CountryCode.objects.get(code = address.country )
+    codes = IssuerTax.objects.filter(issuer = issuer_id)
+    return render(request , 'view-issuer.html' , {
+            'issuer' :issuer,
+            'address' :address,
+            'codes' : codes,
+            'country' : country
+            })   
+
+
+def create_issuer_tax_view(request, issuer_id):
+    sub_taxs = TaxSubtypes.objects.all()
+    issuer_id =issuer_id
+
+    return render(request , 'create-issuer-tax.html' , {
+            'issuer_id' :issuer_id,
+            'sub_taxs' :sub_taxs,})
+
+         
+
+def create_issuer_tax(request):
+    issuer = request.GET.get('issuer')
+    codes = request.GET.getlist("codes_arr[]")
+    try:
+        issuer_id = Issuer.objects.get(id= issuer)
+        for code in codes:
+            subtax = TaxSubtypes.objects.get(code=code)
+            issuer_tax_obj= IssuerTax(
+                issuer = issuer_id,
+                issuer_sub_tax = subtax,
+                start_date = date.today(),
+                is_enabled = True,
+            )
+            issuer_tax_obj.save()
+        message = ' taxs added to your company' 
+
+    except Issuer.DoesNotExist as e:
+        message =  'not added to your company '
+
+    data = {
+        'message' : message}
+    return JsonResponse(data)
+   
+
+def issuer_oracle_DB_create(request):
+    issuer_oracle_DB_form = IssuerOracleDBForm()
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
+    if request.method == 'POST':
+        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
+        if issuer_oracle_DB_form.is_valid():
+            db_obj = issuer_oracle_DB_form.save(commit = False)
+            db_obj.issuer = issuer
+            db_obj.save()
+            return redirect('issuer:list-issuer-db-connection')
+    context= {
+        "db_form" : issuer_oracle_DB_form,
+    }
+    return render(request , "create-issuer-oracle-db.html" , context)
+
+def issuer_oracle_DB_list(request):
+    issuer_oracle_DB_form = IssuerOracleDBForm()
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
+    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer = issuer)
+    print(oracle_DB_connections)
+    context ={
+        'issuer' : issuer,
+        'connections':oracle_DB_connections,
+        'db_form': issuer_oracle_DB_form,
+    }
+    return render(request , "list-issuer-oracle-db.html" , context)
+
+def issuer_oracle_DB_update(request , id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+    issuer_oracle_DB_form = IssuerOracleDBForm(instance=oracle_DB_connection)
+    if request.method == 'POST':
+        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST , instance=oracle_DB_connection)
+        if issuer_oracle_DB_form.is_valid():
+            db_obj = issuer_oracle_DB_form.save()
+            return redirect('issuer:list-issuer-db-connection')
+    context= {
+        "db_form" : issuer_oracle_DB_form,
+    }
+    return render(request , "create-issuer-oracle-db.html" , context)
+
+
+def activate_database(request , id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+    oracle_DB_connection.is_active = True
+    oracle_DB_connection.save()
+    print('DOOOOONE')
+    return redirect('issuer:list-issuer-db-connection')
