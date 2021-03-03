@@ -8,6 +8,28 @@ from django.shortcuts import render, reverse, redirect
 
 from taxManagement.models import Submission, InvoiceHeader
 
+
+def register(request):
+    form = CustomUserCreationForm()
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.is_staff = True
+            user.is_active = True
+            user.save()
+            if user.is_active:
+                login(request, user)
+                return HttpResponseRedirect(reverse('home:user-login'))
+            else:
+
+                messages.error(request, 'This account is deactivated!')
+                return render(request, 'login.html')
+        else:
+            print(form.errors)
+    return render(request, 'register.html', {'register_form': form})
+
+
 @never_cache
 def user_login(request):
     next = request.GET.get('next')
