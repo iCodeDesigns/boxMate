@@ -1,0 +1,121 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+   <!-- Content Header (Page header) -->
+   <section class="content-header">
+      <h1>
+         Add  Taxs
+         <!-- <small>Optional description</small> -->
+      </h1>
+   </section>
+   <!-- Main content -->
+   <section class="content">
+            <div class="box">
+               <!-- /.box-header -->
+             
+            <br>
+               
+               <div class="container-fluid" style="text-align: center;">
+                <span class=" col-md-4 " id="message" style="padding: 12px 14px; margin: 0 0 20px;
+                background: #c7c3c3;  color: rgb(0, 0, 0); 
+                border: 1px solid rgb(196, 19, 19); border-radius: 4px; display: none; font-style: oblique;">
+                </span>
+
+                 <br>
+                 <table id="example" class="display" style="width:100%">
+
+                  <thead>
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Check to use</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub_tax in sub_taxs %}
+                            <tr>
+                              <td>{{sub_tax.code}}</td>
+                              <td>{{sub_tax.desc_en}}</td>
+                                        <td>
+                                            <input type="checkbox" onclick="myFunction({{sub_tax}})" type="checkbox"  name="checkbox" id="checkbox">
+                                            &nbsp; 
+                                            <label for="checkbox"  id="{{sub_tax}}" style="display: none;">{{sub_tax.code}}</label>
+                                            <br>
+                                            {% endfor %}
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                </table>
+
+                              <br>
+                              <div class="col-md-4">
+                           <button type="submit"  onclick="myFunction2()" class="btn btn-primary">Save</button>
+                           <a href="{% url 'issuer:view-issuer' issuer_id=issuer_id %}"
+                           button type="button"
+                           style="text-align: center;" class="btn btn-success">View issuer
+                           </a>
+                              </div>
+                              <br>
+                               <br>
+                        
+
+
+
+     
+</div>
+</div>
+</section>
+</div>
+
+ 
+<script>
+  var codes_arr =[]
+  console.log ( Array.isArray(codes_arr))
+  var issuer = {{issuer_id}}
+
+  function myFunction(sub_tax)
+   {
+    codes_arr  
+    issuer = {{issuer_id}}
+    code = sub_tax.innerHTML
+    if(codes_arr.includes(code))
+    {codes_arr.pop(code)}
+    else{codes_arr.push(code)}
+
+    
+
+    return codes_arr
+   }
+  function myFunction2(){
+    codes_arr 
+    issuer = {{issuer_id}}
+    
+  $.ajax({
+            url: '/issuer/create/issuer/tax',
+            data : {
+                'issuer' :issuer,
+                'codes_arr' : codes_arr
+
+            },
+            dataType : 'json',
+            success: function(data){
+                    message2= codes_arr.join()
+                    message3 = message2 + "" + data.message 
+
+                    message = document.getElementById('message')
+                    message.innerHTML = message3
+                    message.style.display = 'block'
+                    message.style.textAlign = 'center'
+                    
+                
+            }
+  
+        });
+      }
+
+</script>
+
+
+{% endblock body %}

@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from datetime import datetime, date
 from django.utils import timezone
 from django.db import models
-from codes.models import CountryCode, TaxTypes, ActivityType
+from django.db import transaction
+from codes.models import CountryCode, TaxTypes, ActivityType , TaxSubtypes
 from django.conf import settings
 
 
@@ -10,7 +11,7 @@ from django.conf import settings
 class Issuer(models.Model):
     type = models.CharField(max_length=8,
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
-    reg_num = models.CharField(max_length=20, verbose_name='reg_number')
+    reg_num = models.CharField(max_length=20, verbose_name='reg_number', unique=True)
     name = models.CharField(max_length=50, verbose_name='issuer name', blank=True, null=True)
     client_id = models.CharField(max_length=50,blank=True, null=True )
     clientSecret1 = models.CharField(max_length=50,blank=True, null=True)
@@ -61,10 +62,9 @@ class Address(models.Model):
 
 
 
-
 class IssuerTax(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax')
-    tax_type = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax_type')
+    issuer_sub_tax = models.ForeignKey(TaxSubtypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_sub_tax')
     start_date = models.DateField(default=timezone.now, null=True, blank=True)
     end_date = models.DateField(auto_now_add=True, null=True, blank=True)
     is_enabled = models.BooleanField()
@@ -77,3 +77,21 @@ class IssuerTax(models.Model):
 
     def __str__(self):
         return self.issuer.name
+
+class IssuerOracleDB(models.Model):
+    issuer = models.ForeignKey(Issuer,on_delete=models.CASCADE)
+    ip_address = models.CharField(max_length=20)
+    port_number = models.CharField(max_length=10)
+    service_number = models.CharField(max_length=10)
+    username = models.CharField(max_length=30)
+    password = models.CharField(max_length=100)
+    database_name = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.is_active:
+            return super(IssuerOracleDB, self).save(*args, **kwargs)
+        with transaction.atomic():
+            IssuerOracleDB.objects.filter(
+                is_active=True , issuer=self.issuer).update(is_active=False)
+            return super(IssuerOracleDB, self).save(*args, **kwargs)

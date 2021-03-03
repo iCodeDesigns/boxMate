@@ -44,9 +44,13 @@ def user_login(request):
                 login(request, user)
                 if next:
                     return redirect(next)
-                return redirect(reverse('home:homepage'))
             else:
                 messages.error(request, 'Inactive Account')
+
+            if user.issuer is not None: 
+                return redirect(reverse('home:homepage'))
+            else:
+                return redirect('issuer:create-issuer')
         else:
             messages.error(request, ('Login Failed, Please Check the Username or Password'))
     return render(request, 'login.html')

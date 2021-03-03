@@ -640,6 +640,7 @@ def resubmit(request, invoice_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
+
 def calculate_line_total(invoice_line_id, tax_calculator):
     invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
     t3_amount = tax_calculator.t3
@@ -655,11 +656,13 @@ def calculate_line_total(invoice_line_id, tax_calculator):
 
 @login_required(login_url='home:user-login')
 def import_data_from_db(request):
-    address = '156.4.58.40'
-    port = '1521'
-    service_nm = 'prod'
-    username = 'apps'
-    password = 'applmgr_42'
+    issuer = Issuer.objects.get(id = request.user.issuer.id)
+    db_credintials = IssuerOracleDB.objects.get(issuer=issuer , is_active=True)
+    address = db_credintials.ip_address
+    port = db_credintials.port_number
+    service_nm = db_credintials.service_number
+    username = db_credintials.username
+    password = db_credintials.password
     connection_class = OracleConnection(
         address, port, service_nm, username, password)
     data = connection_class.get_data_from_db()
@@ -763,7 +766,7 @@ def calculate_all_invoice_lines(header_obj):
 
 
 def view_invoice(request, invoice_id):
-    invoice_header = InvoiceHeader.objects.get(internal_id=invoice_id)
+    invoice_header = InvoiceHeader.objects.get(id=invoice_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
     context = {
         "invoice_header": invoice_header,
