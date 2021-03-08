@@ -1,5 +1,5 @@
 from django import forms
-from issuer.models import Issuer ,IssuerTax, Address , IssuerOracleDB
+from issuer.models import Issuer ,IssuerTax, Address , IssuerOracleDB , Receiver
 from datetime import date
 from django.forms import modelformset_factory
 
@@ -57,3 +57,15 @@ class IssuerOracleDBForm(forms.ModelForm):
         exclude = {'issuer',}
     def __init__(self , *args , **kwargs):
         super(IssuerOracleDBForm , self).__init__(*args , **kwargs)
+
+
+class ReceiverForm(forms.ModelForm):
+    class Meta:
+        model = Receiver
+        fields = '__all__'
+        exclude = ('issuer',)
+        def __init__(self, *args, **kwargs):
+            super(ReceiverForm, self).__init__(*args, **kwargs)
+            for field in self.fields:
+                self.fields[field].widget.attrs['class'] = 'form-control'
+

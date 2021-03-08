@@ -26,6 +26,7 @@ class Issuer(models.Model):
 
 
 class Receiver(models.Model):
+    issuer = models.ForeignKey(Issuer , on_delete=models.CASCADE) #### by:Mamdouh
     type = models.CharField(max_length=8,
                             choices=[('B', 'business'), ('P', 'natural person'), ('F', 'foreigner')], default='B')
     reg_num = models.CharField(max_length=8, verbose_name='reg_number')

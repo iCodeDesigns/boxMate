@@ -293,3 +293,108 @@ def activate_database(request , id):
     oracle_DB_connection.save()
     print('DOOOOONE')
     return redirect('issuer:list-issuer-db-connection')
+
+
+def create_receiver(request):
+    '''
+        created_at:08/03/2021
+        author: Mamadouh
+        purpose:create new reciever for this issuer
+    '''
+
+    receiver_form = ReceiverForm()
+    address_form = AddressForm()
+    if request.method == 'POST':
+        receiver_form = ReceiverForm(request.POST)
+        address_form = AddressForm(request.POST)
+        if receiver_form.is_valid() and address_form.is_valid():
+            receiver_obj = receiver_form.save(commit=False)
+            receiver_obj.issuer = request.user.issuer
+            receiver_obj.created_by = request.user
+            receiver_obj.created_at = date.today()
+            receiver_obj.save()
+
+            address_obj = address_form.save(commit=False)
+            address_obj.receiver = receiver_obj
+            address_obj.created_by = request.user
+            address_obj.created_at = date.today()
+            address_obj.save()
+
+            return redirect('issuer:list-receiver') 
+            
+        else:
+            print(receiver_form.errors) 
+            print(address_form.errors)
+            return render(request , 'create-receiver.html' , {
+                'receiver_form': receiver_form,
+                'address_form': address_form,})
+                        
+    else:
+        return render(request , 'create-receiver.html' , {
+            'receiver_form': receiver_form,
+            'address_form': address_form,})
+
+
+def list_receiver(request):
+    '''
+        created_at:08/03/2021
+        author: Mamadouh
+        purpose:list all recievers for this issuer
+    '''
+    receivers = Receiver.objects.filter(issuer = request.user.issuer)
+    context = {
+        'receivers':receivers,
+    }
+    return render(request , 'list-receiver.html' , context)
+
+
+def update_receiver(request, pk):
+    '''
+        created_at:08/03/2021
+        author: Mamadouh
+        purpose:update reciever
+    '''
+
+    receiver = Receiver.objects.get(id = pk)
+    address = Address.objects.get(receiver = receiver)
+    receiver_form = ReceiverForm(instance = receiver)
+    address_form = AddressForm(instance = address)
+    if request.method == 'POST':
+        receiver_form = ReceiverForm(request.POST ,instance = receiver)
+        address_form = AddressForm(request.POST , instance = address)
+        if receiver_form.is_valid() and address_form.is_valid():
+            receiver_obj = receiver_form.save(commit=False)
+            receiver_obj.issuer = request.user.issuer
+            receiver_obj.last_updated_by = request.user
+            receiver_obj.last_updated_at = date.today()
+            receiver_obj.save()
+
+            address_obj = address_form.save(commit=False)
+            address_obj.receiver = receiver_obj
+            address_obj.last_updated_by = request.user
+            address_obj.last_updated_at = date.today()
+            address_obj.save()
+
+            return redirect('issuer:list-receiver') 
+            
+        else:
+            print(receiver_form.errors) 
+            print(address_form.errors)
+            return render(request , 'create-receiver.html' , {
+                'receiver_form': receiver_form,
+                'address_form': address_form,})
+                        
+    else:
+        return render(request , 'create-receiver.html' , {
+            'receiver_form': receiver_form,
+            'address_form': address_form,})
+
+def delete_receiver(request , pk):
+    '''
+        created_at:08/03/2021
+        author: Mamadouh
+        purpose:delete reciever
+    '''
+    receiver = Receiver.objects.get(id = pk)
+    receiver.delete()
+    return redirect('issuer:list-receiver') 
