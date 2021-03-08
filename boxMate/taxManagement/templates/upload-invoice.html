@@ -89,9 +89,9 @@
                                     {% if header.submissions %}
                                     <td>{{header.submissions.subm_id}}</td>
                                        {% if header.submissions.subm_id %}
-                                       <td><span class="label label-success">Submitted</span></span></td>
+                                       <td><span class="label label-success">Submitted</span></td>
                                        {% else %}
-                                       <td><span class="label label-danger">Not Submitted</span></span></td>
+                                       <td><span class="label label-danger">Not Submitted</span></td>
                                        {% endif %}
 
                                     {% else %}
@@ -102,8 +102,8 @@
                                     </td>
                                     </a>
                                     {% endif %}
-                                    <td> 
-                                       <a href="{% url 'taxManagement:view-invoice' invoice_id=header.internal_id %}">
+                                    <td>
+                                       <a href="{% url 'taxManagement:view-invoice' invoice_id=header.id %}">
                                        <span class="glyphicon glyphicon-pencil"></span></td>
                                     </a>
                                  </tr>

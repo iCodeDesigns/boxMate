@@ -1,5 +1,10 @@
 import json
+import simplejson
 import requests
+import time
+from demjson import decode
+from django.conf import settings
+from django.db.models import Q, Count
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -7,29 +12,22 @@ from requests.auth import HTTPBasicAuth
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from demjson import decode
-from taxManagement.resources import MainTableResource
-from tablib import Dataset
-from django.conf import settings
-from taxManagement.tmp_storage import TempFolderStorage
-from django.db.models import Count
-from .models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
-from issuer.models import Issuer, Receiver
-from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from rest_framework.decorators import api_view
-from issuer.models import *
-from codes.models import *
-from django.db.models import Q
-import simplejson
+from tablib import Dataset
 from pprint import pprint
 from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
-from issuer import views as issuer_views
-import time
+from taxManagement.resources import MainTableResource
+from taxManagement.models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
+from taxManagement.tmp_storage import TempFolderStorage
 from taxManagement.db_connection import OracleConnection
-from .tax_calculator import InoviceTaxLineCalculator
+from taxManagement.tax_calculator import InoviceTaxLineCalculator
 from taxManagement.java import call_java
-
+from issuer.models import Issuer, Receiver, Address
+from issuer import views as issuer_views
+from codes.models import ActivityType, TaxSubtypes, TaxTypes
+from ast import literal_eval
+from taxManagement.invoice_generation import Invoicegeneration
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -75,12 +73,13 @@ def import_data_to_invoice(user):
         Count('internal_id'))
     for header in headers:
         try:
-            old_header = InvoiceHeader.objects.filter(issuer=user.issuer).get(internal_id=header['internal_id'])
+            old_header = InvoiceHeader.objects.filter(
+                issuer=user.issuer).get(internal_id=header['internal_id'])
             old_header.delete()
         except InvoiceHeader.DoesNotExist:
             pass
         issuer = user.issuer
-        issuer_address = Address.objects.get(issuer = issuer)
+        issuer_address = Address.objects.get(issuer=issuer)
         receiver = Receiver.objects.get(
             reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
@@ -212,222 +211,15 @@ def upload_excel_sheet(request):
         tmp_storage.remove()
 
     else:
-        messages.error(request, 'Invalid Excel Sheet ' + str(result.base_errors))
+        messages.error(request, 'Invalid Excel Sheet ' +
+                       str(result.base_errors))
         return redirect('/tax/list/uploaded-invoices')
 
-    #issuer_views.get_issuer_data(request.user)
+    # issuer_views.get_issuer_data(request.user)
     issuer_views.get_receiver_data(request.user)
     import_data_to_invoice(request.user)
     messages.success(request, 'Data is imported Successfully')
     return redirect('/tax/list/uploaded-invoices')
-
-
-def get_issuer_body(invoice_id):
-    invoice = InvoiceHeader.objects.get(id=invoice_id)
-    issuer_id = invoice.issuer
-    issuer = Issuer.objects.get(id=issuer_id.id)
-
-    type = issuer.type
-    reg_num = issuer.reg_num
-    name = issuer.name
-
-    address = get_issuer_address(invoice_id)
-
-    return {
-        "type": type,
-        "id": reg_num,
-        "name": name,
-        "address": address,
-    }
-
-
-def get_receiver_body(invoice_id):
-    invoice = InvoiceHeader.objects.get(id=invoice_id)
-    receiver_id = invoice.receiver
-    receiver = Receiver.objects.get(id=receiver_id.id)
-
-    type = receiver.type
-    reg_num = receiver.reg_num
-    name = receiver.name
-
-    address = get_receiver_address(invoice_id)
-
-    return {
-        "type": type,
-        "id": reg_num,
-        "name": name,
-        "address": address,
-    }
-
-
-def get_issuer_address(invoice_id):
-    invoice = InvoiceHeader.objects.get(id=invoice_id)
-    address_id = invoice.issuer_address
-    address = Address.objects.get(id=address_id.id)
-    country_id = address.country
-    country_code = CountryCode.objects.get(code=country_id.code)
-    country = country_code.code
-    branchID = address.branch_id
-    governate = address.governate
-    regionCity = address.regionCity
-    street = address.street
-    buildingNumber = address.buildingNumber
-    postalCode = address.postalCode
-    floor = address.floor
-    room = address.room
-    landmark = address.landmark
-    additionalInformation = address.additionalInformation
-
-    return {
-        "branchID": branchID,
-        "country": country,
-        "governate": governate,
-        "regionCity": regionCity,
-        "street": street,
-        "buildingNumber": buildingNumber,
-        "postalCode": postalCode,
-        "floor": floor,
-        "room": room,
-        "landmark": landmark,
-        "additionalInformation": additionalInformation
-    }
-
-
-def get_receiver_address(invoice_id):
-    invoice = InvoiceHeader.objects.get(id=invoice_id)
-    address_id = invoice.receiver_address
-    address = Address.objects.filter(id=address_id.id)[0]
-    #
-    country_id = address.country
-    country_code = CountryCode.objects.get(code=country_id.code)
-    country = country_code.code
-    #
-    governate = address.governate
-    regionCity = address.regionCity
-    street = address.street
-    buildingNumber = address.buildingNumber
-    postalCode = address.postalCode
-    floor = address.floor
-    room = address.room
-    landmark = address.landmark
-    additionalInformation = address.additionalInformation
-    return {
-
-        "country": country,
-        "governate": governate,
-        "regionCity": regionCity,
-        "street": street,
-        "buildingNumber": buildingNumber,
-        "postalCode": postalCode,
-        "floor": floor,
-        "room": room,
-        "landmark": landmark,
-        "additionalInformation": additionalInformation
-
-    }
-
-
-def get_invoice_header(invoice_id):
-    invoice_header = InvoiceHeader.objects.get(id=invoice_id)
-    signatures = Signature.objects.filter(invoice_header=invoice_header)
-    taxtotals = HeaderTaxTotal.objects.filter(header=invoice_header)
-    tax_total_list = []
-    for total in taxtotals:
-        tax_total_object = {
-            "taxType": total.tax.code,
-            "amount": Decimal(format(total.total,'.5f'))
-        }
-        tax_total_list.append(tax_total_object)
-    signature_list = []
-    for signature in signatures:
-        signature_obj = {
-            "signatureType": signature.signature_type,
-            "value": signature.signature_value
-        }
-        signature_list.append(signature_obj)
-
-    data = {
-        "documentType": invoice_header.document_type,
-        "documentTypeVersion": invoice_header.document_type_version,
-        "dateTimeIssued": "2021-03-01T15:37:51Z",
-        # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",
-        "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
-        "internalID": invoice_header.internal_id,
-        "purchaseOrderReference": invoice_header.purchase_order_reference,
-        "purchaseOrderDescription": invoice_header.purchase_order_description,
-        "salesOrderReference": invoice_header.sales_order_description,
-        "salesOrderDescription": invoice_header.sales_order_description,
-        "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-        "totalDiscountAmount": Decimal(format(invoice_header.total_discount_amount,'.5f')),
-        "totalSalesAmount":Decimal(format(invoice_header.total_sales_amount,'.5f')),
-        "netAmount": Decimal(format(invoice_header.net_amount,'.5f')),
-        "taxTotals": tax_total_list,
-        "totalAmount": Decimal(format(invoice_header.total_amount,'.5f')),
-        "extraDiscountAmount": Decimal(format(invoice_header.extra_discount_amount,'.5f')),
-        "totalItemsDiscountAmount": Decimal(format(invoice_header.total_items_discount_amount,'.5f'))
-        # "signatures": signature_list
-    }
-    return data
-
-
-def get_invoice_lines(invoice_id):
-    invoice_lines = InvoiceLine.objects.filter(
-        invoice_header__id=invoice_id)
-    invoice_lines_list = []
-    for line in invoice_lines:
-        invoice_line = {
-            "description": line.description,
-            "itemType": line.itemType,
-            "itemCode": line.itemCode,
-            "unitType": line.unitType,
-            "quantity": Decimal(line.quantity),
-            "internalCode": line.internalCode,
-            "salesTotal": Decimal(format(line.salesTotal,'.5f')),
-            "total": Decimal(format(line.total,'.5f')),
-            "valueDifference": Decimal(format(line.valueDifference,'.5f')),
-            "totalTaxableFees": Decimal(format(line.totalTaxableFees,'.5f')),
-            "netTotal": Decimal(format(line.netTotal,'.5f')),
-            "itemsDiscount":Decimal(format( line.itemsDiscount,'.5f')),
-            "unitValue": {
-                "amountEGP": Decimal(format(line.amountEGP,'.5f')),
-                "amountSold": Decimal(format(line.amountSold,'.5f')),
-                "currencyExchangeRate": Decimal(format(line.currencyExchangeRate,'.5f')),
-                "currencySold": line.currencySold},
-            "discount": {"rate": Decimal(format(line.rate,'.2f')),
-                         "amount": Decimal(format(line.amount,'.5f'))
-                         }
-        }
-
-        taxable_lines = get_taxable_lines(line.id)
-        invoice_line.update({"taxableItems": taxable_lines})
-        invoice_lines_list.append(invoice_line)
-    return invoice_lines_list
-
-
-def get_taxable_lines(invoice_line_id):
-    tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
-    tax_lines_list = []
-    for line in tax_lines:
-        tax_line = {"taxType": line.taxType.code, "amount": Decimal(format(line.amount,'.5f')),
-                    "subType": line.subType.code, "rate":  Decimal(format(line.rate,'.2f'))}
-        tax_lines_list.append(tax_line)
-    return tax_lines_list
-
-
-def get_one_invoice(invoice_id):
-    issuer_body = get_issuer_body(invoice_id)
-    receiver_body = get_receiver_body(invoice_id)
-    invoice_header = get_invoice_header(invoice_id)
-    invoice_lines = get_invoice_lines(invoice_id)
-    invoice = {
-        "issuer": issuer_body,
-        "receiver": receiver_body,
-
-    }
-    invoice.update(invoice_header)
-    invoice.update({"invoiceLines": invoice_lines})
-
-    return invoice
 
 
 def get_submission_response(submission_id):
@@ -464,7 +256,8 @@ def get_submission_response(submission_id):
 
     submission = Submission.objects.get(subm_id=submission_id)
 
-    submission.subm_uuid = response_json['documentSummary'][0]['uuid']  # document uuid
+    # document uuid
+    submission.subm_uuid = response_json['documentSummary'][0]['uuid']
     submission.document_count = response_json['documentCount']
     submission.date_time_received = response_json['dateTimeReceived']
     submission.over_all_status = response_json['overallStatus']
@@ -502,7 +295,8 @@ def save_submission_response(invoice_id, submission_id, status):
         submission_obj.save()
     # if submission id is not None , call a function to check the submission of the invoice from gov api
     if submission_id is not None:
-        time.sleep(10)  # wait sometime until the status is updated at the gov side
+        # wait sometime until the status is updated at the gov side
+        time.sleep(10)
         get_submission_response(submission_id)
 
 
@@ -516,22 +310,18 @@ def submit_invoice(request, invoice_id):
     :param invoice_id: the id of the invoice to be submitted (database id)
     :return: redirects to the page that lists all invoices
     '''
-    invoice = get_one_invoice(invoice_id)  # function that gets the invoice data in JSON format
-    json_data = simplejson.dumps(invoice)  # this format is required by the gov api
-    print("************8")
-    print(json_data)
-    # json_data = json.dumps({"documents": [invoice]})  # this format is required by the gov api
-    #data = decode(json_data)  # to make a good json out of a bad json ,for more info refer to https://github.com/dmeranda/demjson
-    jar = call_java.java_func(json_data, "Dreem", "08268939")
-    #print(jar)
-    data = decode(jar)
-    #print(data)
-
+    generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
+    invoice_as_str = simplejson.dumps(generated_invoice)      # by:ahd hozayen, we used simplejson to decode Decimal fields
+    jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")      # send invoice_as_str to jar file to sign it.
+    from_bytes_to_good_str = jar.decode("utf-8")
+    from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
+    
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + auth_token},
-                             json=data)
+                             data=from_str_to_json)
+    print(response)
     # if token is expired
     # TODO need to save the token in a session
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
@@ -539,7 +329,8 @@ def submit_invoice(request, invoice_id):
         response = requests.post(url, verify=False,
                                  headers={'Content-Type': 'application/json',
                                           'Authorization': 'Bearer ' + auth_token},
-                                 json=data)
+                                 data=from_str_to_json)
+        print(response)
     over_all_status = None
     # in case of network error
     if response is None:
@@ -548,7 +339,6 @@ def submit_invoice(request, invoice_id):
 
     else:
         response_json = response.json()
-        print(response_json)
         submissionId = response_json['submissionId']
 
     # case of invalid invoice with submission id is null
@@ -573,21 +363,16 @@ def get_all_invoice_headers(request):
         "invoice_headers": invoice_headers
     }
     return render(request, 'upload-invoice.html', context)
-    # headers = []
-    # for invoice_header in invoice_headers:
-    #     header = get_invoice_header(invoice_header.internal_id)
-    #     headers.append(header)
-    # if request.method == 'GET':
-    #     serializer =  InvoiceHeaderSerializer(invoice_headers , many=True)
-    #     return Response(serializer.data , status=status.HTTP_200_OK)
 
 
 def get_decument_detail_after_submit(request, internal_id):
     submission = Submission.objects.get(invoice__id=internal_id)
     if submission.subm_uuid is not None:
-        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + submission.subm_uuid + '/details'
+        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + \
+            submission.subm_uuid + '/details'
         response = requests.get(url, verify=False,
-                                headers={'Authorization': 'Bearer ' + auth_token, }
+                                headers={
+                                    'Authorization': 'Bearer ' + auth_token, }
                                 )
         if response.status_code == status.HTTP_401_UNAUTHORIZED:
             get_token()
@@ -596,7 +381,8 @@ def get_decument_detail_after_submit(request, internal_id):
                                         'Authorization': 'Bearer ' + auth_token, }
                                     )
 
-        validation_steps = response.json()['validationResults']['validationSteps']
+        validation_steps = response.json(
+        )['validationResults']['validationSteps']
         header_errors = []
         lines_errors = []
         general_errors = []
@@ -649,7 +435,6 @@ def resubmit(request, invoice_id):
     return redirect("taxManagement:list-eta-invoice")
 
 
-
 def calculate_line_total(invoice_line_id, tax_calculator):
     invoice_line = InvoiceLine.objects.get(id=invoice_line_id)
     t3_amount = tax_calculator.t3
@@ -658,15 +443,15 @@ def calculate_line_total(invoice_line_id, tax_calculator):
     t2_amount = tax_calculator.t2
     total_non_taxable_fees = tax_calculator.total_non_taxable_fees
     line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + \
-                 t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+        t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
     invoice_line.total = line_total
     invoice_line.save()
 
 
 @login_required(login_url='home:user-login')
 def import_data_from_db(request):
-    issuer = Issuer.objects.get(id = request.user.issuer.id)
-    db_credintials = IssuerOracleDB.objects.get(issuer=issuer , is_active=True)
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    db_credintials = IssuerOracleDB.objects.get(issuer=issuer, is_active=True)
     address = db_credintials.ip_address
     port = db_credintials.port_number
     service_nm = db_credintials.service_number
@@ -781,4 +566,4 @@ def view_invoice(request, invoice_id):
         "invoice_header": invoice_header,
         "invoice_lines": invoice_lines,
     }
-    return render(request , 'view-invoice.html' , context)
+    return render(request, 'view-invoice.html', context)
