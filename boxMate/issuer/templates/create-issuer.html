@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -33,7 +35,7 @@
 	<!-- /Error messaging -->
                <div class="container-fluid">
                   <form method="POST" id="myform">
-                    {% csrf_token %}        
+                    {% csrf_token %}
                     <div class="form-row">
                       <h2>Company</h2>
                           <div class="form-group col-md-4">
@@ -52,14 +54,14 @@
                          </div>
                         </div>
 
-                        
+
                         <div class="form-row">
                           <div class="form-group col-md-3">
                            <label for="inputEmail4">Registration Num</label>
                            <br>
                            {{ issuer_form.reg_num}}
                          </div>
-                     
+
                          <div class="form-group col-md-3">
                            <label for="inputEmail4">Name</label>
                            <br>
@@ -77,7 +79,7 @@
                            <br>
                            {{ issuer_form.activity_code}}
                          </div>
-                         
+
                         </div>
 
                         <div class="form-row">
@@ -94,7 +96,7 @@
                                 <br>
                                 {{ address_form.branch_id}}
                               </div>
-                              
+
                                <div class="form-group col-md-4">
                                  <label for="inputCity">Governate</label>
                                  <br>
@@ -106,7 +108,7 @@
                                  <br>
                                  {{ address_form.regionCity}}
                                </div>
-                               
+
                            </div>
 
                            <div class="form-row">
@@ -134,7 +136,7 @@
                                 {{ address_form.country}}
                               </div>
                            </div>
-                            
+
                            <div class="form-row">
                               <div class="form-group col-md-3">
                                  <label for="inputCity">Floor</label>
@@ -160,10 +162,10 @@
                                  {{ address_form.additionalInformation}}
                                </div>
 
-                          
+
                            </div>
 
-                        
+
                            <br>
                            <div class="form-group col-md-4">
                            <button type="submit"  class="btn btn-primary">Save and go to Taxs</button>

@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -48,7 +50,7 @@
                                                     <a href="{% url 'issuer:update-receiver' receiver.id %}">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
-                                                    
+
                                                     <a href="{% url 'issuer:delete-receiver' receiver.id %}" onclick="return confirm('Are you sure?')">
                                                         <span class="glyphicon glyphicon-trash"></span>
                                                     </a>
