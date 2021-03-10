@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -8,7 +10,7 @@
                <h1>
                   ETA Invoices
                </h1>
-               
+
             </section>
             <!-- Main content -->
             <section class="content">
@@ -25,7 +27,7 @@
                                  <div class="col-sm-6">
                                     <div class="dataTables_length" id="example1_length">
                                        <label>
-                                          Show 
+                                          Show
                                           <select name="example1_length" aria-controls="example1" class="form-control input-sm">
                                              <option value="10">10</option>
                                              <option value="25">25</option>
@@ -43,7 +45,7 @@
                                               <button type="button" class="btn btn-success">Search</button>
                                               <button type="button" class="btn btn-success">Filter</button>
                                             </div>
-                                          
+
                                        </div>
                                     </div>
                                  </div>
@@ -91,7 +93,7 @@
                                           </tr>
                                            {% endfor %}
                                        </tbody>
-                                       
+
                                     </table>
                                  </div>
                               </div>
