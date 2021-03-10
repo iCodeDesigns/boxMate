@@ -163,42 +163,6 @@ def list_uploaded_invoice(request):
     return render(request, 'upload-invoice.html')
 
 
-def create_issuer(request):
-    issuer_form = IssuerForm()
-    address_form = AddressForm()
-    if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST)
-        address_form = AddressForm(request.POST)
-        if issuer_form.is_valid() and address_form.is_valid():
-            issuer_obj = issuer_form.save(commit=False)
-            issuer_obj.created_at = date.today()
-            issuer_obj.save()
-
-            address_obj = address_form.save(commit=False)
-            address_obj.issuer = issuer_obj
-            address_obj.created_at = date.today()
-            address_obj.save()
-
-            user = User.objects.get(id= request.user.id)
-            user.issuer = issuer_obj
-            user.save()
-            return redirect('issuer:create-tax',
-                issuer_id = issuer_obj.id)
-
-        else:
-            print(issuer_form.errors)
-            print(address_form.errors)
-            return render(request , 'create-issuer.html' , {
-                'issuer_form': issuer_form,
-                'address_form': address_form,})
-
-    else:
-        return render(request , 'create-issuer.html' , {
-            'issuer_form': issuer_form,
-            'address_form': address_form,})
-
-
-
 def view_issuer(request, issuer_id):
     issuer = Issuer.objects.get(id = issuer_id)
     address = Address.objects.get(issuer = issuer_id)
@@ -246,6 +210,41 @@ def create_issuer_tax(request):
     return JsonResponse(data)
 
 ############################################## Issuer Section ###########################################
+def create_issuer(request):
+    issuer_form = IssuerForm()
+    address_form = AddressForm()
+    if request.method == 'POST':
+        issuer_form = IssuerForm(request.POST)
+        address_form = AddressForm(request.POST)
+        if issuer_form.is_valid() and address_form.is_valid():
+            issuer_obj = issuer_form.save(commit=False)
+            issuer_obj.created_at = date.today()
+            issuer_obj.save()
+
+            address_obj = address_form.save(commit=False)
+            address_obj.issuer = issuer_obj
+            address_obj.created_at = date.today()
+            address_obj.save()
+
+            user = User.objects.get(id= request.user.id)
+            user.issuer = issuer_obj
+            user.save()
+            return redirect('issuer:create-tax',
+                issuer_id = issuer_obj.id)
+
+        else:
+            print(issuer_form.errors)
+            print(address_form.errors)
+            return render(request , 'create-issuer.html' , {
+                'issuer_form': issuer_form,
+                'address_form': address_form,})
+
+    else:
+        return render(request , 'create-issuer.html' , {
+            'issuer_form': issuer_form,
+            'address_form': address_form,})
+
+
 def issuer_oracle_DB_create(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
     issuer = Issuer.objects.get(id = request.user.issuer.id)
@@ -261,6 +260,7 @@ def issuer_oracle_DB_create(request):
     }
     return render(request , "create-issuer-oracle-db.html" , context)
 
+
 def issuer_oracle_DB_list(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
     issuer = Issuer.objects.get(id = request.user.issuer.id)
@@ -272,6 +272,7 @@ def issuer_oracle_DB_list(request):
         'db_form': issuer_oracle_DB_form,
     }
     return render(request , "list-issuer-oracle-db.html" , context)
+
 
 def issuer_oracle_DB_update(request , id):
     oracle_DB_connection = IssuerOracleDB.objects.get(id = id)

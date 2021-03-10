@@ -3,158 +3,156 @@
 
 {% block body %}
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
 
-    </section>
-    <!-- Main content -->
-    <section class="content">
-        <div class="form-row">
-            <div class="box">
-                <div class="box-header">
-                    <h2 class="box-title" style="font-weight: bolder;">Invoice #{{ invoice_header.internal_id }}</h2>
-                    <br>
-                    <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
-                        <span style="font-weight: bolder; margin-right: 1%;">Submit Invoice</span>
-                        <span class="glyphicon glyphicon-cloud-upload"></span>
-                    </a>
-                 </div>
-            <div class="box-body">
-                <div class="form-group col-md-4">
-                    <b>Issuer: </b>
-                    {{invoice_header.issuer.name}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Receiver: </b>
-                    {{invoice_header.receiver.name}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Date Time Issued: </b>
-                    {{invoice_header.date_time_issued}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total Sales: </b>
-                    {{invoice_header.total_sales_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total Discount: </b>
-                    {{invoice_header.total_discount_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Net: </b>
-                    {{invoice_header.net_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Extra Discount: </b>
-                    {{invoice_header.extra_discount_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total Items Discount: </b>
-                    {{invoice_header.total_items_discount_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total Items Discount: </b>
-                    {{invoice_header.total_items_discount_amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total: </b>
-                    {{invoice_header.total_amount}} EGP
-                </div>
-            </div>
-        </div>
-        </div>
-            {% for line in invoice_lines %}
-            <div class="box">
-                <div class="box-header">
-                    <h2 class="box-title" style="font-weight: bolder;">Item #{{ line.itemCode }}</h2>
-                 </div>
-            <div class="box-body">
-                <div class="form-group col-md-4">
-                    <b>Item Type: </b>
-                    {{line.itemType}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Unit Type: </b>
-                    {{line.unitType}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Quantity: </b>
-                    {{line.quantity}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Currency Sold: </b>
-                    {{line.currencySold}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Amount EGP: </b>
-                    {{line.amountEGP}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Sales Total: </b>
-                    {{line.salesTotal}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total: </b>
-                    {{line.total}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Value Difference: </b>
-                    {{line.valueDifference}}
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Total Taxable Fees: </b>
-                    {{line.totalTaxableFees}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Items Discount: </b>
-                    {{line.itemsDiscount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Net Total: </b>
-                    {{line.netTotal}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Discount Rate: </b>
-                    {{line.rate}} %
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Discount Amount: </b>
-                    {{line.amount}} EGP
-                </div>
-                <div class="form-group col-md-4">
-                    <b>Internal Code: </b>
-                    {{line.internalCode}}
-                </div>
-            </div>
-            {% for tax in line.tax_lines.all %}
-            <div class="box">
-                <div class="box-header">
-                    <h2 class="box-title" style="font-weight: bolder;">Tax Subtype: {{ tax.subType }}</h2>
-                 </div>
-                 <div class="box-body">
-                    <div class="form-group col-md-4">
-                        <b>Tax Type: </b>
-                        {{tax.taxType}}
-                    </div>
-                    <div class="form-group col-md-4">
-                        <b>Tax Rate: </b>
-                        {{tax.rate}} %
-                    </div>
-                    <div class="form-group col-md-4">
-                        <b>Tax Amount: </b>
-                        {{tax.amount}} EGP
-                    </div>
-                 </div>
-            </div>
-            </div>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="form-row">
+      <div class="box">
+        <div class="box-header">
+          <h2 class="box-title" style="font-weight: bolder; font-size: 24px;">Invoice #{{ invoice_header.internal_id }}</h2>
+          <div class="margin pull-right col-med-4">
+             <div class="btn-group">
+               <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
+                 <p>Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></p>
+               </a>
             </div>
 
-            {% endfor %}
-            {% endfor %}
+          </div>
         </div>
-        <!-- /.row -->
-    </section>
+        <div class="box-body">
+          <div class="form-group col-md-4">
+            <b>Issuer: </b>
+            {{invoice_header.issuer.name}}
+          </div>
+          <div class="form-group col-md-4">
+            <b>Receiver: </b>
+            {{invoice_header.receiver.name}}
+          </div>
+          <div class="form-group col-md-4">
+            <b>Date Time Issued: </b>
+            {{invoice_header.date_time_issued}}
+          </div>
+          <div class="form-group col-md-4">
+            <b>Total Sales: </b>
+            {{invoice_header.total_sales_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Total Discount: </b>
+            {{invoice_header.total_discount_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Net: </b>
+            {{invoice_header.net_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Extra Discount: </b>
+            {{invoice_header.extra_discount_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Total Items Discount: </b>
+            {{invoice_header.total_items_discount_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Total Items Discount: </b>
+            {{invoice_header.total_items_discount_amount}} EGP
+          </div>
+          <div class="form-group col-md-4">
+            <b>Total: </b>
+            {{invoice_header.total_amount}} EGP
+          </div>
+        </div>
+      </div>
+    </div>
+    {% for line in invoice_lines %}
+    <div class="box">
+      <div class="box-header">
+        <h2 class="box-title" style="font-weight: bolder;">Item #{{ line.itemCode }}</h2>
+      </div>
+      <div class="box-body">
+        <div class="form-group col-md-4">
+          <b>Item Type: </b>
+          {{line.itemType}}
+        </div>
+        <div class="form-group col-md-4">
+          <b>Unit Type: </b>
+          {{line.unitType}}
+        </div>
+        <div class="form-group col-md-4">
+          <b>Quantity: </b>
+          {{line.quantity}}
+        </div>
+        <div class="form-group col-md-4">
+          <b>Currency Sold: </b>
+          {{line.currencySold}}
+        </div>
+        <div class="form-group col-md-4">
+          <b>Amount EGP: </b>
+          {{line.amountEGP}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Sales Total: </b>
+          {{line.salesTotal}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Total: </b>
+          {{line.total}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Value Difference: </b>
+          {{line.valueDifference}}
+        </div>
+        <div class="form-group col-md-4">
+          <b>Total Taxable Fees: </b>
+          {{line.totalTaxableFees}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Items Discount: </b>
+          {{line.itemsDiscount}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Net Total: </b>
+          {{line.netTotal}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Discount Rate: </b>
+          {{line.rate}} %
+        </div>
+        <div class="form-group col-md-4">
+          <b>Discount Amount: </b>
+          {{line.amount}} EGP
+        </div>
+        <div class="form-group col-md-4">
+          <b>Internal Code: </b>
+          {{line.internalCode}}
+        </div>
+      </div>
+      {% for tax in line.tax_lines.all %}
+      <div class="box">
+        <div class="box-header">
+          <h2 class="box-title" style="font-weight: bolder;">Tax Subtype: {{ tax.subType }}</h2>
+        </div>
+        <div class="box-body">
+          <div class="form-group col-md-4">
+            <b>Tax Type: </b>
+            {{tax.taxType}}
+          </div>
+          <div class="form-group col-md-4">
+            <b>Tax Rate: </b>
+            {{tax.rate}} %
+          </div>
+          <div class="form-group col-md-4">
+            <b>Tax Amount: </b>
+            {{tax.amount}} EGP
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </section>
 </div>
-
 
 {% endblock body %}
