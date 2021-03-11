@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -8,7 +10,7 @@
                <h1>
                   Validation Errors
                </h1>
-               
+
             </section>
             <!-- Main content -->
             <section class="content">
@@ -21,7 +23,7 @@
                         <!-- /.box-header -->
                         <div class="box-body">
                            <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                              
+
                               <div class="row">
                                  <div class="col-sm-12">
                                     <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
@@ -37,11 +39,11 @@
                                           </tr>
                                            {% endfor %}
                                        </tbody>
-                                       
+
                                     </table>
                                  </div>
                               </div>
-                              
+
                            </div>
                         </div>
                         <!-- /.box-body -->
@@ -63,14 +65,14 @@
                         <!-- /.box-header -->
                         <div class="box-body">
                            <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                              
+
                               <div class="row">
                                  <div class="col-sm-12">
                                     <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
                                        <thead>
                                           <tr role="row">
                                              <th style="color: red;">Error Description</th>
-                                             
+
                                           </tr>
                                        </thead>
                                        <tbody>
@@ -80,11 +82,11 @@
                                           </tr>
                                            {% endfor %}
                                        </tbody>
-                                       
+
                                     </table>
                                  </div>
                               </div>
-                              
+
                            </div>
                         </div>
                         <!-- /.box-body -->

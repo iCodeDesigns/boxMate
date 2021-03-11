@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -14,12 +16,12 @@
    <section class="content">
             <div class="box">
                <!-- /.box-header -->
-             
+
             <br>
-               
+
                <div class="container-fluid" style="text-align: center;">
                 <span class=" col-md-4 " id="message" style="padding: 12px 14px; margin: 0 0 20px;
-                background: #c7c3c3;  color: rgb(0, 0, 0); 
+                background: #c7c3c3;  color: rgb(0, 0, 0);
                 border: 1px solid rgb(196, 19, 19); border-radius: 4px; display: none; font-style: oblique;">
                 </span>
 
@@ -40,7 +42,7 @@
                               <td>{{sub_tax.desc_en}}</td>
                                         <td>
                                             <input type="checkbox" onclick="myFunction({{sub_tax}})" type="checkbox"  name="checkbox" id="checkbox">
-                                            &nbsp; 
+                                            &nbsp;
                                             <label for="checkbox"  id="{{sub_tax}}" style="display: none;">{{sub_tax.code}}</label>
                                             <br>
                                             {% endfor %}
@@ -59,17 +61,17 @@
                               </div>
                               <br>
                                <br>
-                        
 
 
 
-     
+
+
 </div>
 </div>
 </section>
 </div>
 
- 
+
 <script>
   var codes_arr =[]
   console.log ( Array.isArray(codes_arr))
@@ -77,21 +79,21 @@
 
   function myFunction(sub_tax)
    {
-    codes_arr  
+    codes_arr
     issuer = {{issuer_id}}
     code = sub_tax.innerHTML
     if(codes_arr.includes(code))
     {codes_arr.pop(code)}
     else{codes_arr.push(code)}
 
-    
+
 
     return codes_arr
    }
   function myFunction2(){
-    codes_arr 
+    codes_arr
     issuer = {{issuer_id}}
-    
+
   $.ajax({
             url: '/issuer/create/issuer/tax',
             data : {
@@ -102,16 +104,16 @@
             dataType : 'json',
             success: function(data){
                     message2= codes_arr.join()
-                    message3 = message2 + "" + data.message 
+                    message3 = message2 + "" + data.message
 
                     message = document.getElementById('message')
                     message.innerHTML = message3
                     message.style.display = 'block'
                     message.style.textAlign = 'center'
-                    
-                
+
+
             }
-  
+
         });
       }
 

@@ -1,5 +1,7 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
@@ -52,9 +54,9 @@
                                        data-target="#exampleModal">
                                        Upload Excel
                                     </button>
-                                    <a href="{% url 'taxManagement:connect-oracle' %}">
+                                    <!-- <a href="{% url 'taxManagement:connect-oracle' %}">
                                       <button type="button" class="btn btn-success">Import data from OracleDB</button>
-                                      </a>
+                                      </a> -->
                                  </div>
 
                               </div>

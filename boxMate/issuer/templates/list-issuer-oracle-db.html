@@ -1,13 +1,14 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Orarcle DB Connections
-            <!-- <small>Optional description</small> -->
+          {% trans 'Import From Oracle' %}
         </h1>
 
     </section>
@@ -25,7 +26,7 @@
                             <div class="col-sm-6">
                                 <button type="button" class="btn btn-primary margin-bottom" data-toggle="modal"
                                     data-target="#exampleModal">
-                                    Add New DB Connection
+                                    {% trans 'Import From Oracle ERP' %}
                                 </button>
                             </div>
                             <div class="row">
