@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'import_export',
     'rest_framework',
     'corsheaders',
+    'currencies',
 
 ]
 CORS_ORIGIN_ALLOW_ALL = True

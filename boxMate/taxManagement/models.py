@@ -122,19 +122,17 @@ class InvoiceHeader(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True)
     issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                        related_name="issuer_address")
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE, null=True, blank=True)
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
     receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                          related_name="receiver_address")
     document_type = models.CharField(max_length=2,
-                                     choices=[('I', 'I')], default='I', null=True, blank=True)
+                                     choices=[('I', 'Invoice'),('C','Credit Memo'),('D','Debit Memo')], default='I')
     document_type_version = models.CharField(max_length=8,
-                                             choices=[('1.0', '1.0'), ('0.9', '0.9')], default='1.0', null=True,
-                                             blank=True)
+                                             choices=[('1.0', '1.0'), ('0.9', '0.9')], default='1.0')
 
-    date_time_issued = models.DateTimeField(default=datetime.now()
-                                            , null=True, blank=True)
-    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
-    internal_id = models.CharField(max_length=50, null=True, blank=True)
+    date_time_issued = models.DateTimeField(default=datetime.now())
+    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE)
+    internal_id = models.CharField(max_length=50)
     purchase_order_reference = models.CharField(max_length=50, null=True, blank=True)
     purchase_order_description = models.CharField(max_length=100, null=True, blank=True)
     sales_order_reference = models.CharField(max_length=50, null=True, blank=True)

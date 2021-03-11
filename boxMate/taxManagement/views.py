@@ -587,6 +587,11 @@ def create_new_invoice_header(request):
     return render(request , 'create-invoice-header.html' , context)
     
 def create_new_invoice_line(request,invoice_id):
+    ''' 
+        date : 10/03/2021
+        author : Mamdouh
+        purpose : create new invoice and save it to database
+    '''
     line_form = InvoiceLineForm()
     tax_line_form = TaxLineInlineForm()
     header = InvoiceHeader.objects.get(id = invoice_id)
