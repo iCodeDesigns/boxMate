@@ -1,0 +1,123 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            New Invoice
+        </h1>
+
+    </section>
+    <div class="container-fluid">
+        <form method="POST" id="myform">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Receiver</label>
+                    <br>
+                    {{ header_form.receiver}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Document Type</label>
+                    <br>
+                    {{ header_form.document_type}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Document Type Version</label>
+                    <br>
+                    {{ header_form.document_type_version}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Taxpayer Activity Code</label>
+                    <br>
+                    {{ header_form.taxpayer_activity_code}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Internal ID</label>
+                    <br>
+                    {{ header_form.internal_id}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Purchase Order Reference</label>
+                    <br>
+                    {{ header_form.purchase_order_reference}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Purchase Order Description</label>
+                    <br>
+                    {{ header_form.purchase_order_description}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Sales Order Reference</label>
+                    <br>
+                    {{ header_form.sales_order_reference}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Sales Order Description</label>
+                    <br>
+                    {{ header_form.sales_order_description}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Proforma Invoice Number</label>
+                    <br>
+                    {{ header_form.proforma_invoice_number}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Total Sales Amount</label>
+                    <br>
+                    {{ header_form.total_sales_amount}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Total Discount Amount</label>
+                    <br>
+                    {{ header_form.total_discount_amount}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Net Amount</label>
+                    <br>
+                    {{ header_form.net_amount}}
+                </div>
+
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Extra Discount Amount</label>
+                    <br>
+                    {{ header_form.extra_discount_amount}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Total Items Discount Amount</label>
+                    <br>
+                    {{ header_form.total_items_discount_amount}}
+                </div>
+
+                <div class="form-group col-md-12">
+                    <label for="inputEmail4">Total Amount</label>
+                    <br>
+                    {{ header_form.total_amount}}
+                </div>
+
+            </div>
+
+            <div class="form-group col-md-11">
+                <br>
+                <button type="submit" class="btn btn-primary pull-right">Save And Add Invoice Line</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock body %}

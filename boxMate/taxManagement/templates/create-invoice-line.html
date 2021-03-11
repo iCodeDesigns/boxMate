@@ -1,0 +1,194 @@
+{% extends 'main.html'%}
+{% load static %}
+
+{% block body %}
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            New Invoice Line
+        </h1>
+
+    </section>
+    <section class="content-fluid">
+        <form method="POST" id="myform">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Description</label>
+                    <br>
+                    {{ line_form.description}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Item Type</label>
+                    <br>
+                    {{ line_form.itemType}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Item Code</label>
+                    <br>
+                    {{ line_form.itemCode}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Unit Type</label>
+                    <br>
+                    {{ line_form.unitType}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Quantity</label>
+                    <br>
+                    {{ line_form.quantity}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Currency Sold</label>
+                    <br>
+                    {{ line_form.currencySold}}
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Amount Sold</label>
+                    <br>
+                    {{ line_form.amountSold}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Amount EGP</label>
+                    <br>
+                    {{ line_form.amountEGP}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Currency Exchange Rate</label>
+                    <br>
+                    {{ line_form.currencyExchangeRate}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Sales Total</label>
+                    <br>
+                    {{ line_form.salesTotal}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Total</label>
+                    <br>
+                    {{ line_form.total}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Value Difference</label>
+                    <br>
+                    {{ line_form.valueDifference}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Total Taxable Fees</label>
+                    <br>
+                    {{ line_form.totalTaxableFees}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Items Discount</label>
+                    <br>
+                    {{ line_form.itemsDiscount}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Net Total</label>
+                    <br>
+                    {{ line_form.netTotal}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Discount Rate</label>
+                    <br>
+                    {{ line_form.rate}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Discount Amount</label>
+                    <br>
+                    {{ line_form.amount}}
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputEmail4">Internal Code</label>
+                    <br>
+                    {{ line_form.internalCode}}
+                </div>
+                <div id="tax_line_set">
+                    <div class="form-row">
+                        <h2>Tax Lines</h2>
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">Tax Type</label>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">Tax SubType</label>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">Tax Rate</label>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">Tax Amount</label>
+                        </div>
+
+                    </div>
+                    {{tax_line_form.management_form}}
+                    {% for form in tax_line_form %}
+                    <div class="form-group col-md-3">
+                        {{ form.taxType}}
+                    </div>
+                    <div class="form-group col-md-3">
+                        {{ form.subType}}
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        {{ form.rate}}
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        {{ form.amount}}
+                    </div>
+                    {% endfor %}
+                </div>
+
+
+                <div id="tax_line_empty_form" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            {{ tax_line_form.empty_form.taxType}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            {{ tax_line_form.empty_form.subType}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            {{ tax_line_form.empty_form.rate}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            {{ tax_line_form.empty_form.amount}}
+                        </div>
+
+                    </div>
+                </div>
+                <div class="separator mb-5"></div>
+                <br>
+                <div class="col-md-12">
+                    <button type="button" id="add_line" onclick="add_tax_line_func()"
+                        class="btn cur-p btn-success pull-right">Add Tax
+                        Line</button>
+                </div>
+                <div class="separator mb-5"></div>
+                <div class="form-group col-md-12">
+                    <br>
+                    <button type="submit" class="btn btn-primary" name="Save And Exit">Save And Exit</button>
+                    <button type="submit" class="btn btn-primary" name="Save And Add">Add Another Line</button>
+                    
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+
+    function add_tax_line_func() {
+        console.log("bababbaba");
+        var form_idx = $('#id_tax_lines-TOTAL_FORMS').val();
+        $('#tax_line_set').append($('#tax_line_empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_tax_lines-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+    };
+</script>
+{% endblock body %}

@@ -28,6 +28,7 @@ from issuer import views as issuer_views
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from ast import literal_eval
 from taxManagement.invoice_generation import Invoicegeneration
+from .forms import *
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -567,3 +568,52 @@ def view_invoice(request, invoice_id):
         "invoice_lines": invoice_lines,
     }
     return render(request, 'view-invoice.html', context)
+
+def create_new_invoice_header(request):
+    header_form = InvoiceHeaderForm()
+    if request.method == 'POST':
+        header_form = InvoiceHeaderForm(request.POST)
+        if header_form.is_valid():
+            header_obj = header_form.save(commit=False)
+            header_obj.created_by = request.user
+            header_obj.save()
+            print(header_obj.id)
+            return redirect('taxManagement:create-invoice-line',invoice_id=header_obj.id)
+
+    context = {
+        'header_form':header_form,
+    }
+
+    return render(request , 'create-invoice-header.html' , context)
+    
+def create_new_invoice_line(request,invoice_id):
+    line_form = InvoiceLineForm()
+    tax_line_form = TaxLineInlineForm()
+    header = InvoiceHeader.objects.get(id = invoice_id)
+
+    if request.method == 'POST':
+        line_form = InvoiceLineForm(request.POST)
+        tax_line_form = TaxLineInlineForm(request.POST)
+        if line_form.is_valid():
+            line_obj = line_form.save(commit=False)
+            line_obj.invoice_header = header
+            line_obj.created_by = request.user
+            line_obj.save()
+            if tax_line_form.is_valid():
+                for form in tax_line_form:
+                    tax_line_obj = form.save(commit = False)
+                    tax_line_obj.invoice_line = line_obj
+                    tax_line_obj.created_by = request.user
+                    tax_line_obj.save()
+                    if 'Save And Exit' in request.POST:
+                        return redirect('taxManagement:get-all-invoice-headers')
+                    elif 'Save And Add' in request.POST:
+                        return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
+
+
+    context={
+        'line_form' : line_form,
+        'tax_line_form' : tax_line_form,
+    }
+
+    return render(request , 'create-invoice-line.html' , context)

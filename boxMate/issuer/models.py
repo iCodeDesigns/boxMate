@@ -38,7 +38,8 @@ class Receiver(models.Model):
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
 
-
+    def __str__(self):
+        return self.name
 
 class Address(models.Model):
     branch_id = models.CharField(max_length=10)
