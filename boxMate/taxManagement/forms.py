@@ -30,4 +30,4 @@ class TaxLineForm(forms.ModelForm):
             for field in self.fields:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
-TaxLineInlineForm = inlineformset_factory(InvoiceLine,TaxLine ,fields=('__all__'),extra=1)
+TaxLineInlineForm = inlineformset_factory(InvoiceLine,TaxLine ,form=TaxLineForm, extra=1)

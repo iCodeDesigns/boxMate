@@ -610,6 +610,8 @@ def create_new_invoice_line(request,invoice_id):
                     tax_line_obj.invoice_line = line_obj
                     tax_line_obj.created_by = request.user
                     tax_line_obj.save()
+                    calculate_all_invoice_lines(header)
+                    header_totals(header)
                     if 'Save And Exit' in request.POST:
                         return redirect('taxManagement:get-all-invoice-headers')
                     elif 'Save And Add' in request.POST:

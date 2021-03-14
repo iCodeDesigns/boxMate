@@ -8,6 +8,7 @@ from codes.models import ActivityType
 from codes.models import TaxSubtypes, TaxTypes
 from datetime import datetime
 from django.conf import settings
+from currencies.models import Currency
 
 
 # Create your models here.
@@ -205,12 +206,12 @@ class Signature(models.Model):
 
 class InvoiceLine(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name="lines")
-    description = models.CharField(max_length=250, blank=True, null=True)
-    itemType = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GPC format')
-    itemCode = models.CharField(max_length=50, blank=True, null=True, help_text='Must be of GS1 code')
-    unitType = models.CharField(max_length=50, blank=True, null=True, help_text='A code from unitype table')
-    quantity = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
-    currencySold = models.CharField(max_length=10, blank=True, null=True, help_text='Currency code used from ISO 4217.')
+    description = models.CharField(max_length=250)
+    itemType = models.CharField(max_length=50, help_text='Must be of GPC format')
+    itemCode = models.CharField(max_length=50, help_text='Must be of GS1 code')
+    unitType = models.CharField(max_length=50, help_text='A code from unitype table')
+    quantity = models.DecimalField(max_digits=20, decimal_places=5)
+    currencySold = models.ForeignKey(Currency,on_delete=models.CASCADE)
     amountEGP = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
     amountSold = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True,
                                      help_text='Mandatory if currencySold <> EGP.')
@@ -236,13 +237,13 @@ class InvoiceLine(models.Model):
                                         help_text='Non-taxable items discount.')
     netTotal = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True, default=0.0,
                                    help_text='Total amount for the invoice line after applying discount.')
-    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=1,
+    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0.0,
                                help_text='Optional: discount percentage rate applied. Must be from 0 to 100.')
     amount = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True, default=0.0,
                                  help_text='Optional: amount of discount provided to customer for this item. Should '
                                            'be smaller or equal to value Total. If percentage specified should be '
                                            'valid amount calculated from total by applying discount percentage. ')
-    internalCode = models.CharField(max_length=50, blank=True, null=True,
+    internalCode = models.CharField(max_length=50,
                                     help_text='Optional: Internal code used for the product being sold – can be used '
                                               'to simplify references back to existing solution.')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
@@ -254,12 +255,15 @@ class InvoiceLine(models.Model):
     # for TaxLine totals
     def get_amount_egp(self):
         if self.currencySold is not None:
-            if self.currencySold != 'EGP':
+            if self.currencySold.code != 'EGP':
                 if self.amountSold and self.currencyExchangeRate is not None:
                     self.amountEGP = self.amountSold * self.currencyExchangeRate
                 else:
                     self.amountEGP = 0
                 self.save()
+            else:
+                if self.amountEGP is None:
+                    self.amountEGP = 0
 
     def calculate_sales_total(self):
         if self.quantity and self.amountEGP is not None:

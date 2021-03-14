@@ -23,6 +23,8 @@ class Issuer(models.Model):
                                    related_name="Issuer_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="Issuer_last_updated_by")
 
+    def __str__(self):
+        return self.name
 
 
 class Receiver(models.Model):
