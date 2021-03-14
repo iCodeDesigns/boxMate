@@ -47,8 +47,10 @@ class AddressForm(forms.ModelForm):
         fields = '__all__'
         def __init__(self, *args, **kwargs):
             super(AddressForm, self).__init__(*args, **kwargs)
+            self.fields['country'].widget.attrs.update(width=200)
             for field in self.fields:
                 self.fields[field].widget.attrs['class'] = 'form-control'
+
 
 class IssuerOracleDBForm(forms.ModelForm):
     class Meta:

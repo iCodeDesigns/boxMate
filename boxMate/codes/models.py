@@ -20,7 +20,7 @@ class CountryCode(models.Model):
     desc_ar = models.TextField(null=True, blank=True)
 
     def __str__(self):
-         return self.code
+         return self.desc_ar
 
 
 class UnitType(models.Model):
