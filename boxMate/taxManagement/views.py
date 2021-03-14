@@ -570,6 +570,11 @@ def view_invoice(request, invoice_id):
     return render(request, 'view-invoice.html', context)
 
 def create_new_invoice_header(request):
+    ''' 
+        date : 10/03/2021
+        author : Mamdouh
+        purpose : create new invoice and save it to database
+    '''
     header_form = InvoiceHeaderForm()
     if request.method == 'POST':
         header_form = InvoiceHeaderForm(request.POST)
@@ -613,7 +618,7 @@ def create_new_invoice_line(request,invoice_id):
                     calculate_all_invoice_lines(header)
                     header_totals(header)
                     if 'Save And Exit' in request.POST:
-                        return redirect('taxManagement:get-all-invoice-headers')
+                        return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
                     elif 'Save And Add' in request.POST:
                         return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
 
