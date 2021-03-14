@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'import_export',
     'rest_framework',
     'corsheaders',
+    'currencies',
 
 ]
 CORS_ORIGIN_ALLOW_ALL = True
@@ -134,3 +135,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
+
+
+OPENEXCHANGERATES_APP_ID = "c2b2efcb306e075d9c2f2d0b614119ea"
