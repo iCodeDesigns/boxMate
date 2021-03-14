@@ -42,7 +42,7 @@
                         <td>{{ issuer.reg_num }}</td>
                         <td>{{ issuer.client_id }}</td>
                         <td style="display: flex; justify-content: space-around;">
-                          <a href="{% url 'issuer:view-issuer' issuer.id %}">
+                          <a href="{% url 'issuer:view-issuer' issuer.id %}" data-toggle="tooltip" title="Edit">
                             <span class="glyphicon glyphicon-pencil"></span>
                           </a>
                         </td>

@@ -32,26 +32,26 @@
                                         <thead>
                                             <tr role="row">
                                                 <th>#</th>
-                                                <th>Name</th>
-                                                <th>Registration Number</th>
-                                                <th>Type</th>
-                                                <th>Action</th>
+                                                <th style="text-align: center;">Name</th>
+                                                <th style="text-align: center;">Registration Number</th>
+                                                <th style="text-align: center;">Type</th>
+                                                <th style="text-align: center;">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for receiver in receivers %}
                                             <tr>
                                                 <td>{{ forloop.counter }}</td>
-                                                <td>{{ receiver.name }}</td>
-                                                <td>{{ receiver.reg_num }}</td>
-                                                <td>{{ receiver.get_type_display }}</td>
+                                                <td style="text-align: center;">{{ receiver.name }}</td>
+                                                <td style="text-align: center;">{{ receiver.reg_num }}</td>
+                                                <td style="text-align: center;">{{ receiver.get_type_display }}</td>
                                                 <td style="display: flex; justify-content: space-around;">
 
-                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}">
+                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}" data-toggle="tooltip" title="Edit">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
 
-                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}" onclick="return confirm('Are you sure?')">
+                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}" data-toggle="tooltip" title="Delete" onclick="return confirm('Are you sure?')">
                                                         <span class="glyphicon glyphicon-trash"></span>
                                                     </a>
                                                 </td>
