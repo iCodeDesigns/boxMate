@@ -215,10 +215,10 @@ def create_issuer_tax(request):
 
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
-    issuer_form = IssuerForm()
+    issuer_form = IssuerForm(update=False)
     address_form = AddressForm()
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST)
+        issuer_form = IssuerForm(request.POST, update=False)
         address_form = AddressForm(request.POST)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
