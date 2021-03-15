@@ -1,0 +1,170 @@
+{% extends 'main.html'%}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        {% if update %}
+        <h1>Update Address</h1>
+        {% else %}
+        <h1>
+            Create Address
+            <!-- <small>Optional description</small> -->
+        </h1>
+        {% endif %}
+
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="box">
+            <!-- /.box-header -->
+            <!-- Error messaging -->
+            {% if issuer_form.errors %}
+            {% for field in issuer_form %}
+            {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+            <!-- /Error messaging -->
+            <div class="box-body">
+                <div class="container-fluid">
+                    <form method="POST" id="myform">
+                        {% csrf_token %}
+                        
+                        {{ address_formset.management_form }}
+                        {% for address_form in address_formset %}
+                        <div id="address_form">
+                            <div class="form-row">
+                                <h2 class="col-md-12">Address</h2>
+                                <div class="form-group col-md-4">
+                                    <label for="inputCity">{% trans 'Branch' %}</label>
+                                    {{ address_form.branch_id}}
+                                </div>
+
+                                <div class="form-group col-md-4">
+                                    <label for="inputCity">{% trans 'Governate' %}</label>
+                                    {{ address_form.governate}}
+                                </div>
+
+                                <div class="form-group col-md-4">
+                                    <label for="inputCity">{% trans 'Region City' %}</label>
+                                    {{ address_form.regionCity}}
+                                </div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Street' %}</label>
+                                    {{ address_form.street}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Building Number' %}</label>
+                                    {{ address_form.buildingNumber}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Postal Code' %}</label>
+                                    {{ address_form.postalCode}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Country' %}</label>
+                                    {{ address_form.country}}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div id="empty_form" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+
+                                    <label for="inputCity">{% trans 'Branch' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.branch_id}}
+                                </div>
+
+                                <div class="form-group col-md-4">
+                                    <label for="inputCity">{% trans 'Governate' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.governate}}
+                                </div>
+
+                                <div class="form-group col-md-4">
+                                    <label for="inputCity">{% trans 'Region City' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.regionCity}}
+                                </div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Street' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.street}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Building Number' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.buildingNumber}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Postal Code' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.postalCode}}
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label for="inputCity">{% trans 'Country' %}</label>
+                                    <br>
+                                    {{ address_formset.empty_form.country}}
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {% if not update %}
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-primary">Save and go to Taxs</button>
+                        </div>
+                        {% else %}
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                        {% endif %}
+                        <div class="form-group col-md-4">
+                            <button type="button" id="add_line" onclick="add_address_func()"
+                                class="btn cur-p btn-success pull-right">Add Address
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+{% endblock body %}
+{% block js %}
+<script>
+
+    function add_address_func() {
+        var form_idx = $('#id_form-TOTAL_FORMS').val();
+        $('#address_form').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+    };
+</script>
+{% endblock js %}

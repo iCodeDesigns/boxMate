@@ -39,57 +39,58 @@
         <br>
         <div style="text-align: center;">
             <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput" class="form-label">Branch : </label>
+                <label for="formGroupExampleInput" class="form-label">{% trans 'Branch' %}: </label>
                 {{address.branch_id}}
             </div>
             <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">Country : </label>
+                <label for="formGroupExampleInput2" class="form-label">{% trans 'Country' %}: </label>
                 {{country.desc_en}}
             </div>
             <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">Governate : </label>
+                <label for="formGroupExampleInput2" class="form-label">{% trans 'Governate' %}: </label>
                 {{address.governate}}
             </div>
 
             <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">Region City : </label>
+                <label for="formGroupExampleInput2" class="form-label">{% trans 'Region City' %}: </label>
                 {{address.regionCity}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Street : </label>
                 {{address.street}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Building Number : </label>
                 {{address.buildingNumber}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Postal Code : </label>
                 {{address.postalCode}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Floor : </label>
                 {{address.floor}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Room : </label>
                 {{address.room}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-3" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Landmark : </label>
                 {{address.landmark}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
+            <div class="col-md-6" style="font-size: larger;">
                 <label for="formGroupExampleInput2" class="form-label">Additional Information : </label>
                 {{address.additionalInformation}}
             </div>
+            {% endfor %}
         </div>
         <div class="form-row">
             <div class="form-group col-md-12">
@@ -98,18 +99,19 @@
         </div>
 
         <h1 style="font-weight: bolder;">
-            Taxes
+
+            {% trans 'Taxes' %}
             <!-- <small>Optional description</small> -->
         </h1>
 <!--        By: amira-->
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">Tax Type</th>
-                <th scope="col">Code</th>
-                <th scope="col">Tax Sub-Type</th>
-                <th scope="col">Start Date</th>
-                <th scope="col">End Date</th>
+                <th scope="col">{% trans 'Tax Type' %}</th>
+                <th scope="col">{% trans 'Code' %}</th>
+                <th scope="col">{% trans 'Tax Sub-Type' %}</th>
+                <th scope="col">{% trans 'Start Date' %}</th>
+                <th scope="col">{% trans 'End Date' %}</th>
             </tr>
             </thead>
             <tbody>

@@ -24,13 +24,15 @@
               </div>
               <div class="row">
                 <div class="col-sm-12">
-                  <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+                  <table id="example1" class="table table-bordered table-striped dataTable" role="grid"
+                    aria-describedby="example1_info">
                     <thead>
                       <tr role="row">
                         <th>#</th>
                         <th>Name</th>
                         <th>Registration Number</th>
                         <th>Client ID</th>
+                        <th>Addresses</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -41,6 +43,11 @@
                         <td>{{ issuer.name }}</td>
                         <td>{{ issuer.reg_num }}</td>
                         <td>{{ issuer.client_id }}</td>
+                        <td>
+                          <a href="{% url 'issuer:list-issuer-address' %}" data-toggle="tooltip" title="View">
+                            <span class="glyphicon glyphicon-zoom-in"></span>
+                          </a>
+                        </td>
                         <td style="display: flex; justify-content: space-around;">
                           <a href="{% url 'issuer:view-issuer' issuer.id %}" data-toggle="tooltip" title="View">
                             <span class="glyphicon glyphicon-zoom-in"></span>
