@@ -20,6 +20,10 @@ urlpatterns = [
     path('list/receiver' , views.list_receiver , name='list-receiver'),
     path('list/receiver/<int:pk>' , views.update_receiver , name='update-receiver'),
     path('delete/receiver/<int:pk>' , views.delete_receiver , name='delete-receiver'),
+    path('create/address/issuer' , views.create_issuer_address,name='create-issuer-address'),
+    path('list/address/issuer' , views.list_issuer_address,name='list-issuer-address'),
+    path('update/address/issuer/<int:id>' , views.update_issuer_address,name='update-issuer-address'),
+    path('delete/address/issuer/<int:id>' , views.delete_issuer_address,name='delete-issuer-address'),
 
 
 ]

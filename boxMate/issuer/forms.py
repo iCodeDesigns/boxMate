@@ -1,7 +1,7 @@
 from django import forms
 from issuer.models import Issuer ,IssuerTax, Address , IssuerOracleDB , Receiver
 from datetime import date
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory , formset_factory
 
 
 def clean_unique(form, field, exclude_initial=True, 
@@ -80,3 +80,4 @@ class ReceiverForm(forms.ModelForm):
             for field in self.fields:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
+AddressInlineForm = formset_factory(form=AddressForm, extra=1)
