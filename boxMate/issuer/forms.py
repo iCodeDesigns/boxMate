@@ -20,10 +20,17 @@ class IssuerForm(forms.ModelForm):
     class Meta:
         model = Issuer
         fields = '__all__'
-        def __init__(self, *args, **kwargs):
-            super(IssuerForm, self).__init__(*args, **kwargs)
-            for field in self.fields:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs):
+        update = kwargs.pop('update')
+        super(IssuerForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+        if update:
+            self.fields['reg_num'].widget.attrs['readonly'] = True
+            self.fields['client_id'].widget.attrs['readonly'] = True
+            self.fields['activity_code'].widget.attrs['readonly'] = True
+            self.fields['type'].widget.attrs['readonly'] = True
+
 
 
 
@@ -45,10 +52,10 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = '__all__'
-        def __init__(self, *args, **kwargs):
-            super(AddressForm, self).__init__(*args, **kwargs)
-            for field in self.fields:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs):
+        super(AddressForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 class IssuerOracleDBForm(forms.ModelForm):
     class Meta:
