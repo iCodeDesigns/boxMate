@@ -107,6 +107,8 @@
                 <th scope="col">Tax Type</th>
                 <th scope="col">Code</th>
                 <th scope="col">Tax Sub-Type</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
             </tr>
             </thead>
             <tbody>
@@ -121,6 +123,8 @@
                     {{code.issuer_sub_tax.desc_en}}
                     {% endif %}
                 </td>
+                <td>{{code.start_date}}</td>
+                <td>{{code.end_date}}</td>
             </tr>
             {% endfor %}
             </tbody>
