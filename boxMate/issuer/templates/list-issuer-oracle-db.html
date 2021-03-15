@@ -60,13 +60,13 @@
                                                 </td>
                                                 {% else %}
                                                 <td>
-                                                    <a class="btn btn-primary" href="{% url 'issuer:activate-db' id=connection.id %}">
+                                                    <a class="btn btn-primary" href="{% url 'issuer:activate-db' id=connection.id %}" >
                                                         <span>Activate</span>
                                                     </a>
                                                 </td>
                                                 {% endif %}
                                                 <td>
-                                                    <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}">
+                                                    <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}" data-toggle="tooltip" title="Edit">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
                                                 </td>
