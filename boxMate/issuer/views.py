@@ -170,7 +170,7 @@ def list_uploaded_invoice(request):
 def view_issuer(request, issuer_id):
     issuer = Issuer.objects.get(id = issuer_id)
     address = Address.objects.get(issuer = issuer_id)
-    country = CountryCode.objects.get(code = address.country )
+    country = CountryCode.objects.get(code = address.country.code )
     codes = IssuerTax.objects.filter(issuer = issuer_id)
     return render(request , 'view-issuer.html' , {
             'issuer' :issuer,
