@@ -274,11 +274,6 @@ def update_issuer(request , issuer_id):
         else:
             print(issuer_form.errors)
             print(address_form.errors)
-            # return render(request , 'create-issuer.html' , {
-            #     'issuer_form': issuer_form,
-            #     'address_form': address_form,
-            #     'update':True,})
-
         
     return render(request , 'create-issuer.html' , {
         'issuer_form': issuer_form,
