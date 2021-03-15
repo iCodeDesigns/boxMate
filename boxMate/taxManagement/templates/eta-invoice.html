@@ -63,6 +63,7 @@
                                              <th>Uuid</th>
                                              <th>view</th>
                                              <th>Resubmit</th>
+                                             <th>Refresh</th>
                                           </tr>
                                        </thead>
                                        <tbody>
@@ -90,6 +91,9 @@
                                              <td>{{ invoice.subm_uuid }}</td>
                                              <td><a href="{% url 'taxManagement:dec-detail' invoice.invoice.id%}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
                                              <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
+                                             {% if invoice.over_all_status == 'InProgress'  %}
+                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.subm_id %}"><span class="	glyphicon glyphicon-refresh"></span></a></td>
+                                             {% endif %}
                                           </tr>
                                            {% endfor %}
                                        </tbody>

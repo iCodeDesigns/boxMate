@@ -637,3 +637,9 @@ def create_new_invoice_line(request,invoice_id):
     }
 
     return render(request , 'create-invoice-line.html' , context)
+
+
+def refresh_submission_status(request , submission_id):
+    submission = get_submission_response(submission_id)
+    print(submission)
+    return redirect('taxManagement:get-all-invoice-headers')
