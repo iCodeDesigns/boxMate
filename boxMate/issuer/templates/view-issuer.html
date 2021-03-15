@@ -10,6 +10,7 @@
     <section class="content-header">
         <h1 style="font-weight: bolder;">
             {{issuer.name}}
+            <!-- <small>Optional description</small> -->
         </h1>
         <div style="text-align: center;">
             <div class="mb-3" style="font-size: larger;">
@@ -36,22 +37,28 @@
             <!-- <small>Optional description</small> -->
         </h1>
         <br>
-        <div style="text-align: center;">
-            <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput" class="form-label">{% trans 'Branch' %}: </label>
+        <div>
+            {% for address in addresses %}
+
+            <div class="col-md-12" style="font-size: larger; color: red;">
+                <label for="formGroupExampleInput" class="form-label">Address #</label>
+                {{forloop.counter}}
+            </div>
+            <div class="col-md-3" style="font-size: larger;">
+                <label for="formGroupExampleInput" class="form-label">Branch : </label>
                 {{address.branch_id}}
             </div>
-            <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">{% trans 'Country' %}: </label>
-                {{country.desc_en}}
+            <div class="col-md-3" style="font-size: larger;">
+                <label for="formGroupExampleInput2" class="form-label">Country : </label>
+                {{address.country.desc_en}}
             </div>
-            <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">{% trans 'Governate' %}: </label>
+            <div class="col-md-3" style="font-size: larger;">
+                <label for="formGroupExampleInput2" class="form-label">Governate : </label>
                 {{address.governate}}
             </div>
 
-            <div class="mb-3" style="font-size: larger;">
-                <label for="formGroupExampleInput2" class="form-label">{% trans 'Region City' %}: </label>
+            <div class="col-md-3" style="font-size: larger;">
+                <label for="formGroupExampleInput2" class="form-label">Region City : </label>
                 {{address.regionCity}}
             </div>
 
@@ -98,19 +105,16 @@
         </div>
 
         <h1 style="font-weight: bolder;">
-
-            {% trans 'Taxes' %}
-            <!-- <small>Optional description</small> -->
-        </h1>
-<!--        By: amira-->
+            Taxes
+            </h1>
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">{% trans 'Tax Type' %}</th>
-                <th scope="col">{% trans 'Code' %}</th>
-                <th scope="col">{% trans 'Tax Sub-Type' %}</th>
-                <th scope="col">{% trans 'Start Date' %}</th>
-                <th scope="col">{% trans 'End Date' %}</th>
+                <th scope="col">Tax Type</th>
+                <th scope="col">Code</th>
+                <th scope="col">Tax Sub-Type</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
             </tr>
             </thead>
             <tbody>
