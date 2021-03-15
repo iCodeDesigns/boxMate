@@ -8,6 +8,7 @@ urlpatterns = [
     path('list/uploaded-invoices', views.list_uploaded_invoice, name='list-uploaded-invoices'),
     path('create/issuer', views.create_issuer, name='create-issuer'),
     path('list/issuer', views.list_issuer, name='list-issuer'),
+    path('update/issuer/<int:issuer_id>' , views.update_issuer , name='update-issuer'),
     path('create/tax/<int:issuer_id>', views.create_issuer_tax_view, name='create-tax'),
     path('create/issuer/tax', views.create_issuer_tax, name='create-issuer-tax'), #ajax
     path('issuer/<int:issuer_id>', views.view_issuer, name='view-issuer'),
