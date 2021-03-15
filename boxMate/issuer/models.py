@@ -70,11 +70,11 @@ class IssuerTax(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_tax')
     issuer_sub_tax = models.ForeignKey(TaxSubtypes, on_delete=models.CASCADE, null=True, blank=True, related_name='issuer_sub_tax')
     start_date = models.DateField(default=timezone.now, null=True, blank=True)
-    end_date = models.DateField(auto_now_add=True, null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True) # By: amira/ removed auto now to not be set in creation time
     is_enabled = models.BooleanField()
 
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
-    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False, blank=True)
+    last_updated_at = models.DateField(null=True, auto_now_add=False, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="issuer_tax_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="issuer_tax_last_update_by")
