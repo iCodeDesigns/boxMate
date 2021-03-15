@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.translation import get_language
 
 
 # Create your models here.
@@ -20,7 +21,9 @@ class CountryCode(models.Model):
     desc_ar = models.TextField(null=True, blank=True)
 
     def __str__(self):
-         return self.code
+        if get_language() == 'en-us':  # to return language according to current language
+            return self.desc_en
+        return self.desc_ar
 
 
 class UnitType(models.Model):

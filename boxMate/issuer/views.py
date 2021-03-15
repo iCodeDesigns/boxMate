@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from array import *
 from custom_user.models import User
 from django.contrib import messages
+from .decorators import is_issuer
 
 
 
@@ -93,6 +94,7 @@ def get_issuer_data(user):
         address_obj.save()
 """
 
+@is_issuer
 def get_receiver_data(user):
     receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
         'receiver_type',
@@ -159,10 +161,12 @@ def get_receiver_data(user):
             address_obj.save()
 
 
+@is_issuer
 def list_uploaded_invoice(request):
     return render(request, 'upload-invoice.html')
 
 
+@is_issuer
 def view_issuer(request, issuer_id):
     issuer = Issuer.objects.get(id = issuer_id)
     address = Address.objects.get(issuer = issuer_id)
@@ -176,6 +180,7 @@ def view_issuer(request, issuer_id):
             })
 
 
+@is_issuer
 def create_issuer_tax_view(request, issuer_id):
     sub_taxs = TaxSubtypes.objects.all()
     issuer_id =issuer_id
@@ -186,6 +191,7 @@ def create_issuer_tax_view(request, issuer_id):
 
 
 
+@is_issuer
 def create_issuer_tax(request):
     issuer = request.GET.get('issuer')
     codes = request.GET.getlist("codes_arr[]")
@@ -281,6 +287,8 @@ def update_issuer(request , issuer_id):
 
 
 
+
+@is_issuer
 def issuer_oracle_DB_create(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
     issuer = Issuer.objects.get(id = request.user.issuer.id)
@@ -297,6 +305,7 @@ def issuer_oracle_DB_create(request):
     return render(request , "create-issuer-oracle-db.html" , context)
 
 
+@is_issuer
 def issuer_oracle_DB_list(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
     issuer = Issuer.objects.get(id = request.user.issuer.id)
@@ -310,6 +319,7 @@ def issuer_oracle_DB_list(request):
     return render(request , "list-issuer-oracle-db.html" , context)
 
 
+@is_issuer
 def issuer_oracle_DB_update(request , id):
     oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
     issuer_oracle_DB_form = IssuerOracleDBForm(instance=oracle_DB_connection)
@@ -323,7 +333,7 @@ def issuer_oracle_DB_update(request , id):
     }
     return render(request , "create-issuer-oracle-db.html" , context)
 
-
+@is_issuer
 def list_issuer(request):
     '''
         created_at: 10/03/2021
@@ -343,10 +353,10 @@ def activate_database(request , id):
     oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
     oracle_DB_connection.is_active = True
     oracle_DB_connection.save()
-    print('DOOOOONE')
     return redirect('issuer:list-issuer-db-connection')
 
 
+@is_issuer
 def create_receiver(request):
     '''
         created_at:08/03/2021
@@ -387,6 +397,7 @@ def create_receiver(request):
             'address_form': address_form,})
 
 
+@is_issuer
 def list_receiver(request):
     '''
         created_at:08/03/2021
@@ -400,6 +411,7 @@ def list_receiver(request):
     return render(request , 'list-receiver.html' , context)
 
 
+@is_issuer
 def update_receiver(request, pk):
     '''
         created_at:08/03/2021
@@ -439,6 +451,7 @@ def update_receiver(request, pk):
             'receiver_form': receiver_form,
             'address_form': address_form,})
 
+@is_issuer
 def delete_receiver(request , pk):
     '''
         created_at:08/03/2021

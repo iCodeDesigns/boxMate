@@ -29,6 +29,7 @@ from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from ast import literal_eval
 from taxManagement.invoice_generation import Invoicegeneration
 from .forms import *
+from issuer.decorators import is_issuer
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -178,6 +179,7 @@ def import_data_to_invoice(user):
 
 
 @login_required(login_url='home:user-login')
+@is_issuer
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
@@ -302,6 +304,7 @@ def save_submission_response(invoice_id, submission_id, status):
 
 
 @login_required(login_url='home:user-login')
+@is_issuer
 def submit_invoice(request, invoice_id):
     '''
     This function is used to submit an invoice to the governmental api, it calls another function to
@@ -352,7 +355,7 @@ def submit_invoice(request, invoice_id):
 
 
 ##### get all invoices ######
-
+@is_issuer
 def get_all_invoice_headers(request):
     invoice_headers = InvoiceHeader.objects.all()
     count = 0
@@ -366,6 +369,7 @@ def get_all_invoice_headers(request):
     return render(request, 'upload-invoice.html', context)
 
 
+@is_issuer
 def get_decument_detail_after_submit(request, internal_id):
     submission = Submission.objects.get(invoice__id=internal_id)
     if submission.subm_uuid is not None:
@@ -409,6 +413,7 @@ def get_decument_detail_after_submit(request, internal_id):
         return redirect('taxManagement:list-eta-invoice')
 
 
+@is_issuer
 def list_eta_invoice(request):
     eta_invoice_list = Submission.objects.all()
     eta_context = {
@@ -560,6 +565,7 @@ def calculate_all_invoice_lines(header_obj):
         calculate_line_total(line_obj.id, tax_calculator)
 
 
+@is_issuer
 def view_invoice(request, invoice_id):
     invoice_header = InvoiceHeader.objects.get(id=invoice_id)
     invoice_lines = InvoiceLine.objects.filter(invoice_header=invoice_header)
@@ -569,6 +575,7 @@ def view_invoice(request, invoice_id):
     }
     return render(request, 'view-invoice.html', context)
 
+@is_issuer
 def create_new_invoice_header(request):
     ''' 
         date : 10/03/2021
@@ -591,6 +598,7 @@ def create_new_invoice_header(request):
 
     return render(request , 'create-invoice-header.html' , context)
     
+@is_issuer
 def create_new_invoice_line(request,invoice_id):
     ''' 
         date : 10/03/2021
