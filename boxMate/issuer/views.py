@@ -248,16 +248,17 @@ def create_issuer(request):
     else:
         return render(request, 'create-issuer.html', {
             'issuer_form': issuer_form,
-            'address_form': address_form,})
+            'address_form': address_form, })
 
-def update_issuer(request , issuer_id):
-    issuer_instance = Issuer.objects.get(id = issuer_id)
-    address_instance = Address.objects.get(issuer = issuer_instance)
-    issuer_form = IssuerForm(instance = issuer_instance , update = True)
-    address_form = AddressForm(instance = address_instance)
+
+def update_issuer(request, issuer_id):
+    issuer_instance = Issuer.objects.get(id=issuer_id)
+    address_instance = Address.objects.get(issuer=issuer_instance)
+    issuer_form = IssuerForm(instance=issuer_instance, update=True)
+    address_form = AddressForm(instance=address_instance)
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST , instance=issuer_instance,update = True )
-        address_form = AddressForm(request.POST, instance = issuer_instance)
+        issuer_form = IssuerForm(request.POST, instance=issuer_instance, update=True)
+        address_form = AddressForm(request.POST, instance=issuer_instance)
         issuer_obj = issuer_form.save(commit=False)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -275,12 +276,10 @@ def update_issuer(request , issuer_id):
             print(issuer_form.errors)
             print(address_form.errors)
 
-    return render(request , 'create-issuer.html' , {
+    return render(request, 'create-issuer.html', {
         'issuer_form': issuer_form,
         'address_form': address_form,
-        'update':True,})
-
-
+        'update': True, })
 
 
 @is_issuer
@@ -346,8 +345,8 @@ def list_issuer(request):
 
 ###############################################################################################
 
-def activate_database(request , id):
-    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+def activate_database(request, id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id=id)
     oracle_DB_connection.is_active = True
     oracle_DB_connection.save()
     return redirect('issuer:list-issuer-db-connection')
@@ -421,8 +420,8 @@ def update_receiver(request, pk):
     receiver_form = ReceiverForm(instance=receiver)
     address_form = AddressForm(instance=address)
     if request.method == 'POST':
-        receiver_form = ReceiverForm(request.POST ,instance = receiver)
-        address_form = AddressForm(request.POST , instance = address)
+        receiver_form = ReceiverForm(request.POST, instance=receiver)
+        address_form = AddressForm(request.POST, instance=address)
         if receiver_form.is_valid() and address_form.is_valid():
             receiver_obj = receiver_form.save(commit=False)
             receiver_obj.issuer = request.user.issuer
@@ -439,7 +438,7 @@ def update_receiver(request, pk):
             return redirect('issuer:list-receiver')
 
         else:
-            return render(request , 'create-receiver.html' , {
+            return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
                 'address_form': address_form, })
 
