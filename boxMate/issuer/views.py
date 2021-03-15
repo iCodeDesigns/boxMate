@@ -166,14 +166,13 @@ def list_uploaded_invoice(request):
 @is_issuer
 def view_issuer(request, issuer_id):
     issuer = Issuer.objects.get(id=issuer_id)
-    address = Address.objects.get(issuer=issuer_id)
-    country = CountryCode.objects.get(code=address.country.code)
+    address = Address.objects.filter(issuer=issuer_id)
+    # country = CountryCode.objects.get(code=address.country.code)
     codes = IssuerTax.objects.filter(issuer=issuer_id)
     return render(request, 'view-issuer.html', {
         'issuer': issuer,
-        'address': address,
+        'addresses': address,
         'codes': codes,
-        'country': country
     })
 
 
@@ -215,10 +214,10 @@ def create_issuer_tax(request):
 
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
-    issuer_form = IssuerForm()
+    issuer_form = IssuerForm(update = False)
     address_form = AddressForm()
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST)
+        issuer_form = IssuerForm(request.POST, update = False)
         address_form = AddressForm(request.POST)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -252,23 +251,15 @@ def create_issuer(request):
 
 def update_issuer(request , issuer_id):
     issuer_instance = Issuer.objects.get(id = issuer_id)
-    address_instance = Address.objects.get(issuer = issuer_instance)
     issuer_form = IssuerForm(instance = issuer_instance , update = True)
-    address_form = AddressForm(instance = address_instance)
     if request.method == 'POST':
         issuer_form = IssuerForm(request.POST , instance=issuer_instance,update = True )
-        address_form = AddressForm(request.POST, instance = issuer_instance)
         issuer_obj = issuer_form.save(commit=False)
-        if issuer_form.is_valid() and address_form.is_valid():
+        if issuer_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
             issuer_obj.last_updated_by = request.user
             issuer_obj.last_updated_at = date.today()
             issuer_obj.save()
-
-            address_obj = address_form.save(commit=False)
-            address_obj.last_updated_by = request.user
-            address_obj.last_updated_at = date.today()
-            address_obj.save()
             return redirect('issuer:list-issuer')
 
         else:
@@ -277,10 +268,53 @@ def update_issuer(request , issuer_id):
 
     return render(request , 'create-issuer.html' , {
         'issuer_form': issuer_form,
-        'address_form': address_form,
         'update':True,})
 
+def create_issuer_address(request):
+    address_formset = AddressInlineForm()
+    if request.method == 'POST':
+        address_formset = AddressInlineForm(request.POST)
+        if address_formset.is_valid():
+            for address in address_formset:
+                address_obj = address.save(commit=False)
+                address_obj.issuer = request.user.issuer
+                address_obj.created_by = request.user
+                address_obj.created_at = datetime.now()
+                address_obj.save()
+            return redirect('issuer:create-tax',request.user.issuer.id)
+    context = {
+        'address_formset': address_formset
+    }
+    return render(request , 'create_issuer_address.html' , context)
 
+def list_issuer_address(request):
+    addresses = Address.objects.filter(issuer=request.user.issuer)
+    context = {
+        'addresses':addresses
+    }
+    return render(request , 'list-issuer-addresses.html',context)
+
+def update_issuer_address(request , id):
+    address = Address.objects.get(id = id)
+    address_form = AddressForm(instance = address)
+    if request.method == 'POST':
+        address_form = AddressForm(request.POST , instance = address)
+        if address_form.is_valid():
+            address_obj = address_form.save(commit=False)
+            address_obj.issuer = request.user.issuer
+            address_obj.last_updated_by = request.user
+            address_obj.last_updated_at = datetime.now()
+            address_obj.save()
+            return redirect('issuer:list-issuer-address')
+    context = {
+        'address_form':address_form
+    }
+    return render(request , 'update-issuer-address.html' , context)
+
+def delete_issuer_address(request , id):
+    address = Address.objects.get(id = id)
+    address.delete()
+    return redirect('issuer:list-issuer-address')
 
 
 @is_issuer

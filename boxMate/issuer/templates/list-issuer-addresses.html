@@ -1,0 +1,73 @@
+{% extends 'main.html'%}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+
+        <div class="box">
+            <div class="box-header">
+                <h1 style="font-weight: bolder;">
+                    Addresses
+                    <a href="{% url 'issuer:create-issuer-address' %}"  data-toggle="tooltip" title="Create" class="pull-right btn btn-success">
+                        Create New Address
+                    </a>
+                    
+                    <!-- <small>Optional description</small> -->
+                </h1>
+            </div>
+            <div class="box-body">
+                {% for address in addresses %}
+                <div class="form-row">
+                    <div class="form-group col-md-12" style="font-size: larger; font-weight: bolder;">
+                        Address #{{forloop.counter}}    
+                        <a href="{% url 'issuer:update-issuer-address' address.id %}" style="margin-left: 3%;" data-toggle="tooltip" title="Edit">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </a>
+                        <a href="{% url 'issuer:delete-issuer-address' address.id %}" style="margin-left: 3%;" data-toggle="tooltip" title="Delete">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                    </div>
+                    
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput" class="form-label">Branch : </label>
+                        {{address.branch_id}}
+                    </div>
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput2" class="form-label">Governate : </label>
+                        {{address.governate}}
+                    </div>
+
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput2" class="form-label">Region City : </label>
+                        {{address.regionCity}}
+                    </div>
+
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput2" class="form-label">Street : </label>
+                        {{address.street}}
+                    </div>
+
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput2" class="form-label">Building Number : </label>
+                        {{address.buildingNumber}}
+                    </div>
+
+                    <div class="form-group col-md-4" style="font-size: larger;">
+                        <label for="formGroupExampleInput2" class="form-label">Postal Code : </label>
+                        {{address.postalCode}}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <br>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% endblock body %}
