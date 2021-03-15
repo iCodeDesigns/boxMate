@@ -98,11 +98,12 @@
         </div>
 
         <h1 style="font-weight: bolder;">
-            Taxs
+            Taxes
             <!-- <small>Optional description</small> -->
         </h1>
+<!--        By: amira-->
         <table class="table">
-            <thead class="thead-dark">
+            <thead>
             <tr>
                 <th scope="col">Tax Type</th>
                 <th scope="col">Code</th>
@@ -124,7 +125,11 @@
                     {% endif %}
                 </td>
                 <td>{{code.start_date}}</td>
-                <td>{{code.end_date}}</td>
+                <td>
+                    {% if code.end_date %}
+                        {{code.end_date}}
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
             </tbody>

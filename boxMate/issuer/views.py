@@ -4,23 +4,19 @@ from issuer.api.serializers import IssuerSerializer
 from taxManagement.models import *
 from django.db.models import Count
 from django.utils import timezone
-from django.shortcuts import render, redirect , HttpResponseRedirect
+from django.shortcuts import render, redirect, HttpResponseRedirect
 from codes.models import CountryCode
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from issuer.forms import *
 from datetime import date
-from codes.models import TaxSubtypes , CountryCode
+from codes.models import TaxSubtypes, CountryCode
 import json
 from django.http import JsonResponse
 from array import *
 from custom_user.models import User
 from django.contrib import messages
 from .decorators import is_issuer
-
-
-
-
 
 """
 def get_issuer_data(user):
@@ -93,6 +89,7 @@ def get_issuer_data(user):
         )
         address_obj.save()
 """
+
 
 @is_issuer
 def get_receiver_data(user):
@@ -168,27 +165,26 @@ def list_uploaded_invoice(request):
 
 @is_issuer
 def view_issuer(request, issuer_id):
-    issuer = Issuer.objects.get(id = issuer_id)
-    address = Address.objects.get(issuer = issuer_id)
-    country = CountryCode.objects.get(code = address.country.code )
-    codes = IssuerTax.objects.filter(issuer = issuer_id)
-    return render(request , 'view-issuer.html' , {
-            'issuer' :issuer,
-            'address' :address,
-            'codes' : codes,
-            'country' : country
-            })
+    issuer = Issuer.objects.get(id=issuer_id)
+    address = Address.objects.get(issuer=issuer_id)
+    country = CountryCode.objects.get(code=address.country.code)
+    codes = IssuerTax.objects.filter(issuer=issuer_id)
+    return render(request, 'view-issuer.html', {
+        'issuer': issuer,
+        'address': address,
+        'codes': codes,
+        'country': country
+    })
 
 
 @is_issuer
 def create_issuer_tax_view(request, issuer_id):
     sub_taxs = TaxSubtypes.objects.all()
-    issuer_id =issuer_id
+    issuer_id = issuer_id
 
-    return render(request , 'create-issuer-tax.html' , {
-            'issuer_id' :issuer_id,
-            'sub_taxs' :sub_taxs,})
-
+    return render(request, 'create-issuer-tax.html', {
+        'issuer_id': issuer_id,
+        'sub_taxs': sub_taxs, })
 
 
 @is_issuer
@@ -196,24 +192,26 @@ def create_issuer_tax(request):
     issuer = request.GET.get('issuer')
     codes = request.GET.getlist("codes_arr[]")
     try:
-        issuer_id = Issuer.objects.get(id= issuer)
+        issuer_id = Issuer.objects.get(id=issuer)
         for code in codes:
             subtax = TaxSubtypes.objects.get(code=code)
-            issuer_tax_obj= IssuerTax(
-                issuer = issuer_id,
-                issuer_sub_tax = subtax,
-                start_date = date.today(),
-                is_enabled = True,
+            issuer_tax_obj = IssuerTax(
+                issuer=issuer_id,
+                issuer_sub_tax=subtax,
+                start_date=date.today(),
+                is_enabled=True,
+                created_by=request.user
             )
             issuer_tax_obj.save()
-        message = ' taxs added to your company'
+        message = ' taxes added to your company'
 
     except Issuer.DoesNotExist as e:
-        message =  'not added to your company '
+        message = 'not added to your company '
 
     data = {
-        'message' : message}
+        'message': message}
     return JsonResponse(data)
+
 
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
@@ -225,77 +223,79 @@ def create_issuer(request):
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
             issuer_obj.created_at = date.today()
+            issuer_obj.created_by = request.user
             issuer_obj.save()
 
             address_obj = address_form.save(commit=False)
             address_obj.issuer = issuer_obj
             address_obj.created_at = date.today()
+            address_obj.created_by = request.user
             address_obj.save()
 
-            user = User.objects.get(id= request.user.id)
+            user = User.objects.get(id=request.user.id)
             user.issuer = issuer_obj
             user.save()
             return redirect('issuer:create-tax',
-                issuer_id = issuer_obj.id)
+                            issuer_id=issuer_obj.id)
 
         else:
             print(issuer_form.errors)
             print(address_form.errors)
-            return render(request , 'create-issuer.html' , {
+            return render(request, 'create-issuer.html', {
                 'issuer_form': issuer_form,
-                'address_form': address_form,})
+                'address_form': address_form, })
 
     else:
-        return render(request , 'create-issuer.html' , {
+        return render(request, 'create-issuer.html', {
             'issuer_form': issuer_form,
-            'address_form': address_form,})
-
+            'address_form': address_form, })
 
 
 @is_issuer
 def issuer_oracle_DB_create(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
-    issuer = Issuer.objects.get(id = request.user.issuer.id)
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
     if request.method == 'POST':
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
         if issuer_oracle_DB_form.is_valid():
-            db_obj = issuer_oracle_DB_form.save(commit = False)
+            db_obj = issuer_oracle_DB_form.save(commit=False)
             db_obj.issuer = issuer
             db_obj.save()
             return redirect('issuer:list-issuer-db-connection')
-    context= {
-        "db_form" : issuer_oracle_DB_form,
+    context = {
+        "db_form": issuer_oracle_DB_form,
     }
-    return render(request , "create-issuer-oracle-db.html" , context)
+    return render(request, "create-issuer-oracle-db.html", context)
 
 
 @is_issuer
 def issuer_oracle_DB_list(request):
     issuer_oracle_DB_form = IssuerOracleDBForm()
-    issuer = Issuer.objects.get(id = request.user.issuer.id)
-    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer = issuer)
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer=issuer)
     print(oracle_DB_connections)
-    context ={
-        'issuer' : issuer,
-        'connections':oracle_DB_connections,
+    context = {
+        'issuer': issuer,
+        'connections': oracle_DB_connections,
         'db_form': issuer_oracle_DB_form,
     }
-    return render(request , "list-issuer-oracle-db.html" , context)
+    return render(request, "list-issuer-oracle-db.html", context)
 
 
 @is_issuer
-def issuer_oracle_DB_update(request , id):
-    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+def issuer_oracle_DB_update(request, id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id=id)
     issuer_oracle_DB_form = IssuerOracleDBForm(instance=oracle_DB_connection)
     if request.method == 'POST':
-        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST , instance=oracle_DB_connection)
+        issuer_oracle_DB_form = IssuerOracleDBForm(request.POST, instance=oracle_DB_connection)
         if issuer_oracle_DB_form.is_valid():
             db_obj = issuer_oracle_DB_form.save()
             return redirect('issuer:list-issuer-db-connection')
-    context= {
-        "db_form" : issuer_oracle_DB_form,
+    context = {
+        "db_form": issuer_oracle_DB_form,
     }
-    return render(request , "create-issuer-oracle-db.html" , context)
+    return render(request, "create-issuer-oracle-db.html", context)
+
 
 @is_issuer
 def list_issuer(request):
@@ -304,17 +304,18 @@ def list_issuer(request):
         author: Ahd Hozayen
         purpose: list all the current issuer/s for the "logged in user"
     '''
-    issuers_list = Issuer.objects.filter(id = request.user.issuer.id)
+    issuers_list = Issuer.objects.filter(id=request.user.issuer.id)
     context = {
-               "page_title": "Issuer List",
-        'issuers_list':issuers_list,
+        "page_title": "Issuer List",
+        'issuers_list': issuers_list,
     }
-    return render(request , 'list-issuer.html' , context)
+    return render(request, 'list-issuer.html', context)
+
 
 ###############################################################################################
 
-def activate_database(request , id):
-    oracle_DB_connection = IssuerOracleDB.objects.get(id = id)
+def activate_database(request, id):
+    oracle_DB_connection = IssuerOracleDB.objects.get(id=id)
     oracle_DB_connection.is_active = True
     oracle_DB_connection.save()
     return redirect('issuer:list-issuer-db-connection')
@@ -351,14 +352,14 @@ def create_receiver(request):
         else:
             print(receiver_form.errors)
             print(address_form.errors)
-            return render(request , 'create-receiver.html' , {
+            return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
-                'address_form': address_form,})
+                'address_form': address_form, })
 
     else:
-        return render(request , 'create-receiver.html' , {
+        return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form,})
+            'address_form': address_form, })
 
 
 @is_issuer
@@ -368,11 +369,11 @@ def list_receiver(request):
         author: Mamadouh
         purpose:list all recievers for this issuer
     '''
-    receivers = Receiver.objects.filter(issuer = request.user.issuer)
+    receivers = Receiver.objects.filter(issuer=request.user.issuer)
     context = {
-        'receivers':receivers,
+        'receivers': receivers,
     }
-    return render(request , 'list-receiver.html' , context)
+    return render(request, 'list-receiver.html', context)
 
 
 @is_issuer
@@ -383,13 +384,13 @@ def update_receiver(request, pk):
         purpose:update reciever
     '''
 
-    receiver = Receiver.objects.get(id = pk)
-    address = Address.objects.get(receiver = receiver)
-    receiver_form = ReceiverForm(instance = receiver)
-    address_form = AddressForm(instance = address)
+    receiver = Receiver.objects.get(id=pk)
+    address = Address.objects.get(receiver=receiver)
+    receiver_form = ReceiverForm(instance=receiver)
+    address_form = AddressForm(instance=address)
     if request.method == 'POST':
-        receiver_form = ReceiverForm(request.POST ,instance = receiver)
-        address_form = AddressForm(request.POST , instance = address)
+        receiver_form = ReceiverForm(request.POST, instance=receiver)
+        address_form = AddressForm(request.POST, instance=address)
         if receiver_form.is_valid() and address_form.is_valid():
             receiver_obj = receiver_form.save(commit=False)
             receiver_obj.issuer = request.user.issuer
@@ -408,22 +409,23 @@ def update_receiver(request, pk):
         else:
             print(receiver_form.errors)
             print(address_form.errors)
-            return render(request , 'create-receiver.html' , {
+            return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
-                'address_form': address_form,})
+                'address_form': address_form, })
 
     else:
-        return render(request , 'create-receiver.html' , {
+        return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form,})
+            'address_form': address_form, })
+
 
 @is_issuer
-def delete_receiver(request , pk):
+def delete_receiver(request, pk):
     '''
         created_at:08/03/2021
         author: Mamadouh
         purpose:delete reciever
     '''
-    receiver = Receiver.objects.get(id = pk)
+    receiver = Receiver.objects.get(id=pk)
     receiver.delete()
     return redirect('issuer:list-receiver')
