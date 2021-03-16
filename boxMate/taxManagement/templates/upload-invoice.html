@@ -78,6 +78,7 @@
                                     <th>Total Amount</th>
                                     <th>Submission ID</th>
                                     <th>Submit</th>
+                                    <th>{% trans 'Status' %}</th>
                                     <th>View</th>
                                  </tr>
                               </thead>
@@ -101,12 +102,16 @@
 
                                     {% else %}
                                     <td></td>
-                                    <td>
-                                       <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id %}">
-                                          <span class="glyphicon glyphicon-cloud-upload"></span>
-                                    </td>
-                                    </a>
+                                       {% if header.invoice_status == 'verified' %}
+                                          <td>
+                                             <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id %}">
+                                                <span class="glyphicon glyphicon-cloud-upload"></span></a>
+                                          </td>
+                                       {% else %}
+                                          <td></td>
+                                       {% endif %} <!--  end if invoice status    -->
                                     {% endif %}
+                                    <td>{{header.invoice_status}}</td>
                                     <td>
                                        <a href="{% url 'taxManagement:view-invoice' invoice_id=header.id %}">
                                        <span class="glyphicon glyphicon-pencil"></span></td>

@@ -147,6 +147,8 @@ class InvoiceHeader(models.Model):
                                                       default=0.0)
     total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
 
+    invoice_status = models.CharField(default='draft', max_length=15)
+
     class Meta:
         unique_together = ('issuer' , 'internal_id')
 

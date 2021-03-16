@@ -643,3 +643,17 @@ def refresh_submission_status(request , submission_id):
     submission = get_submission_response(submission_id)
     print(submission)
     return redirect('taxManagement:get-all-invoice-headers')
+
+
+def update_invoice_status(request, invoice_id, status):
+    """
+    update invoice status to verified or canceled internally,
+    update it according to api response after submission
+    :param request:
+    :return:
+    """
+    try:
+        InvoiceHeader.objects.filter(id=invoice_id).update(invoice_status=status)
+    except Exception as e:
+        print('An error occurred in update status -> ', e)
+    return redirect('taxManagement:get-all-invoice-headers')

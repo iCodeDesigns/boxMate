@@ -19,5 +19,7 @@ urlpatterns = [
     path('create-invoice-line/<int:invoice_id>' , views.create_new_invoice_line , name='create-invoice-line'),
     path('refresh-submission-status/<slug:submission_id>' , views.refresh_submission_status , name='refresh-submission-status'),
 
+    path('tax/change-invoice-status/<int:invoice_id>/<slug:status>', views.update_invoice_status, name="update-invoice-status")
+
 
 ]
