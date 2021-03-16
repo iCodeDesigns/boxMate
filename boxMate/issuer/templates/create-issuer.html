@@ -2,315 +2,163 @@
 {% load static %}
 {% load l10n %}
 {% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block body %}
 <div class="content-wrapper">
-  <!-- Content Header (Page header) -->
-  <section class="content-header">
-    {% if update %}
-    <h1>Update Issuer</h1>
-    {% else %}
-    <h1>
-      Create Company
-      <!-- <small>Optional description</small> -->
-    </h1>
-    {% endif %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        {% if update %}
+        <h1>{% trans 'Update Issuer' %}</h1>
+        {% else %}
+        <h1>
+            {% trans 'Create Company' %}
+            <!-- <small>Optional description</small> -->
+        </h1>
+        {% endif %}
 
-  </section>
-  <!-- Main content -->
-  <section class="content">
-    <div class="box">
-      <!-- /.box-header -->
-      <!-- Error messaging -->
-      {% if issuer_form.errors %}
-      {% for field in issuer_form %}
-      {% for error in field.errors %}
-      <div class="alert alert-danger">
-        <strong>{{ error|escape }}</strong>
-      </div>
-      {% endfor %}
-      {% endfor %}
-      {% for error in issuer_form.non_field_errors %}
-      <div class="alert alert-danger">
-        <strong>{{ error|escape }}</strong>
-      </div>
-      {% endfor %}
-      {% endif %}
-      <!-- /Error messaging -->
-      <div class="box-body">
-        <div class="container-fluid">
-          <form method="POST" id="myform">
-            {% csrf_token %}
-            <div class="form-row">
-              <h2>Company</h2>
-              <div class="form-group col-md-4">
-                <label for="inputCity">Client Id</label>
-                <br>
-                {{ issuer_form.client_id}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Client Secret1</label>
-                <br>
-                {{ issuer_form.clientSecret1}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Client Secret2</label>
-                <br>
-                {{ issuer_form.clientSecret2}}
-              </div>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="box">
+            <!-- /.box-header -->
+            <!-- Error messaging -->
+            {% if issuer_form.errors %}
+            {% for field in issuer_form %}
+            {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Registration Num</label>
-                <br>
-                {{ issuer_form.reg_num}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Name</label>
-                <br>
-                {{ issuer_form.name}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Type</label>
-                <br>
-                {{ issuer_form.type}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputEmail4">Activity Code</label>
-                <br>
-                {{ issuer_form.activity_code}}
-              </div>
-              
-            
+            {% endfor %}
+            {% endfor %}
+            {% for error in issuer_form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-12">
-                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <h2 class="col-md-12">Address</h2>
-              <div class="form-group col-md-4">
-
-                <label for="inputCity">Branch</label>
-                <br>
-                {{ address_form.branch_id}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputCity">Governate</label>
-                <br>
-                {{ address_form.governate}}
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="inputCity">Region City</label>
-                <br>
-                {{ address_form.regionCity}}
-              </div>
-
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col-md-3">
-                <label for="inputCity">Street</label>
-                <br>
-                {{ address_form.street}}
-              </div>
-
-              <div class="form-group col-md-3">
-                <label for="inputCity">Building Number</label>
-                <br>
-                {{ address_form.buildingNumber}}
-              </div>
-
-              <div class="form-group col-md-3">
-                <label for="inputCity">Postal Code</label>
-                <br>
-                {{ address_form.postalCode}}
-              </div>
-
-              <div class="form-group col-md-3">
-                <label for="inputCity"> Country</label>
-                <br>
-                {{ address_form.country}}
-              </div>
-            </div>
-        {% endfor %}
-    {% endfor %}
-    {% for error in issuer_form.non_field_errors %}
-        <div class="alert alert-danger">
-            <strong>{{ error|escape }}</strong>
-        </div>
-    {% endfor %}
-{% endif %}
-	<!-- /Error messaging -->
-               <div class="container-fluid">
-                  <form method="POST" id="myform">
-                    {% csrf_token %}
-                    <div class="form-row">
-                      <h2>Company</h2>
-                          <div class="form-group col-md-4">
-                            <label for="inputCity">Client Id</label>
-                            {{ issuer_form.client_id}}
-                          </div>
-
-                          <div class="form-group col-md-4">
-                            <label for="inputEmail4">Client Secret1</label>
-                            {{ issuer_form.clientSecret1}}
-                          </div>
-
-                          <div class="form-group col-md-4">
-                           <label for="inputEmail4">Client Secret2</label>
-                           {{ issuer_form.clientSecret2}}
-                         </div>
-                        </div>
-
-
+            {% endfor %}
+            {% endif %}
+            <!-- /Error messaging -->
+            <div class="box-body">
+                <div class="container-fluid">
+                    <form method="POST" id="myform">
+                        {% csrf_token %}
                         <div class="form-row">
-                          <div class="form-group col-md-3">
-                           <label for="inputEmail4">Registration Num</label>
-                           <br>
-                           {{ issuer_form.reg_num}}
-                         </div>
-
-                         <div class="form-group col-md-3">
-                           <label for="inputEmail4">Name</label>
-                           <br>
-                           {{ issuer_form.name}}
-                         </div>
-
-                         <div class="form-group col-md-3">
-                           <label for="inputEmail4">Type</label>
-                           <br>
-                           {{ issuer_form.type}}
-                         </div>
-
-                         <div class="form-group col-md-3">
-                           <label for="inputEmail4">Activity Code</label>
-                           <br>
-                           {{ issuer_form.activity_code}}
-                         </div>
-
-                        </div>
-
-                        <div class="form-row">
-                          <div class="form-group col-md-12">
-                           <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-                          </div>
-                        </div>
-
-                           <div class="form-row">
-                            <h2>Address</h2>
-                              <div class="form-group col-md-4">
-
-                                <label for="inputCity">Branch</label>
+                            <h2>Company</h2>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Client Id' %}</label>
                                 <br>
-                                {{ address_form.branch_id}}
-                              </div>
-
-                               <div class="form-group col-md-4">
-                                 <label for="inputCity">Governate</label>
-                                 <br>
-                                 {{ address_form.governate}}
-                               </div>
-
-                               <div class="form-group col-md-4">
-                                 <label for="inputCity">Region City</label>
-                                 <br>
-                                 {{ address_form.regionCity}}
-                               </div>
-
-                           </div>
-
-                           <div class="form-row">
-                            <div class="form-group col-md-3">
-                              <label for="inputCity">Street</label>
-                              <br>
-                              {{ address_form.street}}
+                                {{ issuer_form.client_id}}
                             </div>
 
-                               <div class="form-group col-md-3">
-                                 <label for="inputCity">Building Number</label>
-                                 <br>
-                                 {{ address_form.buildingNumber}}
-                               </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Client Secret1' %}</label>
+                                <br>
+                                {{ issuer_form.clientSecret1}}
+                            </div>
 
-                                <div class="form-group col-md-3">
-                                <label for="inputCity">Postal Code</label>
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Client Secret2' %}</label>
+                                <br>
+                                {{ issuer_form.clientSecret2}}
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Registration Num' %}</label>
+                                <br>
+                                {{ issuer_form.reg_num}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Name' %}</label>
+                                <br>
+                                {{ issuer_form.name}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Type' %}</label>
+                                <br>
+                                {{ issuer_form.type}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">{% trans 'Activity Code' %}</label>
+                                <br>
+                                {{ issuer_form.activity_code}}
+                            </div>
+
+
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <h2 class="col-md-12">{% trans 'Address' %}</h2>
+                            <div class="form-group col-md-4">
+
+                                <label for="inputCity">{% trans 'Branch' %}</label>
+                                <br>
+                                {{ address_form.branch_id}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Governate' %}</label>
+                                <br>
+                                {{ address_form.governate}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Region City' %}</label>
+                                <br>
+                                {{ address_form.regionCity}}
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="inputCity">{% trans 'Street' %}</label>
+                                <br>
+                                {{ address_form.street}}
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <label for="inputCity">{% trans 'Building Number' %}</label>
+                                <br>
+                                {{ address_form.buildingNumber}}
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <label for="inputCity">{% trans 'Postal Code' %}</label>
                                 <br>
                                 {{ address_form.postalCode}}
-                              </div>
+                            </div>
 
-                              <div class="form-group col-md-4">
-                                <label for="inputCity"> Country</label>
-
+                            <div class="form-group col-md-3">
+                                <label for="inputCity">{% trans 'Country' %}</label>
                                 <br>
-                                {{ address_form.country }}
-                              </div>
-                           </div>
+                                {{ address_form.country}}
+                            </div>
+                        </div>
 
-                           <div class="form-row">
-                              <div class="form-group col-md-3">
-                                 <label for="inputCity">Floor</label>
-                                 <br>
-                                 {{ address_form.floor}}
-                               </div>
-
-                               <div class="form-group col-md-3">
-                                 <label for="inputCity">Room</label>
-                                 <br>
-                                 {{ address_form.room}}
-                               </div>
-
-                               <div class="form-group col-md-3">
-                                 <label for="inputCity">Land Mark</label>
-                                 <br>
-                                 {{ address_form.landmark}}
-                               </div>
-
-                               <div class="form-group col-md-3">
-                                 <label for="inputCity">Additional Information</label>
-                                 <br>
-                                 {{ address_form.additionalInformation}}
-                               </div>
-
-
-                           </div>
-
-
-                           <br>
-                           <div class="form-group col-md-12">
-                           <button type="submit"  class="btn btn-primary">Save and go to Taxs</button>
-                           </div>
-                         </form>
-                         </div>
-
+                        <br>
+                        {% if not update %}
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-primary">{% trans 'Save and go to Taxes' %}</button>
+                        </div>
+                        {% else %}
+                        <div class="form-group col-md-4">
+                            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
             </div>
-
-
-            <br>
-            {% if not update %}
-            <div class="form-group col-md-4">
-              <button type="submit" class="btn btn-primary">Save and go to Taxs</button>
-            </div>
-            {% else %}
-            <div class="form-group col-md-4">
-              <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-            {% endif %}
-          </form>
         </div>
-      </div>
-
-    </div>
-  </section>
+    </section>
 </div>
 
 {% endblock body %}

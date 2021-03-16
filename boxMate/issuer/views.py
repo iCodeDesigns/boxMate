@@ -264,10 +264,6 @@ def update_issuer(request , issuer_id):
             issuer_obj.save()
             return redirect('issuer:list-issuer')
 
-        else:
-            print(issuer_form.errors)
-            print(address_form.errors)
-
     return render(request, 'create-issuer.html', {
         'issuer_form': issuer_form,
         'update':True,})

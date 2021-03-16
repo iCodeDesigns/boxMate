@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-15 11:07+0000\n"
+"POT-Creation-Date: 2021-03-16 07:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,110 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: issuer/templates/create-issuer.html:12
+msgid "Update Issuer"
+msgstr "تعديل الشركة"
+
+#: issuer/templates/create-issuer.html:15
+msgid "Create Company"
+msgstr "إنشاء شركة"
+
+#: issuer/templates/create-issuer.html:48
+msgid "Client Id"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:54
+msgid "Client Secret1"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:60
+msgid "Client Secret2"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:67 issuer/templates/view-issuer.html:25
+msgid "Registration Num"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:73 issuer/templates/view-issuer.html:17
+msgid "Name"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:79 issuer/templates/view-issuer.html:21
+msgid "Type"
+msgstr " النوع"
+
+#: issuer/templates/create-issuer.html:85
+msgid "Activity Code"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:99 issuer/templates/view-issuer.html:44
+msgid "Address"
+msgstr "العنوان"
+
+#: issuer/templates/create-issuer.html:102
+#: issuer/templates/create_issuer_address.html:46
+#: issuer/templates/create_issuer_address.html:89
+#: issuer/templates/update-issuer-address.html:28
+#: issuer/templates/view-issuer.html:48
+msgid "Branch"
+msgstr "الفرع"
+
+#: issuer/templates/create-issuer.html:108
+#: issuer/templates/create_issuer_address.html:51
+#: issuer/templates/create_issuer_address.html:95
+#: issuer/templates/update-issuer-address.html:33
+#: issuer/templates/view-issuer.html:56
+msgid "Governate"
+msgstr "المحافظة"
+
+#: issuer/templates/create-issuer.html:114
+#: issuer/templates/create_issuer_address.html:56
+#: issuer/templates/create_issuer_address.html:101
+#: issuer/templates/update-issuer-address.html:38
+#: issuer/templates/view-issuer.html:61
+msgid "Region City"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:123
+#: issuer/templates/create_issuer_address.html:64
+#: issuer/templates/create_issuer_address.html:110
+#: issuer/templates/update-issuer-address.html:46
+#: issuer/templates/view-issuer.html:66
+msgid "Street"
+msgstr "الشارع"
+
+#: issuer/templates/create-issuer.html:129
+#: issuer/templates/create_issuer_address.html:69
+#: issuer/templates/create_issuer_address.html:116
+#: issuer/templates/update-issuer-address.html:51
+#: issuer/templates/view-issuer.html:71
+msgid "Building Number"
+msgstr "رقم البناء"
+
+#: issuer/templates/create-issuer.html:135
+#: issuer/templates/create_issuer_address.html:74
+#: issuer/templates/create_issuer_address.html:122
+#: issuer/templates/update-issuer-address.html:56
+#: issuer/templates/view-issuer.html:76
+msgid "Postal Code"
+msgstr ""
+
+#: issuer/templates/create-issuer.html:141
+#: issuer/templates/create_issuer_address.html:79
+#: issuer/templates/create_issuer_address.html:128
+#: issuer/templates/update-issuer-address.html:61
+#: issuer/templates/view-issuer.html:52
+msgid "Country"
+msgstr "البلد"
+
+#: issuer/templates/create-issuer.html:150
+msgid "Save and go to Taxes"
+msgstr "حفظ والذهاب إلى الضرائب"
+
+#: issuer/templates/create-issuer.html:154
+msgid "Save"
+msgstr "حفظ"
 
 #: issuer/templates/list-issuer-oracle-db.html:11
 msgid "Import From Oracle"
@@ -31,22 +135,42 @@ msgstr ""
 msgid "Issuers"
 msgstr ""
 
-#: issuer/templates/view-issuer.html:108
+#: issuer/templates/view-issuer.html:81
+msgid "Floor"
+msgstr ""
+
+#: issuer/templates/view-issuer.html:86
+msgid "Room"
+msgstr ""
+
+#: issuer/templates/view-issuer.html:91
+msgid "Landmark"
+msgstr ""
+
+#: issuer/templates/view-issuer.html:96
+msgid "Additional Information"
+msgstr ""
+
+#: issuer/templates/view-issuer.html:109
+msgid "Taxes"
+msgstr ""
+
+#: issuer/templates/view-issuer.html:116
 msgid "Tax Type"
 msgstr "نوع الضريبة"
 
-#: issuer/templates/view-issuer.html:109
+#: issuer/templates/view-issuer.html:117
 msgid "Code"
 msgstr "الكود"
 
-#: issuer/templates/view-issuer.html:110
+#: issuer/templates/view-issuer.html:118
 msgid "Tax Sub-Type"
 msgstr "الضريبة الفرعية"
 
-#: issuer/templates/view-issuer.html:111
+#: issuer/templates/view-issuer.html:119
 msgid "Start Date"
 msgstr "تاريخ البداية"
 
-#: issuer/templates/view-issuer.html:112
+#: issuer/templates/view-issuer.html:120
 msgid "End Date"
 msgstr "تاريخ الانتهاء"
