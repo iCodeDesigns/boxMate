@@ -45,9 +45,11 @@
                         </p>
                     </li>
                     <li class="user-footer">
+                        {% if request.user.is_superuser %}
                         <div class="pull-left">
-                            <a href="#" class="btn btn-default btn-flat">Profile</a>
+                            <a href="{% url 'home:register' %}" class="btn btn-default btn-flat">Register New User</a>
                         </div>
+                        {% endif %}
                         <div class="pull-right">
                             <a href="{% url 'home:logout' %}" class="btn btn-default btn-flat">Log out</a>
                         </div>

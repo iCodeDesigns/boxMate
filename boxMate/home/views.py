@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseRedirect
 from django.db.models import Count
 from django.views.decorators.cache import never_cache
@@ -8,7 +8,7 @@ from django.shortcuts import render, reverse, redirect
 from home.forms import CustomUserCreationForm
 from taxManagement.models import Submission, InvoiceHeader
 
-
+@user_passes_test(lambda u: u.is_superuser ,login_url='/login')
 def register(request):
     form = CustomUserCreationForm()
     if request.method == 'POST':
