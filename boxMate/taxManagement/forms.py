@@ -6,7 +6,7 @@ from .models import InvoiceHeader ,InvoiceLine , TaxLine
 class InvoiceHeaderForm(forms.ModelForm):
     class Meta:
         model = InvoiceHeader
-        exclude = ('issuer' , 'issuer_address' , 'receiver_address' , 'date_time_issued',)
+        exclude = ('issuer' , 'issuer_address' , 'receiver_address' , 'date_time_issued','invoice_status',)
     def __init__(self, *args, **kwargs):
             super(InvoiceHeaderForm, self).__init__(*args, **kwargs)
             for field in self.fields:
