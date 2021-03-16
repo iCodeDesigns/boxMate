@@ -30,6 +30,7 @@ from ast import literal_eval
 from taxManagement.invoice_generation import Invoicegeneration
 from .forms import *
 from issuer.decorators import is_issuer
+from currencies.models import Currency
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -134,6 +135,7 @@ def import_data_to_invoice(user):
                                                                                    'internal_code').annotate(
             Count('item_code'))
         for line in lines:
+            currency_sold = Currency.objects.get(code=line['currency_sold'])
             line_obj = InvoiceLine(
                 invoice_header=header_obj,
                 description=line['description'],
@@ -141,7 +143,7 @@ def import_data_to_invoice(user):
                 itemCode=line['item_code'],
                 unitType=line['unit_type'],
                 quantity=line['quantity'],
-                currencySold=line['currency_sold'],
+                currencySold=currency_sold,
                 amountEGP=line['amount_egp'],
                 amountSold=line['amount_sold'],
                 currencyExchangeRate=line['currency_exchange_rate'],
@@ -181,11 +183,10 @@ def import_data_to_invoice(user):
 @login_required(login_url='home:user-login')
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
-    print(request.FILES)
     import_file = request.FILES['import_file']
     dataset = Dataset()
     # # unhash the following line in case of csv file
-    # # imported_data = dataset.load(import_file.read().decode(), format='csv')
+    # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
     # this line in case of excel file
     imported_data = dataset.load(import_file.read(), format='xlsx')
     #
