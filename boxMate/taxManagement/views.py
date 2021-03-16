@@ -357,7 +357,7 @@ def submit_invoice(request, invoice_id):
 ##### get all invoices ######
 @is_issuer
 def get_all_invoice_headers(request):
-    invoice_headers = InvoiceHeader.objects.all()
+    invoice_headers = InvoiceHeader.objects.filter(issuer=request.user.issuer)
     count = 0
     for invoice_header in invoice_headers:
         submissions = Submission.objects.filter(invoice=invoice_header).last()
@@ -587,6 +587,7 @@ def create_new_invoice_header(request):
         header_form = InvoiceHeaderForm(request.POST)
         if header_form.is_valid():
             header_obj = header_form.save(commit=False)
+            header_obj.issuer = request.user.issuer
             header_obj.created_by = request.user
             header_obj.save()
             print(header_obj.id)
