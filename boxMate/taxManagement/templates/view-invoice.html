@@ -18,9 +18,23 @@
           <h2 class="box-title" style="font-weight: bolder; font-size: 24px;">Invoice #{{ invoice_header.internal_id }}</h2>
           <div class="margin pull-right col-med-4">
              <div class="btn-group">
-               <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
-                 <p>Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></p>
-               </a>
+               {% if invoice_header.invoice_status == 'verified'%}
+                 <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
+                   <button class="btn btn-primary">Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
+                 </a>
+               {% endif %}
+               {% if invoice_header.invoice_status != 'cancel'%}
+                {% if invoice_header.invoice_status != 'verified' %}
+                   <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='verified' %}">
+
+                     <button class="btn btn-success">{% trans 'Verified' %}</button>
+                   </a>
+                {% endif %}
+                 <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='cancel' %}">
+
+                   <button class="btn btn-danger">{% trans 'Cancel' %}</button>
+                 </a>
+               {% endif %}
             </div>
 
           </div>
@@ -160,3 +174,10 @@
 </div>
 
 {% endblock body %}
+{% block js %}
+<script>
+  function update_status(){
+
+  }
+</script>
+{% endblock js%}
