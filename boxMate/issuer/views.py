@@ -91,8 +91,9 @@ def get_issuer_data(user):
 """
 
 
-@is_issuer
+
 def get_receiver_data(user):
+    print('*************', user)
     receiver_data = MainTable.objects.filter(~Q(receiver_registration_num=None) & Q(user=user)).values(
         'receiver_type',
         'receiver_registration_num',
@@ -107,6 +108,7 @@ def get_receiver_data(user):
         'receiver_region_city',
         'receiver_postal_code',
         'receiver_country').annotate(Count('receiver_registration_num'))
+    print('receiver: ', receiver_data)
     for data in receiver_data:
         receiver_code = data['receiver_registration_num']
         building_num = data['receiver_building_num']
@@ -138,6 +140,7 @@ def get_receiver_data(user):
                 reg_num=data['receiver_registration_num'],
                 name=data['receiver_name']
             )
+            print(e)
             receiver_obj.save()
             receiver_id = receiver_obj
             country_code = data['receiver_country']

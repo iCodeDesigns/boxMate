@@ -179,9 +179,9 @@ def import_data_to_invoice(user):
 
 
 @login_required(login_url='home:user-login')
-@is_issuer
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
+    print(request.FILES)
     import_file = request.FILES['import_file']
     dataset = Dataset()
     # # unhash the following line in case of csv file
@@ -652,9 +652,25 @@ def update_invoice_status(request, invoice_id, status):
     update it according to api response after submission
     :param request:
     :return:
+    by: amira
     """
     try:
         InvoiceHeader.objects.filter(id=invoice_id).update(invoice_status=status)
     except Exception as e:
         print('An error occurred in update status -> ', e)
     return redirect('taxManagement:get-all-invoice-headers')
+
+
+def export_empty_invoice_temp(request):
+    """
+    download empty excel file
+    :param request:
+    :return:
+    by: amira
+    """
+    invoice_resource = MainTableResource()
+    dataset = invoice_resource.export(queryset=MainTable.objects.none())
+    response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
+    return response
+

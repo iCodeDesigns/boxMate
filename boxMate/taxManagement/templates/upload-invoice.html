@@ -51,9 +51,12 @@
                                        Insert Invoice
                                        </a>
                                     <button type="button" class="btn btn-success" data-toggle="modal"
-                                       data-target="#exampleModal">
+                                       data-target="#exampleModal" style="margin-right: 2px;">
                                        Upload Excel
                                     </button>
+                                    <a href="{% url 'taxManagement:export_excel_template' %}" class="btn btn-warning">
+                                       {% trans 'Export Excel Template' %}
+                                    </a>
                                     <!-- <a href="{% url 'taxManagement:connect-oracle' %}">
                                       <button type="button" class="btn btn-success">Import data from OracleDB</button>
                                       </a> -->
