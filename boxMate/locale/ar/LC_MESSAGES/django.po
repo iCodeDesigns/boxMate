@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-17 13:23+0000\n"
+"POT-Creation-Date: 2021-03-17 14:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,12 +35,103 @@ msgstr ""
 msgid "Not Submitted"
 msgstr ""
 
+#: issuer/templates/create-issuer-oracle-db.html:11
+msgid "Update DB Connection"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:14
+#: issuer/templates/create-issuer-oracle-db.html:16
+#: issuer/templates/create_issuer_address.html:19
+#: issuer/templates/create_issuer_address.html:21
+msgid "Back to List"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:30
+#: issuer/templates/list-issuer-oracle-db.html:39
+#: issuer/templates/list-issuer-oracle-db.html:113
+msgid "Database Name"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:34
+#: issuer/templates/list-issuer-oracle-db.html:40
+#: issuer/templates/list-issuer-oracle-db.html:117
+#, fuzzy
+#| msgid "Address"
+msgid "IP Address"
+msgstr "العنوان"
+
+#: issuer/templates/create-issuer-oracle-db.html:38
+#: issuer/templates/list-issuer-oracle-db.html:41
+#: issuer/templates/list-issuer-oracle-db.html:121
+msgid "Port Number"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:42
+#: issuer/templates/list-issuer-oracle-db.html:42
+#: issuer/templates/list-issuer-oracle-db.html:125
+msgid "Service Number"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:46
+#: issuer/templates/list-issuer-oracle-db.html:132
+msgid "User Name"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:50
+#: issuer/templates/list-issuer-oracle-db.html:136
+msgid "Password"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:54
+#: issuer/templates/list-issuer-oracle-db.html:44
+#: issuer/templates/list-issuer-oracle-db.html:140
+msgid "Is Active"
+msgstr ""
+
+#: issuer/templates/create-issuer-oracle-db.html:58
+#: issuer/templates/create-issuer-tax.html:57
+#: issuer/templates/create-issuer.html:107
+#: issuer/templates/create-receiver.html:153
+#: issuer/templates/create_issuer_address.html:147
+#: issuer/templates/list-issuer-oracle-db.html:149
+#: issuer/templates/update-issuer-address.html:71
+msgid "Save"
+msgstr "حفظ"
+
+#: issuer/templates/create-issuer-tax.html:11
+msgid "Add Taxes"
+msgstr ""
+
+#: issuer/templates/create-issuer-tax.html:33
+#: issuer/templates/view-issuer.html:127
+msgid "Code"
+msgstr "الكود"
+
+#: issuer/templates/create-issuer-tax.html:34
+#: taxManagement/templates/create-invoice-line.html:26
+msgid "Description"
+msgstr ""
+
+#: issuer/templates/create-issuer-tax.html:35
+msgid "Check to use"
+msgstr ""
+
+#: issuer/templates/create-issuer-tax.html:60
+msgid "View issuer"
+msgstr ""
+
 #: issuer/templates/create-issuer.html:12
 msgid "Update Issuer"
 msgstr "تعديل الشركة"
 
 #: issuer/templates/create-issuer.html:15
 msgid "Create Company"
+msgstr "إنشاء شركة"
+
+#: issuer/templates/create-issuer.html:46
+#, fuzzy
+#| msgid "Create Company"
+msgid "Company"
 msgstr "إنشاء شركة"
 
 #: issuer/templates/create-issuer.html:48
@@ -63,13 +154,14 @@ msgstr ""
 
 #: issuer/templates/create-issuer.html:73
 #: issuer/templates/create-receiver.html:54
+#: issuer/templates/list-issuer.html:32 issuer/templates/list-receiver.html:35
 #: issuer/templates/view-issuer.html:27
 msgid "Name"
 msgstr ""
 
 #: issuer/templates/create-issuer.html:79
 #: issuer/templates/create-receiver.html:60
-#: issuer/templates/view-issuer.html:31
+#: issuer/templates/list-receiver.html:37 issuer/templates/view-issuer.html:31
 msgid "Type"
 msgstr " النوع"
 
@@ -78,13 +170,9 @@ msgid "Activity Code"
 msgstr ""
 
 #: issuer/templates/create-issuer.html:103
+#: issuer/templates/create_issuer_address.html:143
 msgid "Save and go to Taxes"
 msgstr "حفظ والذهاب إلى الضرائب"
-
-#: issuer/templates/create-issuer.html:107
-#: issuer/templates/create-receiver.html:153
-msgid "Save"
-msgstr "حفظ"
 
 #: issuer/templates/create-receiver.html:14
 #: issuer/templates/create-receiver.html:16
@@ -92,14 +180,16 @@ msgid "Back to Receivers List"
 msgstr ""
 
 #: issuer/templates/create-receiver.html:74
+#: issuer/templates/create_issuer_address.html:49
 #: issuer/templates/list-issuer-addresses.html:30
+#: issuer/templates/update-issuer-address.html:26
 #: issuer/templates/view-issuer.html:46 issuer/templates/view-issuer.html:54
 msgid "Address"
 msgstr "العنوان"
 
 #: issuer/templates/create-receiver.html:77
-#: issuer/templates/create_issuer_address.html:46
-#: issuer/templates/create_issuer_address.html:89
+#: issuer/templates/create_issuer_address.html:51
+#: issuer/templates/create_issuer_address.html:94
 #: issuer/templates/list-issuer-addresses.html:40
 #: issuer/templates/update-issuer-address.html:28
 #: issuer/templates/view-issuer.html:58
@@ -107,8 +197,8 @@ msgid "Branch"
 msgstr "الفرع"
 
 #: issuer/templates/create-receiver.html:83
-#: issuer/templates/create_issuer_address.html:51
-#: issuer/templates/create_issuer_address.html:95
+#: issuer/templates/create_issuer_address.html:56
+#: issuer/templates/create_issuer_address.html:100
 #: issuer/templates/list-issuer-addresses.html:44
 #: issuer/templates/update-issuer-address.html:33
 #: issuer/templates/view-issuer.html:66
@@ -116,8 +206,8 @@ msgid "Governate"
 msgstr "المحافظة"
 
 #: issuer/templates/create-receiver.html:89
-#: issuer/templates/create_issuer_address.html:56
-#: issuer/templates/create_issuer_address.html:101
+#: issuer/templates/create_issuer_address.html:61
+#: issuer/templates/create_issuer_address.html:106
 #: issuer/templates/list-issuer-addresses.html:49
 #: issuer/templates/update-issuer-address.html:38
 #: issuer/templates/view-issuer.html:71
@@ -125,8 +215,8 @@ msgid "Region City"
 msgstr ""
 
 #: issuer/templates/create-receiver.html:98
-#: issuer/templates/create_issuer_address.html:64
-#: issuer/templates/create_issuer_address.html:110
+#: issuer/templates/create_issuer_address.html:69
+#: issuer/templates/create_issuer_address.html:115
 #: issuer/templates/list-issuer-addresses.html:54
 #: issuer/templates/update-issuer-address.html:46
 #: issuer/templates/view-issuer.html:76
@@ -134,8 +224,8 @@ msgid "Street"
 msgstr "الشارع"
 
 #: issuer/templates/create-receiver.html:104
-#: issuer/templates/create_issuer_address.html:69
-#: issuer/templates/create_issuer_address.html:116
+#: issuer/templates/create_issuer_address.html:74
+#: issuer/templates/create_issuer_address.html:121
 #: issuer/templates/list-issuer-addresses.html:59
 #: issuer/templates/update-issuer-address.html:51
 #: issuer/templates/view-issuer.html:81
@@ -143,8 +233,8 @@ msgid "Building Number"
 msgstr "رقم البناء"
 
 #: issuer/templates/create-receiver.html:110
-#: issuer/templates/create_issuer_address.html:74
-#: issuer/templates/create_issuer_address.html:122
+#: issuer/templates/create_issuer_address.html:79
+#: issuer/templates/create_issuer_address.html:127
 #: issuer/templates/list-issuer-addresses.html:64
 #: issuer/templates/update-issuer-address.html:56
 #: issuer/templates/view-issuer.html:86
@@ -152,8 +242,8 @@ msgid "Postal Code"
 msgstr ""
 
 #: issuer/templates/create-receiver.html:116
-#: issuer/templates/create_issuer_address.html:79
-#: issuer/templates/create_issuer_address.html:128
+#: issuer/templates/create_issuer_address.html:84
+#: issuer/templates/create_issuer_address.html:133
 #: issuer/templates/update-issuer-address.html:61
 #: issuer/templates/view-issuer.html:62
 msgid "Country"
@@ -179,7 +269,27 @@ msgstr ""
 msgid "Additional Information"
 msgstr ""
 
+#: issuer/templates/create_issuer_address.html:11
+#: issuer/templates/update-issuer-address.html:11
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Update Address"
+msgstr "تعديل الشركة"
+
+#: issuer/templates/create_issuer_address.html:14
+#, fuzzy
+#| msgid "Address"
+msgid "Create Address"
+msgstr "العنوان"
+
+#: issuer/templates/create_issuer_address.html:152
+#, fuzzy
+#| msgid "Address"
+msgid "Add Address"
+msgstr "العنوان"
+
 #: issuer/templates/list-issuer-addresses.html:15
+#: issuer/templates/list-issuer.html:35
 #, fuzzy
 #| msgid "Address"
 msgid "Addresses"
@@ -201,10 +311,14 @@ msgid "Back to Addresses"
 msgstr ""
 
 #: issuer/templates/list-issuer-addresses.html:31
+#: issuer/templates/list-issuer-oracle-db.html:45
+#: issuer/templates/list-issuer-oracle-db.html:72
+#: issuer/templates/list-issuer.html:55 issuer/templates/list-receiver.html:50
 msgid "Edit"
 msgstr ""
 
 #: issuer/templates/list-issuer-addresses.html:34
+#: issuer/templates/list-receiver.html:54
 msgid "Delete"
 msgstr ""
 
@@ -216,9 +330,61 @@ msgstr ""
 msgid "Import From Oracle ERP"
 msgstr ""
 
+#: issuer/templates/list-issuer-oracle-db.html:43
+msgid "Username"
+msgstr ""
+
+#: issuer/templates/list-issuer-oracle-db.html:66
+msgid "Activate"
+msgstr ""
+
+#: issuer/templates/list-issuer-oracle-db.html:102
+msgid "New DB Connection"
+msgstr ""
+
+#: issuer/templates/list-issuer-oracle-db.html:147
+msgid "Close"
+msgstr ""
+
 #: issuer/templates/list-issuer.html:11
 msgid "Issuers"
 msgstr ""
+
+#: issuer/templates/list-issuer.html:33 issuer/templates/list-receiver.html:36
+msgid "Registration Number"
+msgstr ""
+
+#: issuer/templates/list-issuer.html:34
+msgid "Client ID"
+msgstr ""
+
+#: issuer/templates/list-issuer.html:36 issuer/templates/list-receiver.html:38
+msgid "Action"
+msgstr ""
+
+#: issuer/templates/list-issuer.html:47
+#, fuzzy
+#| msgid "Address"
+msgid "View Address"
+msgstr "العنوان"
+
+#: issuer/templates/list-issuer.html:52
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "View Issuer"
+msgstr "تعديل الشركة"
+
+#: issuer/templates/list-receiver.html:11
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Receivers"
+msgstr "تعديل الشركة"
+
+#: issuer/templates/list-receiver.html:25
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Add Receiver"
+msgstr "تعديل الشركة"
 
 #: issuer/templates/view-issuer.html:11
 msgid "Issuer Info"
@@ -237,10 +403,6 @@ msgstr ""
 #: taxManagement/templates/view-invoice.html:164
 msgid "Tax Type"
 msgstr "نوع الضريبة"
-
-#: issuer/templates/view-issuer.html:127
-msgid "Code"
-msgstr "الكود"
 
 #: issuer/templates/view-issuer.html:128
 msgid "Tax Sub-Type"
@@ -323,10 +485,6 @@ msgstr ""
 
 #: taxManagement/templates/create-invoice-header.html:94
 msgid "Save And Add Invoice Line"
-msgstr ""
-
-#: taxManagement/templates/create-invoice-line.html:26
-msgid "Description"
 msgstr ""
 
 #: taxManagement/templates/create-invoice-line.html:31
@@ -426,6 +584,90 @@ msgstr ""
 msgid "Add Another Line"
 msgstr ""
 
+#: taxManagement/templates/doc-detail.html:11
+msgid "Validation Errors"
+msgstr ""
+
+#: taxManagement/templates/doc-detail.html:21
+msgid "Header Validation Errors"
+msgstr ""
+
+#: taxManagement/templates/doc-detail.html:32
+#: taxManagement/templates/doc-detail.html:74
+#: taxManagement/templates/doc-detail.html:116
+msgid "Error Description"
+msgstr ""
+
+#: taxManagement/templates/doc-detail.html:63
+msgid "Invoice Lines Validation Errors"
+msgstr ""
+
+#: taxManagement/templates/doc-detail.html:105
+msgid "Other Errors"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:11
+msgid "ETA Invoices"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:21
+msgid "Data Table ETA Invoices"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:30
+msgid "Show"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:37
+msgid "entries"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:45
+msgid "Search"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:46
+msgid "Filter"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:58
+msgid "Custumer ID"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:59
+#: taxManagement/templates/upload-invoice.html:84
+msgid "Status"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:60
+msgid "Transaction Date"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:61
+msgid "Doc Sequence Value"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:62
+#: taxManagement/templates/upload-invoice.html:82
+msgid "Submission ID"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:63
+msgid "Uuid"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:64
+msgid "view"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:65
+msgid "Resubmit"
+msgstr ""
+
+#: taxManagement/templates/eta-invoice.html:66
+msgid "Refresh"
+msgstr ""
+
 #: taxManagement/templates/upload-invoice.html:12
 msgid "Upload Invoice"
 msgstr ""
@@ -458,16 +700,8 @@ msgstr ""
 msgid "Total Amount"
 msgstr ""
 
-#: taxManagement/templates/upload-invoice.html:82
-msgid "Submission ID"
-msgstr ""
-
 #: taxManagement/templates/upload-invoice.html:83
 msgid "Submit"
-msgstr ""
-
-#: taxManagement/templates/upload-invoice.html:84
-msgid "Status"
 msgstr ""
 
 #: taxManagement/templates/view-invoice.html:31
