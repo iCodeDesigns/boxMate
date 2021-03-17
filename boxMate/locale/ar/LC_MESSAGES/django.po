@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-16 07:41+0000\n"
+"POT-Creation-Date: 2021-03-17 13:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: home/templates/index.html:11
+msgid "Dashboard"
+msgstr ""
+
+#: home/templates/index.html:22
+msgid "Total Invoices"
+msgstr ""
+
+#: home/templates/index.html:34
+msgid "Submitted Invoices"
+msgstr ""
+
+#: home/templates/index.html:48
+msgid "Not Submitted"
+msgstr ""
 
 #: issuer/templates/create-issuer.html:12
 msgid "Update Issuer"
@@ -39,15 +55,21 @@ msgstr ""
 msgid "Client Secret2"
 msgstr ""
 
-#: issuer/templates/create-issuer.html:67 issuer/templates/view-issuer.html:25
+#: issuer/templates/create-issuer.html:67
+#: issuer/templates/create-receiver.html:48
+#: issuer/templates/view-issuer.html:35
 msgid "Registration Num"
 msgstr ""
 
-#: issuer/templates/create-issuer.html:73 issuer/templates/view-issuer.html:17
+#: issuer/templates/create-issuer.html:73
+#: issuer/templates/create-receiver.html:54
+#: issuer/templates/view-issuer.html:27
 msgid "Name"
 msgstr ""
 
-#: issuer/templates/create-issuer.html:79 issuer/templates/view-issuer.html:21
+#: issuer/templates/create-issuer.html:79
+#: issuer/templates/create-receiver.html:60
+#: issuer/templates/view-issuer.html:31
 msgid "Type"
 msgstr " النوع"
 
@@ -55,73 +77,136 @@ msgstr " النوع"
 msgid "Activity Code"
 msgstr ""
 
-#: issuer/templates/create-issuer.html:99 issuer/templates/view-issuer.html:44
-msgid "Address"
-msgstr "العنوان"
-
-#: issuer/templates/create-issuer.html:102
-#: issuer/templates/create_issuer_address.html:46
-#: issuer/templates/create_issuer_address.html:89
-#: issuer/templates/update-issuer-address.html:28
-#: issuer/templates/view-issuer.html:48
-msgid "Branch"
-msgstr "الفرع"
-
-#: issuer/templates/create-issuer.html:108
-#: issuer/templates/create_issuer_address.html:51
-#: issuer/templates/create_issuer_address.html:95
-#: issuer/templates/update-issuer-address.html:33
-#: issuer/templates/view-issuer.html:56
-msgid "Governate"
-msgstr "المحافظة"
-
-#: issuer/templates/create-issuer.html:114
-#: issuer/templates/create_issuer_address.html:56
-#: issuer/templates/create_issuer_address.html:101
-#: issuer/templates/update-issuer-address.html:38
-#: issuer/templates/view-issuer.html:61
-msgid "Region City"
-msgstr ""
-
-#: issuer/templates/create-issuer.html:123
-#: issuer/templates/create_issuer_address.html:64
-#: issuer/templates/create_issuer_address.html:110
-#: issuer/templates/update-issuer-address.html:46
-#: issuer/templates/view-issuer.html:66
-msgid "Street"
-msgstr "الشارع"
-
-#: issuer/templates/create-issuer.html:129
-#: issuer/templates/create_issuer_address.html:69
-#: issuer/templates/create_issuer_address.html:116
-#: issuer/templates/update-issuer-address.html:51
-#: issuer/templates/view-issuer.html:71
-msgid "Building Number"
-msgstr "رقم البناء"
-
-#: issuer/templates/create-issuer.html:135
-#: issuer/templates/create_issuer_address.html:74
-#: issuer/templates/create_issuer_address.html:122
-#: issuer/templates/update-issuer-address.html:56
-#: issuer/templates/view-issuer.html:76
-msgid "Postal Code"
-msgstr ""
-
-#: issuer/templates/create-issuer.html:141
-#: issuer/templates/create_issuer_address.html:79
-#: issuer/templates/create_issuer_address.html:128
-#: issuer/templates/update-issuer-address.html:61
-#: issuer/templates/view-issuer.html:52
-msgid "Country"
-msgstr "البلد"
-
-#: issuer/templates/create-issuer.html:150
+#: issuer/templates/create-issuer.html:103
 msgid "Save and go to Taxes"
 msgstr "حفظ والذهاب إلى الضرائب"
 
-#: issuer/templates/create-issuer.html:154
+#: issuer/templates/create-issuer.html:107
+#: issuer/templates/create-receiver.html:153
 msgid "Save"
 msgstr "حفظ"
+
+#: issuer/templates/create-receiver.html:14
+#: issuer/templates/create-receiver.html:16
+msgid "Back to Receivers List"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:74
+#: issuer/templates/list-issuer-addresses.html:30
+#: issuer/templates/view-issuer.html:46 issuer/templates/view-issuer.html:54
+msgid "Address"
+msgstr "العنوان"
+
+#: issuer/templates/create-receiver.html:77
+#: issuer/templates/create_issuer_address.html:46
+#: issuer/templates/create_issuer_address.html:89
+#: issuer/templates/list-issuer-addresses.html:40
+#: issuer/templates/update-issuer-address.html:28
+#: issuer/templates/view-issuer.html:58
+msgid "Branch"
+msgstr "الفرع"
+
+#: issuer/templates/create-receiver.html:83
+#: issuer/templates/create_issuer_address.html:51
+#: issuer/templates/create_issuer_address.html:95
+#: issuer/templates/list-issuer-addresses.html:44
+#: issuer/templates/update-issuer-address.html:33
+#: issuer/templates/view-issuer.html:66
+msgid "Governate"
+msgstr "المحافظة"
+
+#: issuer/templates/create-receiver.html:89
+#: issuer/templates/create_issuer_address.html:56
+#: issuer/templates/create_issuer_address.html:101
+#: issuer/templates/list-issuer-addresses.html:49
+#: issuer/templates/update-issuer-address.html:38
+#: issuer/templates/view-issuer.html:71
+msgid "Region City"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:98
+#: issuer/templates/create_issuer_address.html:64
+#: issuer/templates/create_issuer_address.html:110
+#: issuer/templates/list-issuer-addresses.html:54
+#: issuer/templates/update-issuer-address.html:46
+#: issuer/templates/view-issuer.html:76
+msgid "Street"
+msgstr "الشارع"
+
+#: issuer/templates/create-receiver.html:104
+#: issuer/templates/create_issuer_address.html:69
+#: issuer/templates/create_issuer_address.html:116
+#: issuer/templates/list-issuer-addresses.html:59
+#: issuer/templates/update-issuer-address.html:51
+#: issuer/templates/view-issuer.html:81
+msgid "Building Number"
+msgstr "رقم البناء"
+
+#: issuer/templates/create-receiver.html:110
+#: issuer/templates/create_issuer_address.html:74
+#: issuer/templates/create_issuer_address.html:122
+#: issuer/templates/list-issuer-addresses.html:64
+#: issuer/templates/update-issuer-address.html:56
+#: issuer/templates/view-issuer.html:86
+msgid "Postal Code"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:116
+#: issuer/templates/create_issuer_address.html:79
+#: issuer/templates/create_issuer_address.html:128
+#: issuer/templates/update-issuer-address.html:61
+#: issuer/templates/view-issuer.html:62
+msgid "Country"
+msgstr "البلد"
+
+#: issuer/templates/create-receiver.html:124
+#: issuer/templates/view-issuer.html:91
+msgid "Floor"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:130
+#: issuer/templates/view-issuer.html:96
+msgid "Room"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:136
+#: issuer/templates/view-issuer.html:101
+msgid "Landmark"
+msgstr ""
+
+#: issuer/templates/create-receiver.html:142
+#: issuer/templates/view-issuer.html:106
+msgid "Additional Information"
+msgstr ""
+
+#: issuer/templates/list-issuer-addresses.html:15
+#, fuzzy
+#| msgid "Address"
+msgid "Addresses"
+msgstr "العنوان"
+
+#: issuer/templates/list-issuer-addresses.html:16
+#, fuzzy
+#| msgid "Create Company"
+msgid "Create"
+msgstr "إنشاء شركة"
+
+#: issuer/templates/list-issuer-addresses.html:17
+msgid "Create New Address"
+msgstr ""
+
+#: issuer/templates/list-issuer-addresses.html:19
+#: issuer/templates/list-issuer-addresses.html:20
+msgid "Back to Addresses"
+msgstr ""
+
+#: issuer/templates/list-issuer-addresses.html:31
+msgid "Edit"
+msgstr ""
+
+#: issuer/templates/list-issuer-addresses.html:34
+msgid "Delete"
+msgstr ""
 
 #: issuer/templates/list-issuer-oracle-db.html:11
 msgid "Import From Oracle"
@@ -135,42 +220,348 @@ msgstr ""
 msgid "Issuers"
 msgstr ""
 
-#: issuer/templates/view-issuer.html:81
-msgid "Floor"
+#: issuer/templates/view-issuer.html:11
+msgid "Issuer Info"
 msgstr ""
 
-#: issuer/templates/view-issuer.html:86
-msgid "Room"
+#: issuer/templates/view-issuer.html:12 issuer/templates/view-issuer.html:13
+msgid "Back to Issuers List"
 msgstr ""
 
-#: issuer/templates/view-issuer.html:91
-msgid "Landmark"
-msgstr ""
-
-#: issuer/templates/view-issuer.html:96
-msgid "Additional Information"
-msgstr ""
-
-#: issuer/templates/view-issuer.html:109
+#: issuer/templates/view-issuer.html:119
 msgid "Taxes"
 msgstr ""
 
-#: issuer/templates/view-issuer.html:116
+#: issuer/templates/view-issuer.html:126
+#: taxManagement/templates/create-invoice-line.html:97
+#: taxManagement/templates/view-invoice.html:164
 msgid "Tax Type"
 msgstr "نوع الضريبة"
 
-#: issuer/templates/view-issuer.html:117
+#: issuer/templates/view-issuer.html:127
 msgid "Code"
 msgstr "الكود"
 
-#: issuer/templates/view-issuer.html:118
+#: issuer/templates/view-issuer.html:128
 msgid "Tax Sub-Type"
 msgstr "الضريبة الفرعية"
 
-#: issuer/templates/view-issuer.html:119
+#: issuer/templates/view-issuer.html:129
 msgid "Start Date"
 msgstr "تاريخ البداية"
 
-#: issuer/templates/view-issuer.html:120
+#: issuer/templates/view-issuer.html:130
 msgid "End Date"
 msgstr "تاريخ الانتهاء"
+
+#: issuer/views.py:430 issuer/views.py:437
+msgid "Create Receiver"
+msgstr ""
+
+#: issuer/views.py:489 issuer/views.py:496
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Update Receiver"
+msgstr "تعديل الشركة"
+
+#: taxManagement/templates/create-invoice-header.html:12
+#: taxManagement/templates/create-invoice-header.html:14
+#: taxManagement/templates/create-invoice-line.html:12
+#: taxManagement/templates/create-invoice-line.html:14
+#: taxManagement/templates/view-invoice.html:15
+#: taxManagement/templates/view-invoice.html:17
+msgid "Back to Invoices List"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:28
+#: taxManagement/templates/view-invoice.html:56
+msgid "Receiver"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:34
+msgid "Document Type"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:40
+msgid "Document Type Version"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:46
+msgid "Taxpayer Activity Code"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:52
+#: taxManagement/templates/upload-invoice.html:75
+msgid "Internal ID"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:58
+#: taxManagement/templates/upload-invoice.html:76
+msgid "Purchase Order Reference"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:64
+msgid "Purchase Order Description"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:70
+#: taxManagement/templates/upload-invoice.html:77
+msgid "Sales Order Reference"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:76
+msgid "Sales Order Description"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:82
+msgid "Proforma Invoice Number"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:87
+msgid "Extra Discount Amount"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-header.html:94
+msgid "Save And Add Invoice Line"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:26
+msgid "Description"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:31
+#: taxManagement/templates/view-invoice.html:101
+#, fuzzy
+#| msgid "Type"
+msgid "Item Type"
+msgstr " النوع"
+
+#: taxManagement/templates/create-invoice-line.html:36
+#, fuzzy
+#| msgid "Code"
+msgid "Item Code"
+msgstr "الكود"
+
+#: taxManagement/templates/create-invoice-line.html:41
+#: taxManagement/templates/view-invoice.html:105
+#, fuzzy
+#| msgid "Type"
+msgid "Unit Type"
+msgstr " النوع"
+
+#: taxManagement/templates/create-invoice-line.html:46
+#: taxManagement/templates/view-invoice.html:109
+msgid "Quantity"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:51
+#: taxManagement/templates/view-invoice.html:113
+msgid "Currency Sold"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:57
+msgid "Amount Sold"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:62
+#: taxManagement/templates/view-invoice.html:117
+msgid "Amount EGP"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:67
+msgid "Currency Exchange Rate"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:73
+#: taxManagement/templates/view-invoice.html:129
+msgid "Value Difference"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:78
+#: taxManagement/templates/view-invoice.html:137
+msgid "Items Discount"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:83
+#: taxManagement/templates/view-invoice.html:145
+msgid "Discount Rate"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:88
+#: taxManagement/templates/view-invoice.html:153
+msgid "Internal Code"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:95
+msgid "Tax Lines"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:100
+#, fuzzy
+#| msgid "Tax Sub-Type"
+msgid "Tax SubType"
+msgstr "الضريبة الفرعية"
+
+#: taxManagement/templates/create-invoice-line.html:104
+#: taxManagement/templates/view-invoice.html:168
+#, fuzzy
+#| msgid "Tax Type"
+msgid "Tax Rate"
+msgstr "نوع الضريبة"
+
+#: taxManagement/templates/create-invoice-line.html:108
+#: taxManagement/templates/view-invoice.html:172
+msgid "Tax Amount"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:153
+msgid "Add Tax Line"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:158
+msgid "Save And Exit"
+msgstr ""
+
+#: taxManagement/templates/create-invoice-line.html:159
+msgid "Add Another Line"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:12
+msgid "Upload Invoice"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:51
+msgid "Create New Invoice"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:55
+msgid "Upload Excel"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:58
+msgid "Export Excel Template"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:78
+msgid "Total Discount Amount"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:79
+msgid "Total Sales Amount"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:80
+msgid "Net Amount"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:81
+msgid "Total Amount"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:82
+msgid "Submission ID"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:83
+msgid "Submit"
+msgstr ""
+
+#: taxManagement/templates/upload-invoice.html:84
+msgid "Status"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:31
+msgid "Submit Invoice"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:38
+msgid "Verified"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:43
+msgid "Cancel"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:52
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Issuer"
+msgstr "تعديل الشركة"
+
+#: taxManagement/templates/view-invoice.html:60
+#, fuzzy
+#| msgid "Update Issuer"
+msgid "Date Time Issued"
+msgstr "تعديل الشركة"
+
+#: taxManagement/templates/view-invoice.html:64
+msgid "Total Sales"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:68
+msgid "Total Discount"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:72
+msgid "Net"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:76
+msgid "Extra Discount"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:80
+msgid "Total Items Discount"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:88
+#: taxManagement/templates/view-invoice.html:125
+msgid "Total"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:97
+msgid "Item"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:121
+msgid "Sales Total"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:126
+#: taxManagement/templates/view-invoice.html:134
+#: taxManagement/templates/view-invoice.html:138
+#: taxManagement/templates/view-invoice.html:142
+#: taxManagement/templates/view-invoice.html:150
+#: taxManagement/templates/view-invoice.html:173
+msgid "EGP"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:133
+msgid "Total Taxable Fees"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:141
+msgid "Net Total"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:149
+msgid "Discount Amount"
+msgstr ""
+
+#: taxManagement/templates/view-invoice.html:160
+#, fuzzy
+#| msgid "Tax Sub-Type"
+msgid "Tax Subtype"
+msgstr "الضريبة الفرعية"
+
+#: taxManagement/views.py:591
+msgid "View Invoice"
+msgstr ""
+
+#: taxManagement/views.py:615
+msgid "Create Invoice Header"
+msgstr ""
+
+#: taxManagement/views.py:656
+msgid "Create Invoice Line"
+msgstr ""
