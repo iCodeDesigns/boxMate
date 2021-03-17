@@ -1,11 +1,18 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
-            New Invoice Line
+          {{page_title}}
+          <a href="{% url 'taxManagement:get-all-invoice-headers' %}" data-toggle="tooltip"
+             title="{% trans 'Back to Invoices List' %}" class="pull-right btn btn-warning"
+             style="margin-right: 2px;">
+              {% trans 'Back to Invoices List' %}
+          </a>
         </h1>
 
     </section>
@@ -16,89 +23,89 @@
             <div class="form-row">
                 <div class="col-md-12">
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Description</label>
+                        <label for="inputEmail4">{% trans 'Description' %}</label>
                         <br>
                         {{ line_form.description}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Item Type</label>
+                        <label for="inputEmail4">{% trans 'Item Type' %}</label>
                         <br>
                         {{ line_form.itemType}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Item Code</label>
+                        <label for="inputEmail4">{% trans 'Item Code' %}</label>
                         <br>
                         {{ line_form.itemCode}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Unit Type</label>
+                        <label for="inputEmail4">{% trans 'Unit Type' %}</label>
                         <br>
                         {{ line_form.unitType}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Quantity</label>
+                        <label for="inputEmail4">{% trans 'Quantity' %}</label>
                         <br>
                         {{ line_form.quantity}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Currency Sold</label>
+                        <label for="inputEmail4">{% trans 'Currency Sold' %}</label>
                         <br>
                         {{ line_form.currencySold}}
                     </div>
 
                     <div class="form-group col-md-4" id="amountSold">
-                        <label for="inputEmail4">Amount Sold</label>
+                        <label for="inputEmail4">{% trans 'Amount Sold' %}</label>
                         <br>
                         {{ line_form.amountSold}}
                     </div>
                     <div class="form-group col-md-4" id="amountEGP">
-                        <label for="inputEmail4">Amount EGP</label>
+                        <label for="inputEmail4">{% trans 'Amount EGP' %}</label>
                         <br>
                         {{ line_form.amountEGP}}
                     </div>
                     <div class="form-group col-md-4" id="currencyExchangeRate">
-                        <label for="inputEmail4">Currency Exchange Rate</label>
+                        <label for="inputEmail4">{% trans 'Currency Exchange Rate' %}</label>
                         <br>
                         {{ line_form.currencyExchangeRate}}
                     </div>
 
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Value Difference</label>
+                        <label for="inputEmail4">{% trans 'Value Difference' %}</label>
                         <br>
                         {{ line_form.valueDifference}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Items Discount</label>
+                        <label for="inputEmail4">{% trans 'Items Discount' %}</label>
                         <br>
                         {{ line_form.itemsDiscount}}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="inputEmail4">Discount Rate</label>
+                        <label for="inputEmail4">{% trans 'Discount Rate' %}</label>
                         <br>
                         {{ line_form.rate}}
                     </div>
                     <div class="form-group col-md-12">
-                        <label for="inputEmail4">Internal Code</label>
+                        <label for="inputEmail4">{% trans 'Internal Code' %}</label>
                         <br>
                         {{ line_form.internalCode}}
                     </div>
                 </div>
                 <div id="tax_line_set">
                     <div class="form-row">
-                        <h2>Tax Lines</h2>
+                        <h2>{% trans 'Tax Lines' %}</h2>
                         <div class="form-group col-md-3">
-                            <label for="inputEmail4">Tax Type</label>
+                            <label for="inputEmail4">{% trans 'Tax Type' %}</label>
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="inputEmail4">Tax SubType</label>
-                        </div>
-
-                        <div class="form-group col-md-3">
-                            <label for="inputEmail4">Tax Rate</label>
+                            <label for="inputEmail4">{% trans 'Tax SubType' %}</label>
                         </div>
 
                         <div class="form-group col-md-3">
-                            <label for="inputEmail4">Tax Amount</label>
+                            <label for="inputEmail4">{% trans 'Tax Rate' %}</label>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">{% trans 'Tax Amount' %}</label>
                         </div>
 
                     </div>
@@ -143,14 +150,13 @@
                 <br>
                 <div class="col-md-12">
                     <button type="button" id="add_line" onclick="add_tax_line_func()"
-                        class="btn cur-p btn-success pull-right">Add Tax
-                        Line</button>
+                        class="btn cur-p btn-success pull-right">{% trans 'Add Tax Line' %}</button>
                 </div>
                 <div class="separator mb-5"></div>
                 <div class="form-group col-md-12">
                     <br>
-                    <button type="submit" class="btn btn-primary" name="Save And Exit">Save And Exit</button>
-                    <button type="submit" class="btn btn-primary" name="Save And Add">Add Another Line</button>
+                    <button type="submit" class="btn btn-primary" name="Save And Exit">{% trans 'Save And Exit' %}</button>
+                    <button type="submit" class="btn btn-primary" name="Save And Add">{% trans 'Add Another Line' %}</button>
 
                 </div>
             </div>
