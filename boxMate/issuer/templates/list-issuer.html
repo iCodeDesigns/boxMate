@@ -44,12 +44,12 @@
                         <td>{{ issuer.reg_num }}</td>
                         <td>{{ issuer.client_id }}</td>
                         <td>
-                          <a href="{% url 'issuer:list-issuer-address' %}" data-toggle="tooltip" title="View">
+                          <a href="{% url 'issuer:list-issuer-address' %}" data-toggle="tooltip" title="View Address">
                             <span class="glyphicon glyphicon-zoom-in"></span>
                           </a>
                         </td>
                         <td style="display: flex; justify-content: space-around;">
-                          <a href="{% url 'issuer:view-issuer' issuer.id %}" data-toggle="tooltip" title="View">
+                          <a href="{% url 'issuer:view-issuer' issuer.id %}" data-toggle="tooltip" title="View Issuer">
                             <span class="glyphicon glyphicon-zoom-in"></span>
                           </a>
                           <a href="{% url 'issuer:update-issuer' issuer.id %}" data-toggle="tooltip" title="Edit">
