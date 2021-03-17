@@ -20,7 +20,7 @@
              <div class="btn-group">
                {% if invoice_header.invoice_status == 'verified'%}
                  <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
-                   <button class="btn btn-primary">Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
+                   <button class="btn btn-primary">{% trans 'Submit Invoice' %} &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
                  </a>
                {% endif %}
                {% if invoice_header.invoice_status != 'cancel'%}
@@ -41,7 +41,7 @@
         </div>
         <div class="box-body">
           <div class="form-group col-md-4">
-            <b>Issuer: </b>
+            <b>{% trans 'Issuer' %}: </b>
             {{invoice_header.issuer.name}}
           </div>
           <div class="form-group col-md-4">
