@@ -31,7 +31,7 @@ from taxManagement.invoice_generation import Invoicegeneration
 from .forms import *
 from issuer.decorators import is_issuer
 from currencies.models import Currency
-
+import zipfile
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
 
@@ -184,41 +184,55 @@ def import_data_to_invoice(user):
 def upload_excel_sheet(request):
     main_table_resource = MainTableResource()
     import_file = request.FILES['import_file']
+    print('import file: ', import_file)
     dataset = Dataset()
-    # # unhash the following line in case of csv file
-    # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
-    # this line in case of excel file
-    imported_data = dataset.load(import_file.read(), format='xlsx')
-    #
-    result = main_table_resource.import_data(
-        imported_data, dry_run=True, user=request.user)  # Test the data import
-    tmp_storage = write_to_tmp_storage(import_file)
-    if not result.has_errors() and not result.has_validation_errors():
-        tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
-        data = tmp_storage.read('rb')
-        # Uncomment the following line in case of 'csv' file
-        # data = force_str(data, "utf-8")
-        dataset = Dataset()
-        # Enter format = 'csv' for csv file
-        # TODO delete only the data of the issuer
-        success = MainTable.objects.filter(user=request.user).delete()
-        if not success:
-            messages.error(request, 'Failed to import Excel sheet')
+    # try to handle uploading our template with no data
+    try:
+        # # unhash the following line in case of csv file
+        # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
+        # this line in case of excel file
+        imported_data = dataset.load(import_file.read(), format='xlsx')
+        #
+        # handle case uploading empty excel sheet
+        if imported_data:
+            result = main_table_resource.import_data(
+                imported_data, dry_run=True, user=request.user)  # Test the data import
+            print('result: ', result)
+            tmp_storage = write_to_tmp_storage(import_file)
+            if not result.has_errors() and not result.has_validation_errors():
+                tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
+                data = tmp_storage.read('rb')
+                # Uncomment the following line in case of 'csv' file
+                # data = force_str(data, "utf-8")
+                dataset = Dataset()
+                # Enter format = 'csv' for csv file
+                # TODO delete only the data of the issuer
+                success = MainTable.objects.filter(user=request.user).delete()
+                if not success:
+                    messages.error(request, 'Failed to import Excel sheet')
+                    return redirect('/tax/list/uploaded-invoices')
+
+                imported_data = dataset.load(data, format='xlsx')
+
+                main_table_resource.import_data(imported_data,
+                                                dry_run=False,
+                                                raise_errors=True,
+                                                file_name=tmp_storage.name, user=request.user)
+                tmp_storage.remove()
+
+            else:
+                messages.error(request, 'Invalid Excel Sheet ' +
+                               str(result.base_errors))
+                return redirect('/tax/list/uploaded-invoices')
+        else:
+            messages.error(request, 'Empty Excel File')
             return redirect('/tax/list/uploaded-invoices')
-
-        imported_data = dataset.load(data, format='xlsx')
-
-        main_table_resource.import_data(imported_data,
-                                        dry_run=False,
-                                        raise_errors=True,
-                                        file_name=tmp_storage.name, user=request.user)
-        tmp_storage.remove()
-
-    else:
-        messages.error(request, 'Invalid Excel Sheet ' +
-                       str(result.base_errors))
+    # todo: test uploading our template with correct data
+    except zipfile.BadZipfile as e:
+        # e is ---> File is not a zip file
+        print('Exception occurred while uplaoding a file --> ', e)
+        messages.error(request, 'Please fill Excel Sheet with data')
         return redirect('/tax/list/uploaded-invoices')
-
     # issuer_views.get_issuer_data(request.user)
     issuer_views.get_receiver_data(request.user)
     import_data_to_invoice(request.user)
