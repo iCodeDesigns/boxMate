@@ -75,9 +75,9 @@ class ReceiverForm(forms.ModelForm):
         model = Receiver
         fields = '__all__'
         exclude = ('issuer',)
-        def __init__(self, *args, **kwargs):
-            super(ReceiverForm, self).__init__(*args, **kwargs)
-            for field in self.fields:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs):
+        super(ReceiverForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 AddressInlineForm = formset_factory(form=AddressForm, extra=1)
