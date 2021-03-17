@@ -8,7 +8,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         
-        <h1>Update Address</h1>
+        <h1>{% trans 'Update Address' %}</h1>
         
 
     </section>
@@ -23,7 +23,7 @@
                         
                         <div id="address_form">
                             <div class="form-row">
-                                <h2 class="col-md-12">Address</h2>
+                                <h2 class="col-md-12">{% trans 'Address' %}</h2>
                                 <div class="form-group col-md-4">
                                     <label for="inputCity">{% trans 'Branch' %}</label>
                                     {{ address_form.branch_id}}
@@ -68,7 +68,7 @@
                         </div>
 
                         <div class="form-group col-md-4">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
                         </div>
                         
                        

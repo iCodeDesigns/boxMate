@@ -8,13 +8,18 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         {% if update %}
-        <h1>Update Address</h1>
+        <h1>{% trans 'Update Address' %}</h1>
         {% else %}
         <h1>
-            Create Address
+            {% trans 'Create Address' %}
             <!-- <small>Optional description</small> -->
         </h1>
         {% endif %}
+        <a href="{% url 'issuer:list-issuer' %}" data-toggle="tooltip"
+           title="{% trans 'Back to List' %}" class="pull-right btn btn-warning"
+           style="margin-right: 2px;">
+            {% trans 'Back to List' %}
+        </a>
 
     </section>
     <!-- Main content -->
@@ -36,12 +41,12 @@
                 <div class="container-fluid">
                     <form method="POST" id="myform">
                         {% csrf_token %}
-                        
+
                         {{ address_formset.management_form }}
                         {% for address_form in address_formset %}
                         <div id="address_form">
                             <div class="form-row">
-                                <h2 class="col-md-12">Address</h2>
+                                <h2 class="col-md-12">{% trans 'Address' %}</h2>
                                 <div class="form-group col-md-4">
                                     <label for="inputCity">{% trans 'Branch' %}</label>
                                     {{ address_form.branch_id}}
@@ -135,16 +140,16 @@
 
                         {% if not update %}
                         <div class="form-group col-md-4">
-                            <button type="submit" class="btn btn-primary">Save and go to Taxs</button>
+                            <button type="submit" class="btn btn-primary">{% trans 'Save and go to Taxes' %}</button>
                         </div>
                         {% else %}
                         <div class="form-group col-md-4">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
                         </div>
                         {% endif %}
                         <div class="form-group col-md-4">
                             <button type="button" id="add_line" onclick="add_address_func()"
-                                class="btn cur-p btn-success pull-right">Add Address
+                                    class="btn cur-p btn-success pull-right">{% trans 'Add Address' %}
                             </button>
                         </div>
                     </form>
@@ -166,5 +171,6 @@
         var current_indx = Number(form_idx)
 
     };
+
 </script>
 {% endblock js %}

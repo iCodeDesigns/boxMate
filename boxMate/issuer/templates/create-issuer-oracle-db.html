@@ -8,8 +8,13 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Update DB Connection
+            {% trans 'Update DB Connection' %}
             <!-- <small>Optional description</small> -->
+            <a href="{% url 'issuer:list-issuer-db-connection' %}" data-toggle="tooltip"
+               title="{% trans 'Back to List' %}" class="pull-right btn btn-warning"
+               style="margin-right: 2px;">
+                {% trans 'Back to List' %}
+            </a>
         </h1>
 
     </section>
@@ -22,35 +27,35 @@
                     <div class="form-row">
                         <label class="form-group col-md-12"></label>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">Database Name</label>
+                            <label class="form-group col-md-4">{% trans 'Database Name' %}</label>
                             {{ db_form.database_name}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">IP Address</label>
+                            <label class="form-group col-md-4">{% trans 'IP Address' %}</label>
                             {{ db_form.ip_address}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">Port Number</label>
+                            <label class="form-group col-md-4">{% trans 'Port Number' %}</label>
                             {{ db_form.port_number}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">Service Number</label>
+                            <label class="form-group col-md-4">{% trans 'Service Number' %}</label>
                             {{ db_form.service_number}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">User Name</label>
+                            <label class="form-group col-md-4">{% trans 'User Name' %}</label>
                             {{ db_form.username}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">Password</label>
+                            <label class="form-group col-md-4">{% trans 'Password' %}</label>
                             {{ db_form.password}}
                         </div>
                         <div class="form-group col-md-12">
-                            <label class="form-group col-md-4">Is Active</label>
+                            <label class="form-group col-md-4">{% trans 'Is Active' %}</label>
                             {{ db_form.is_active}}
                         </div>
                         <div style="float:right; margin-bottom: 10px;">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
                         </div>
                     </div>
                 </form>
