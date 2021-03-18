@@ -8,7 +8,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Receivers
+            {% trans 'Receivers' %}
             <!-- <small>Optional description</small> -->
         </h1>
 
@@ -22,7 +22,7 @@
                         <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
                             <div class="col-sm-6">
                                 <a href="{% url 'issuer:create-receiver' %}" class="btn btn-primary margin-bottom">
-                                    Add Receiver
+                                    {% trans 'Add Receiver' %}
                                 </a>
                             </div>
                             <div class="row">
@@ -32,10 +32,10 @@
                                         <thead>
                                             <tr role="row">
                                                 <th>#</th>
-                                                <th style="text-align: center;">Name</th>
-                                                <th style="text-align: center;">Registration Number</th>
-                                                <th style="text-align: center;">Type</th>
-                                                <th style="text-align: center;">Action</th>
+                                                <th style="text-align: center;">{% trans 'Name' %}</th>
+                                                <th style="text-align: center;">{% trans 'Registration Number' %}</th>
+                                                <th style="text-align: center;">{% trans 'Type' %}</th>
+                                                <th style="text-align: center;">{% trans 'Action' %}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -47,11 +47,11 @@
                                                 <td style="text-align: center;">{{ receiver.get_type_display }}</td>
                                                 <td style="display: flex; justify-content: space-around;">
 
-                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}" data-toggle="tooltip" title="Edit">
+                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}" data-toggle="tooltip" title="{% trans 'Edit' %}">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
 
-                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}" data-toggle="tooltip" title="Delete" onclick="return confirm('Are you sure?')">
+                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}" data-toggle="tooltip" title="{% trans 'Delete' %}" onclick="return confirm('Are you sure?')">
                                                         <span class="glyphicon glyphicon-trash"></span>
                                                     </a>
                                                 </td>

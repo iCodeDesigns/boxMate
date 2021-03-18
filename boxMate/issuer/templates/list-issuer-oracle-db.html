@@ -8,7 +8,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-          {% trans 'Import From Oracle' %}
+            {% trans 'Import From Oracle' %}
         </h1>
 
     </section>
@@ -25,53 +25,56 @@
                         <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
                             <div class="col-sm-6">
                                 <button type="button" class="btn btn-primary margin-bottom" data-toggle="modal"
-                                    data-target="#exampleModal">
+                                        data-target="#exampleModal">
                                     {% trans 'Import From Oracle ERP' %}
                                 </button>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
                                     <table id="example1" class="table table-bordered table-striped dataTable"
-                                        role="grid" aria-describedby="example1_info">
+                                           role="grid" aria-describedby="example1_info">
                                         <thead>
-                                            <tr role="row">
-                                                <th>#</th>
-                                                <th>Database Name</th>
-                                                <th>IP Address</th>
-                                                <th>Port Number</th>
-                                                <th>Service Number</th>
-                                                <th>Username</th>
-                                                <th>Is Active</th>
-                                                <th>Edit</th>
-                                            </tr>
+                                        <tr role="row">
+                                            <th>#</th>
+                                            <th>{% trans 'Database Name' %}</th>
+                                            <th>{% trans 'IP Address' %}</th>
+                                            <th>{% trans 'Port Number' %}</th>
+                                            <th>{% trans 'Service Number' %}</th>
+                                            <th>{% trans 'Username' %}</th>
+                                            <th>{% trans 'Is Active' %}</th>
+                                            <th>{% trans 'Edit' %}</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {% for connection in connections %}
-                                            <tr>
-                                                <td>{{ forloop.counter }}</td>
-                                                <td>{{ connection.database_name }}</td>
-                                                <td>{{ connection.ip_address }}</td>
-                                                <td>{{ connection.port_number }}</td>
-                                                <td>{{ connection.service_number }}</td>
-                                                <td>{{ connection.username }}</td>
-                                                {% if connection.is_active %}
-                                                <td>Active
-                                                    <span class="glyphicon glyphicon-ok-sign" style="color: #28a745;"></span>
-                                                </td>
-                                                {% else %}
-                                                <td>
-                                                    <a class="btn btn-primary" href="{% url 'issuer:activate-db' id=connection.id %}" >
-                                                        <span>Activate</span>
-                                                    </a>
-                                                </td>
-                                                {% endif %}
-                                                <td>
-                                                    <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}" data-toggle="tooltip" title="Edit">
-                                                        <span class="glyphicon glyphicon-pencil"></span>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
+                                        {% for connection in connections %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ connection.database_name }}</td>
+                                            <td>{{ connection.ip_address }}</td>
+                                            <td>{{ connection.port_number }}</td>
+                                            <td>{{ connection.service_number }}</td>
+                                            <td>{{ connection.username }}</td>
+                                            {% if connection.is_active %}
+                                            <td>Active
+                                                <span class="glyphicon glyphicon-ok-sign"
+                                                      style="color: #28a745;"></span>
+                                            </td>
+                                            {% else %}
+                                            <td>
+                                                <a class="btn btn-primary"
+                                                   href="{% url 'issuer:activate-db' id=connection.id %}">
+                                                    <span>{% trans 'Activate' %}</span>
+                                                </a>
+                                            </td>
+                                            {% endif %}
+                                            <td>
+                                                <a href="{% url 'issuer:update-issuer-db-connection' id=connection.id %}"
+                                                   data-toggle="tooltip" title="{% trans 'Edit' %}">
+                                                    <span class="glyphicon glyphicon-pencil"></span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
                                         </tbody>
 
                                     </table>
@@ -90,14 +93,13 @@
 </div>
 
 
-
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
+     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">New DB Connection</h5>
+                <h5 class="modal-title" id="exampleModalLabel">{% trans 'New DB Connection' %}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -108,48 +110,46 @@
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-group col-md-4">Database Name</label>
+                            <label class="form-group col-md-4">{% trans 'Database Name' %}</label>
                             {{ db_form.database_name}}
                         </div>
                         <div class="form-group">
-                            <label class="form-group col-md-4">IP Address</label>
+                            <label class="form-group col-md-4">{% trans 'IP Address' %}</label>
                             {{ db_form.ip_address}}
                         </div>
                         <div class="form-group">
-                            <label class="form-group col-md-4">Port Number</label>
+                            <label class="form-group col-md-4">{% trans 'Port Number' %}</label>
                             {{ db_form.port_number}}
                         </div>
                         <div class="form-group">
-                            <label class="form-group col-md-4">Service Number</label>
+                            <label class="form-group col-md-4">{% trans 'Service Number' %}</label>
                             {{ db_form.service_number}}
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-group col-md-4">User Name</label>
+                            <label class="form-group col-md-4">{% trans 'User Name' %}</label>
                             {{ db_form.username}}
                         </div>
                         <div class="form-group">
-                            <label class="form-group col-md-4">Password</label>
+                            <label class="form-group col-md-4">{% trans 'Password' %}</label>
                             {{ db_form.password}}
                         </div>
                         <div class="form-group">
-                            <label class="form-group col-md-4">Is Active</label>
+                            <label class="form-group col-md-4">{% trans 'Is Active' %}</label>
                             {{ db_form.is_active}}
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Close' %}</button>
                 <button type="submit" class="btn btn-secondary" data-dismiss="modal"
-                    onclick="document.getElementById('myform').submit();">Save</button>
+                        onclick="document.getElementById('myform').submit();">{% trans 'Save' %}
+                </button>
             </div>
         </div>
     </div>
 </div>
-</div>
-
-
 {% endblock body %}

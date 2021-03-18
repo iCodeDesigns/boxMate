@@ -1,12 +1,19 @@
 {% extends 'main.html'%}
 {% load static %}
+{% load l10n %}
+{% load i18n %}
 
 {% block body %}
 <div class="content-wrapper">
-    <section class="content-header">
-        <h1>
-            New Invoice
-        </h1>
+  <section class="content-header">
+    <h1>
+      {{page_title}}
+      <a href="{% url 'taxManagement:get-all-invoice-headers' %}" data-toggle="tooltip"
+         title="{% trans 'Back to Invoices List' %}" class="pull-right btn btn-warning"
+         style="margin-right: 2px;">
+          {% trans 'Back to Invoices List' %}
+      </a>
+    </h1>
 
     </section>
     <div class="container-fluid">
@@ -15,88 +22,95 @@
 
             <div class="form-row">
             <div class="form-group col-md-4">
-                    <label for="inputEmail4">Issuer Address</label>
+                    <label for="inputEmail4">{% trans 'Issuer Address' %}</label>
                     <br>
                     {{ header_form.issuer_address}}
                 </div>
                 <div class="form-group col-md-4">
-                    <label for="inputEmail4">Receiver</label>
+                    <label for="inputEmail4">{% trans 'Receiver' %}</label>
                     <br>
                     {{ header_form.receiver}}
                 </div>
                 <div class="form-group col-md-4">
-                    <label for="inputEmail4">Receiver Address</label>
+                    <label for="inputEmail4">{% trans 'Receiver Address' %}</label>
                     <br>
                     {{ header_form.receiver_address}}
                 </div>
 
                 <div class="form-group col-md-4">
-                    <label for="inputEmail4">Document Type</label>
+                    <label for="inputEmail4">{% trans 'Document Type' %}</label>
                     <br>
                     {{ header_form.document_type}}
                 </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Document Type Version</label>
-                    <br>
-                    {{ header_form.document_type_version}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Taxpayer Activity Code</label>
-                    <br>
-                    {{ header_form.taxpayer_activity_code}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Internal ID</label>
-                    <br>
-                    {{ header_form.internal_id}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Purchase Order Reference</label>
-                    <br>
-                    {{ header_form.purchase_order_reference}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Purchase Order Description</label>
-                    <br>
-                    {{ header_form.purchase_order_description}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Sales Order Reference</label>
-                    <br>
-                    {{ header_form.sales_order_reference}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Sales Order Description</label>
-                    <br>
-                    {{ header_form.sales_order_description}}
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Proforma Invoice Number</label>
-                    <br>
-                    {{ header_form.proforma_invoice_number}}
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="inputEmail4">Extra Discount Amount</label>
-                    <br>
-                    {{ header_form.extra_discount_amount}}
-                </div>
-
-            </div>
-
-            <div class="form-group col-md-11">
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Document Type' %}</label>
                 <br>
-                <button type="submit" class="btn btn-primary pull-right">Save And Add Invoice Line</button>
+                {{ header_form.document_type}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Document Type Version' %}</label>
+                <br>
+                {{ header_form.document_type_version}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Taxpayer Activity Code' %}</label>
+                <br>
+                {{ header_form.taxpayer_activity_code}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Internal ID' %}</label>
+                <br>
+                {{ header_form.internal_id}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Purchase Order Reference' %}</label>
+                <br>
+                {{ header_form.purchase_order_reference}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Purchase Order Description' %}</label>
+                <br>
+                {{ header_form.purchase_order_description}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Sales Order Reference' %}</label>
+                <br>
+                {{ header_form.sales_order_reference}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Sales Order Description' %}</label>
+                <br>
+                {{ header_form.sales_order_description}}
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Proforma Invoice Number' %}</label>
+                <br>
+                {{ header_form.proforma_invoice_number}}
+              </div>
+              <div class="form-group col-md-4">
+                <label for="inputEmail4">{% trans 'Extra Discount Amount' %}</label>
+                <br>
+                {{ header_form.extra_discount_amount}}
+              </div>
             </div>
-        </form>
+            <div class="form-group col-md-11">
+              <br>
+              <button type="submit" class="btn btn-primary pull-right">{% trans "Save And Add Invoice Line" %}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
     </div>
+  </section>
 </div>
 {% endblock body %}
 

@@ -19,7 +19,7 @@
 
     </section>
     <!-- Main content -->
-    <section class="content">
+    <section class="container-fluid">
         <div class="box">
             <!-- /.box-header -->
             <!-- Error messaging -->
@@ -43,7 +43,7 @@
                     <form method="POST" id="myform">
                         {% csrf_token %}
                         <div class="form-row">
-                            <h2>Company</h2>
+                            <h2>{% trans 'Company' %}</h2>
                             <div class="form-group col-md-4">
                                 <label for="inputCity">{% trans 'Client Id' %}</label>
                                 <br>
@@ -95,7 +95,7 @@
                             </div>
                         </div>
 
-                      
+
 
                         <br>
                         {% if not update %}

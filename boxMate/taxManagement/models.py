@@ -159,17 +159,17 @@ class InvoiceHeader(models.Model):
             self.total_sales_amount = sales_total
         else:
             self.total_sales_amount = 0
-        self.save()    
+        self.save()
 
 
     def calculate_items_discount(self):
         items_discount = InvoiceLine.objects.filter(invoice_header=self).aggregate(itemsDiscount=Sum("itemsDiscount"))[
             'itemsDiscount']
-        if items_discount is not None : 
+        if items_discount is not None :
             self.total_items_discount_amount = items_discount
         else:
             self.total_items_discount_amount = 0
-        self.save()    
+        self.save()
 
 
     def calculate_discount_amount(self):
@@ -178,22 +178,22 @@ class InvoiceHeader(models.Model):
         if total_discount_amount is not None :
             self.total_discount_amount = total_discount_amount
         else:
-            self.total_discount_amount = 0    
+            self.total_discount_amount = 0
         self.save()
 
     def calculate_net_amount(self):
         net_amount = InvoiceLine.objects.filter(invoice_header=self).aggregate(net_amount=Sum("netTotal"))[
             'net_amount']
-        if net_amount is not None : 
+        if net_amount is not None :
             self.net_amount = net_amount
         else:
-            self.net_amount = 0    
+            self.net_amount = 0
         self.save()
 
     def calculate_total_amount(self):
         total_amount = InvoiceLine.objects.filter(invoice_header=self).aggregate(total_amount=Sum("total"))[
             'total_amount']
-        if total_amount and self.extra_discount_amount is not None:   
+        if total_amount and self.extra_discount_amount is not None:
             self.total_amount = total_amount - self.extra_discount_amount
         else:
             self.total_amount = 0

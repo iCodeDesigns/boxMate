@@ -6,6 +6,16 @@
 
 {% block body %}
 <div class="content-wrapper">
+    <div class="box-header">
+                <h1 style="font-weight: bolder;">
+                    {% trans 'Issuer Info' %}
+                    <a href="{% url 'issuer:list-issuer' %}"  data-toggle="tooltip" title="{% trans 'Back to Issuers List' %}" class="pull-right btn btn-warning" style="margin-right: 2px;">
+                        {% trans 'Back to Issuers List' %}
+                    </a>
+
+                    <!-- <small>Optional description</small> -->
+                </h1>
+            </div>
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1 style="font-weight: bolder;">
@@ -33,7 +43,7 @@
         </div>
 
         <h1 style="font-weight: bolder;">
-            Address
+            {% trans 'Address' %}
             <!-- <small>Optional description</small> -->
         </h1>
         <br>
