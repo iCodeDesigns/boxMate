@@ -25,5 +25,7 @@ urlpatterns = [
     path('update/address/issuer/<int:id>' , views.update_issuer_address,name='update-issuer-address'),
     path('delete/address/issuer/<int:id>' , views.delete_issuer_address,name='delete-issuer-address'),
 
+    path('export/receiver-template', views.export_receiver_template, name='export-receiver-template'),
+
 
 ]

@@ -20,10 +20,18 @@
                 <div class="box">
                     <div class="box-body">
                         <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                            <div class="col-sm-6">
-                                <a href="{% url 'issuer:create-receiver' %}" class="btn btn-primary margin-bottom">
-                                    {% trans 'Add Receiver' %}
-                                </a>
+                            <div class="col-sm-12">
+                                <div class="margin pull-right">
+                                    <a href="{% url 'issuer:create-receiver' %}" class="btn btn-primary margin-bottom">
+                                        {% trans 'Add Receiver' %}
+                                    </a>
+                                    <a href="#" class="btn btn-success margin-bottom">
+                                       {% trans 'Upload Excel' %}
+                                    </a>
+                                    <a href="{% url 'issuer:export-receiver-template' %}" class="btn btn-warning margin-bottom ">
+                                       {% trans 'Export Excel Template' %}
+                                    </a>
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">

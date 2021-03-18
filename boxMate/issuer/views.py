@@ -18,6 +18,8 @@ from custom_user.models import User
 from django.contrib import messages
 from .decorators import is_issuer
 from django.utils.translation import ugettext_lazy as _
+from .resources import ReceiverResource
+from django.http import HttpResponse
 
 """
 def get_issuer_data(user):
@@ -92,7 +94,6 @@ def get_issuer_data(user):
 """
 
 
-
 def get_receiver_data(user):
     print('*************', user)
     user_id = User.objects.get(id=user.id)
@@ -142,10 +143,10 @@ def get_receiver_data(user):
                 type=data['receiver_type'],
                 reg_num=data['receiver_registration_num'],
                 name=data['receiver_name'],
-                issuer = issuer
+                issuer=issuer
             )
             receiver_obj.save()
-            print('after save ',receiver_obj)
+            print('after save ', receiver_obj)
             receiver_id = receiver_obj
             country_code = data['receiver_country']
             code_obj = CountryCode.objects.get(pk=country_code)
@@ -221,10 +222,10 @@ def create_issuer_tax(request):
 
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
-    issuer_form = IssuerForm(update = False)
+    issuer_form = IssuerForm(update=False)
     address_form = AddressForm()
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST, update = False)
+        issuer_form = IssuerForm(request.POST, update=False)
         address_form = AddressForm(request.POST)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -257,12 +258,11 @@ def create_issuer(request):
             'address_form': address_form, })
 
 
-
-def update_issuer(request , issuer_id):
-    issuer_instance = Issuer.objects.get(id = issuer_id)
-    issuer_form = IssuerForm(instance = issuer_instance , update = True)
+def update_issuer(request, issuer_id):
+    issuer_instance = Issuer.objects.get(id=issuer_id)
+    issuer_form = IssuerForm(instance=issuer_instance, update=True)
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST , instance=issuer_instance,update = True )
+        issuer_form = IssuerForm(request.POST, instance=issuer_instance, update=True)
         issuer_obj = issuer_form.save(commit=False)
         if issuer_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -273,7 +273,8 @@ def update_issuer(request , issuer_id):
 
     return render(request, 'create-issuer.html', {
         'issuer_form': issuer_form,
-        'update':True,})
+        'update': True, })
+
 
 def create_issuer_address(request):
     address_formset = AddressInlineForm()
@@ -286,24 +287,26 @@ def create_issuer_address(request):
                 address_obj.created_by = request.user
                 address_obj.created_at = datetime.now()
                 address_obj.save()
-            return redirect('issuer:create-tax',request.user.issuer.id)
+            return redirect('issuer:create-tax', request.user.issuer.id)
     context = {
         'address_formset': address_formset
     }
-    return render(request , 'create_issuer_address.html' , context)
+    return render(request, 'create_issuer_address.html', context)
+
 
 def list_issuer_address(request):
     addresses = Address.objects.filter(issuer=request.user.issuer)
     context = {
-        'addresses':addresses
+        'addresses': addresses
     }
-    return render(request , 'list-issuer-addresses.html',context)
+    return render(request, 'list-issuer-addresses.html', context)
 
-def update_issuer_address(request , id):
-    address = Address.objects.get(id = id)
-    address_form = AddressForm(instance = address)
+
+def update_issuer_address(request, id):
+    address = Address.objects.get(id=id)
+    address_form = AddressForm(instance=address)
     if request.method == 'POST':
-        address_form = AddressForm(request.POST , instance = address)
+        address_form = AddressForm(request.POST, instance=address)
         if address_form.is_valid():
             address_obj = address_form.save(commit=False)
             address_obj.issuer = request.user.issuer
@@ -312,15 +315,15 @@ def update_issuer_address(request , id):
             address_obj.save()
             return redirect('issuer:list-issuer-address')
     context = {
-        'address_form':address_form
+        'address_form': address_form
     }
-    return render(request , 'update-issuer-address.html' , context)
+    return render(request, 'update-issuer-address.html', context)
 
-def delete_issuer_address(request , id):
-    address = Address.objects.get(id = id)
+
+def delete_issuer_address(request, id):
+    address = Address.objects.get(id=id)
     address.delete()
     return redirect('issuer:list-issuer-address')
-
 
 
 @is_issuer
@@ -507,3 +510,18 @@ def delete_receiver(request, pk):
     receiver = Receiver.objects.get(id=pk)
     receiver.delete()
     return redirect('issuer:list-receiver')
+
+
+def export_receiver_template(request):
+    """
+    export a template to fill receiver info
+    :param request:
+    :return:
+    By: amira
+    Date: 18-03-2021
+    """
+    receiver_resource = ReceiverResource()
+    dataset = receiver_resource.export(queryset=Receiver.objects.none())
+    response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
+    return response
