@@ -33,25 +33,68 @@ class ReceiverResource(resources.ModelResource):
     """
 
     class Meta:
-        model = Receiver
-        exclude = ('last_updated_at', 'created_by', 'last_updated_by', 'created_at', 'id')
+        model = Address
+        exclude = (
+            'last_updated_at', 'created_by', 'last_updated_by', 'created_at', 'id', 'issuer', 'country', 'receiver')
 
-    name = fields.Field(
+    receiver__name = fields.Field(
         column_name='Receiver Name',
         attribute='name',
+        widget=ForeignKeyWidget(Receiver, 'name')
     )
-
-    type = fields.Field(
-        column_name='Type',
+    receiver__type = fields.Field(
+        column_name='Receiver Type',
         attribute='type',
+        widget=ForeignKeyWidget(Receiver, 'Type')
     )
-
-    issuer = fields.Field(
-        column_name='Issuer',
-        attribute='issuer',
-    )
-
-    reg_num = fields.Field(
+    receiver__reg_name = fields.Field(
         column_name='Registration Number',
         attribute='reg_num',
+        widget=ForeignKeyWidget(Receiver, 'reg_num')
+    )
+
+    branch_id = fields.Field(
+        column_name='Branch',
+        attribute='branch_id'
+    )
+    governate = fields.Field(
+        column_name='Governate',
+        attribute='governate'
+    )
+    regionCity = fields.Field(
+        column_name='Region City',
+        attribute='regionCity'
+    )
+    street = fields.Field(
+        column_name='Street',
+        attribute='street'
+    )
+    buildingNumber = fields.Field(
+        column_name='Building Number',
+        attribute='buildingNumber'
+    )
+    postalCode = fields.Field(
+        column_name='Postal Code',
+        attribute='postalCode'
+    )
+    country = fields.Field(
+        column_name='Country Code',
+        attribute='country',
+        widget=ForeignKeyWidget(CountryCode, 'code')
+    )
+    floor = fields.Field(
+        column_name='Floor',
+        attribute='floor'
+    )
+    room = fields.Field(
+        column_name='Room',
+        attribute='room'
+    )
+    landmark = fields.Field(
+        column_name='landmark',
+        attribute='Landmark'
+    )
+    additionalInformation = fields.Field(
+        column_name='Additional Info',
+        attribute='additionalInformation'
     )

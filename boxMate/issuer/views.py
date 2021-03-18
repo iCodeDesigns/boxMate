@@ -1,3 +1,5 @@
+from zipfile import ZipFile, BadZipfile
+
 from django.db import IntegrityError
 from issuer.models import *
 from issuer.api.serializers import IssuerSerializer
@@ -20,6 +22,7 @@ from .decorators import is_issuer
 from django.utils.translation import ugettext_lazy as _
 from .resources import ReceiverResource
 from django.http import HttpResponse
+from tablib import Dataset
 
 """
 def get_issuer_data(user):
@@ -525,3 +528,23 @@ def export_receiver_template(request):
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
     return response
+
+def import_receiver_template(request):
+    """
+    import data from excel sheet
+    :param request:
+    :return:
+    """
+    receiver_resource = ReceiverResource()
+    imported_file = request.FILES['import_file']
+    dataset = Dataset()
+    # try:
+    #     with ZipFile(imported_file) as zf:
+    #         excel_data = dataset.load(imported_file.read(), format='xlsx')
+    # except BadZipfile:
+    #     print("Does not work ")
+    #     excel_data = None
+    excel_data = dataset.load(imported_file.read(), format='xlsx')
+    print(imported_file, ' @@@@')
+    print(excel_data)
+    return redirect('/issuer/list/receiver')

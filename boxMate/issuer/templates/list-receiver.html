@@ -25,9 +25,10 @@
                                     <a href="{% url 'issuer:create-receiver' %}" class="btn btn-primary margin-bottom">
                                         {% trans 'Add Receiver' %}
                                     </a>
-                                    <a href="#" class="btn btn-success margin-bottom">
-                                       {% trans 'Upload Excel' %}
-                                    </a>
+                                    <button type="button" class="btn btn-success margin-bottom" data-toggle="modal"
+                                       data-target="#exampleModal" style="margin-right: 2px;">
+                                       {% trans "Upload Excel" %}
+                                    </button>
                                     <a href="{% url 'issuer:export-receiver-template' %}" class="btn btn-warning margin-bottom ">
                                        {% trans 'Export Excel Template' %}
                                     </a>
@@ -81,6 +82,32 @@
         </div>
         <!-- /.row -->
     </section>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+   aria-hidden="true">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <form method="POST" action="{% url 'issuer:import-receiver-template' %}" id="form1" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+               <input type="file" name="import_file">
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+               <button type="submit" class="btn btn-secondary" data-dismiss="modal" onclick="document.getElementById('form1').submit();">Submit</button>
+
+            </div>
+         </form>
+      </div>
+   </div>
 </div>
 
 
