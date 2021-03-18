@@ -107,8 +107,10 @@
                                     <td></td>
                                        {% if header.invoice_status == 'verified' %}
                                           <td>
-                                             <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id %}">
-                                                <span class="glyphicon glyphicon-cloud-upload"></span></a>
+                                             <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id version=1.0 %}">
+                                                <span class="glyphicon glyphicon-cloud-upload"> V1.0</span></a>
+                                                <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id version=0.9 %}">
+                                                <span class="glyphicon glyphicon-cloud-upload"> V0.9</span></a>
                                           </td>
                                        {% else %}
                                           <td></td>
