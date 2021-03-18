@@ -647,18 +647,19 @@ def create_new_invoice_line(request,invoice_id):
             line_obj.invoice_header = header
             line_obj.created_by = request.user
             line_obj.save()
+            tax_line_form = TaxLineInlineForm(request.POST, instance=line_obj)
+            
             if tax_line_form.is_valid():
-                for form in tax_line_form:
-                    tax_line_obj = form.save(commit = False)
-                    tax_line_obj.invoice_line = line_obj
-                    tax_line_obj.created_by = request.user
-                    tax_line_obj.save()
+                tax_line_obj = tax_line_form.save(commit = False)
+                for obj in tax_line_obj:
+                    obj.created_by = request.user
+                    obj.save()
                     calculate_all_invoice_lines(header)
                     header_totals(header)
-                    if 'Save And Exit' in request.POST:
-                        return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
-                    elif 'Save And Add' in request.POST:
-                        return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
+                if 'Save And Exit' in request.POST:
+                    return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
+                elif 'Save And Add' in request.POST:
+                    return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
 
 
     context={

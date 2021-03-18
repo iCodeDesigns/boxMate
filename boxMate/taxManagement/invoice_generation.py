@@ -167,10 +167,11 @@ class Invoicegeneration:
     def get_taxable_lines(self, invoice_line_id):
         tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
         tax_lines_list = []
-        for line in tax_lines:
-            tax_line = {"taxType": line.taxType.code, "amount": Decimal(format(line.amount, '.5f')),
-                        "subType": line.subType.code, "rate":  Decimal(format(line.rate, '.2f'))}
-            tax_lines_list.append(tax_line)
+        if len(tax_lines)!=0:
+            for line in tax_lines:
+                tax_line = {"taxType": line.taxType.code, "amount": Decimal(format(line.amount, '.5f')),
+                            "subType": line.subType.code, "rate":  Decimal(format(line.rate, '.2f'))}
+                tax_lines_list.append(tax_line)
         return tax_lines_list
 
 
@@ -179,6 +180,14 @@ class Invoicegeneration:
             invoice_header__id=self.invoice_id)
         invoice_lines_list = []
         for line in invoice_lines:
+            if line.amountSold:
+                amountSold =  Decimal(format(line.amountSold, '.5f'))
+            else:
+                amountSold =  Decimal(format(0 , '.5f'))
+            if line.currencyExchangeRate:
+                currencyExchangeRate = Decimal(format(line.currencyExchangeRate, '.5f'))
+            else:
+                currencyExchangeRate = Decimal(format(0 , '.5f'))
             invoice_line = {
                 "description": line.description,
                 "itemType": line.itemType,
@@ -194,9 +203,9 @@ class Invoicegeneration:
                 "itemsDiscount": Decimal(format(line.itemsDiscount, '.5f')),
                 "unitValue": {
                     "amountEGP": Decimal(format(line.amountEGP, '.5f')),
-                    "amountSold": Decimal(format(line.amountSold, '.5f')),
-                    "currencyExchangeRate": Decimal(format(line.currencyExchangeRate, '.5f')),
-                    "currencySold": line.currencySold},
+                    "amountSold": amountSold,
+                    "currencyExchangeRate": currencyExchangeRate,
+                    "currencySold": line.currencySold.code},
                 "discount": {"rate": Decimal(format(line.rate, '.2f')),
                              "amount": Decimal(format(line.amount, '.5f'))
                              }
