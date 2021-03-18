@@ -19,7 +19,8 @@
           <div class="margin pull-right col-med-4">
              <div class="btn-group">
                {% if invoice_header.invoice_status == 'verified'%}
-                 <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
+               
+                 <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id version=1.0%}">
                    <button class="btn btn-primary">Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
                  </a>
                {% endif %}

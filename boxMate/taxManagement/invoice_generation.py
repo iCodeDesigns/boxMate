@@ -70,6 +70,7 @@ class Invoicegeneration:
     def get_receiver_address(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
         address_id = invoice.receiver_address
+        print("###" , address_id)
         address = Address.objects.filter(id=address_id.id)[0]
         #
         country_id = address.country
