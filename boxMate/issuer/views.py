@@ -17,6 +17,7 @@ from array import *
 from custom_user.models import User
 from django.contrib import messages
 from .decorators import is_issuer
+from django.utils.translation import ugettext_lazy as _
 
 """
 def get_issuer_data(user):
@@ -425,12 +426,16 @@ def create_receiver(request):
             print(address_form.errors)
             return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
-                'address_form': address_form, })
+                'address_form': address_form,
+                "page_title": _("Create Receiver"),
+            })
 
     else:
         return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form, })
+            'address_form': address_form,
+            "page_title": _("Create Receiver"),
+        })
 
 
 @is_issuer
@@ -480,12 +485,16 @@ def update_receiver(request, pk):
         else:
             return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
-                'address_form': address_form, })
+                'address_form': address_form,
+                "page_title": _("Update Receiver"),
+            })
 
     else:
         return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form, })
+            'address_form': address_form,
+            "page_title": _("Update Receiver"),
+        })
 
 
 @is_issuer

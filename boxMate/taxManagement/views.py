@@ -32,6 +32,7 @@ from .forms import *
 from issuer.decorators import is_issuer
 from currencies.models import Currency
 import zipfile
+from django.utils.translation import ugettext_lazy as _
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
 
@@ -587,6 +588,7 @@ def view_invoice(request, invoice_id):
     context = {
         "invoice_header": invoice_header,
         "invoice_lines": invoice_lines,
+        "page_title": _("View Invoice")
     }
     return render(request, 'view-invoice.html', context)
 
@@ -610,6 +612,7 @@ def create_new_invoice_header(request):
 
     context = {
         'header_form':header_form,
+        "page_title": _("Create Invoice Header"),
     }
 
     return render(request , 'create-invoice-header.html' , context)
@@ -650,6 +653,7 @@ def create_new_invoice_line(request,invoice_id):
     context={
         'line_form' : line_form,
         'tax_line_form' : tax_line_form,
+        "page_title": _("Create Invoice Line")
     }
 
     return render(request , 'create-invoice-line.html' , context)

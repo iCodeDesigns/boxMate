@@ -8,7 +8,15 @@
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
-
+    <h1>
+            {{page_title}}
+            <!-- <small>Optional description</small> -->
+            <a href="{% url 'taxManagement:get-all-invoice-headers' %}" data-toggle="tooltip"
+               title="{% trans 'Back to Invoices List' %}" class="pull-right btn btn-warning"
+               style="margin-right: 2px;">
+                {% trans 'Back to Invoices List' %}
+            </a>
+        </h1>
   </section>
   <!-- Main content -->
   <section class="content">
@@ -20,7 +28,7 @@
              <div class="btn-group">
                {% if invoice_header.invoice_status == 'verified'%}
                  <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
-                   <button class="btn btn-primary">Submit Invoice &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
+                   <button class="btn btn-primary">{% trans 'Submit Invoice' %} &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
                  </a>
                {% endif %}
                {% if invoice_header.invoice_status != 'cancel'%}
@@ -41,35 +49,35 @@
         </div>
         <div class="box-body">
           <div class="form-group col-md-4">
-            <b>Issuer: </b>
+            <b>{% trans 'Issuer' %}: </b>
             {{invoice_header.issuer.name}}
           </div>
           <div class="form-group col-md-4">
-            <b>Receiver: </b>
+            <b>{% trans 'Receiver' %}: </b>
             {{invoice_header.receiver.name}}
           </div>
           <div class="form-group col-md-4">
-            <b>Date Time Issued: </b>
+            <b>{% trans 'Date Time Issued' %}: </b>
             {{invoice_header.date_time_issued}}
           </div>
           <div class="form-group col-md-4">
-            <b>Total Sales: </b>
+            <b>{% trans 'Total Sales' %}: </b>
             {{invoice_header.total_sales_amount}} EGP
           </div>
           <div class="form-group col-md-4">
-            <b>Total Discount: </b>
+            <b>{% trans 'Total Discount' %}: </b>
             {{invoice_header.total_discount_amount}} EGP
           </div>
           <div class="form-group col-md-4">
-            <b>Net: </b>
+            <b>{% trans 'Net' %}: </b>
             {{invoice_header.net_amount}} EGP
           </div>
           <div class="form-group col-md-4">
-            <b>Extra Discount: </b>
+            <b>{% trans 'Extra Discount' %}: </b>
             {{invoice_header.extra_discount_amount}} EGP
           </div>
           <div class="form-group col-md-4">
-            <b>Total Items Discount: </b>
+            <b>{% trans 'Total Items Discount' %}: </b>
             {{invoice_header.total_items_discount_amount}} EGP
           </div>
           <div class="form-group col-md-4">
@@ -77,7 +85,7 @@
             {{invoice_header.total_items_discount_amount}} EGP
           </div>
           <div class="form-group col-md-4">
-            <b>Total: </b>
+            <b>{% trans 'Total' %}: </b>
             {{invoice_header.total_amount}} EGP
           </div>
         </div>
@@ -86,83 +94,83 @@
     {% for line in invoice_lines %}
     <div class="box">
       <div class="box-header">
-        <h2 class="box-title" style="font-weight: bolder;">Item #{{ line.itemCode }}</h2>
+        <h2 class="box-title" style="font-weight: bolder;">{% trans 'Item' %} #{{ line.itemCode }}</h2>
       </div>
       <div class="box-body">
         <div class="form-group col-md-4">
-          <b>Item Type: </b>
+          <b>{% trans 'Item Type' %}: </b>
           {{line.itemType}}
         </div>
         <div class="form-group col-md-4">
-          <b>Unit Type: </b>
+          <b>{% trans 'Unit Type' %}: </b>
           {{line.unitType}}
         </div>
         <div class="form-group col-md-4">
-          <b>Quantity: </b>
+          <b>{% trans 'Quantity' %}: </b>
           {{line.quantity}}
         </div>
         <div class="form-group col-md-4">
-          <b>Currency Sold: </b>
+          <b>{% trans 'Currency Sold' %}: </b>
           {{line.currencySold}}
         </div>
         <div class="form-group col-md-4">
-          <b>Amount EGP: </b>
+          <b>{% trans 'Amount EGP' %}: </b>
           {{line.amountEGP}} EGP
         </div>
         <div class="form-group col-md-4">
-          <b>Sales Total: </b>
+          <b>{% trans 'Sales Total' %}: </b>
           {{line.salesTotal}} EGP
         </div>
         <div class="form-group col-md-4">
-          <b>Total: </b>
-          {{line.total}} EGP
+          <b>{% trans 'Total' %}: </b>
+          {{line.total}} {% trans 'EGP' %}
         </div>
         <div class="form-group col-md-4">
-          <b>Value Difference: </b>
+          <b>{% trans 'Value Difference' %}: </b>
           {{line.valueDifference}}
         </div>
         <div class="form-group col-md-4">
-          <b>Total Taxable Fees: </b>
-          {{line.totalTaxableFees}} EGP
+          <b>{% trans 'Total Taxable Fees' %}: </b>
+          {{line.totalTaxableFees}} {% trans 'EGP' %}
         </div>
         <div class="form-group col-md-4">
-          <b>Items Discount: </b>
-          {{line.itemsDiscount}} EGP
+          <b>{% trans 'Items Discount' %}: </b>
+          {{line.itemsDiscount}} {% trans 'EGP' %}
         </div>
         <div class="form-group col-md-4">
-          <b>Net Total: </b>
-          {{line.netTotal}} EGP
+          <b>{% trans 'Net Total' %}: </b>
+          {{line.netTotal}} {% trans 'EGP' %}
         </div>
         <div class="form-group col-md-4">
-          <b>Discount Rate: </b>
+          <b>{% trans 'Discount Rate' %}: </b>
           {{line.rate}} %
         </div>
         <div class="form-group col-md-4">
-          <b>Discount Amount: </b>
-          {{line.amount}} EGP
+          <b>{% trans 'Discount Amount' %}: </b>
+          {{line.amount}} {% trans 'EGP' %}
         </div>
         <div class="form-group col-md-4">
-          <b>Internal Code: </b>
+          <b>{% trans 'Internal Code' %}: </b>
           {{line.internalCode}}
         </div>
       </div>
       {% for tax in line.tax_lines.all %}
       <div class="box">
         <div class="box-header">
-          <h2 class="box-title" style="font-weight: bolder;">Tax Subtype: {{ tax.subType }}</h2>
+          <h2 class="box-title" style="font-weight: bolder;">{% trans 'Tax Subtype' %}: {{ tax.subType }}</h2>
         </div>
         <div class="box-body">
           <div class="form-group col-md-4">
-            <b>Tax Type: </b>
+            <b>{% trans 'Tax Type' %}: </b>
             {{tax.taxType}}
           </div>
           <div class="form-group col-md-4">
-            <b>Tax Rate: </b>
+            <b>{% trans 'Tax Rate' %}: </b>
             {{tax.rate}} %
           </div>
           <div class="form-group col-md-4">
-            <b>Tax Amount: </b>
-            {{tax.amount}} EGP
+            <b>{% trans 'Tax Amount' %}: </b>
+            {{tax.amount}} {% trans 'EGP' %}
           </div>
         </div>
       </div>
@@ -174,10 +182,4 @@
 </div>
 
 {% endblock body %}
-{% block js %}
-<script>
-  function update_status(){
 
-  }
-</script>
-{% endblock js%}
