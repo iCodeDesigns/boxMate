@@ -508,3 +508,18 @@ def delete_receiver(request, pk):
     receiver = Receiver.objects.get(id=pk)
     receiver.delete()
     return redirect('issuer:list-receiver')
+
+@is_issuer
+def view_receiver(request , pk):
+    '''
+        created_at:21/03/2021
+        author: Mamadouh
+        purpose:view reciever details
+    '''
+    receiver = Receiver.objects.get(id=pk)
+    receiver_addresses = Address.objects.filter(receiver=receiver)
+    context = {
+        'receiver' : receiver,
+        'addresses' : receiver_addresses,
+    }
+    return render(request , 'view-receiver.html' , context)
