@@ -1,6 +1,7 @@
 from import_export.widgets import ForeignKeyWidget
 from import_export import resources, fields
 from .models import *
+from taxManagement.models import MainTable
 
 
 class IssuerResource(resources.ModelResource):
@@ -26,91 +27,68 @@ class IssuerResource(resources.ModelResource):
 
 
 class ReceiverResource(resources.ModelResource):
-    """
-    describes how columns of the model are displayed
-    By: amira
-    Date: 18-3-2021
-    """
-
     class Meta:
-        model = Receiver
-        exclude = ('issuer',)
+        model = MainTable
         fields = (
-            'id', 'name', 'reg_num', 'type'
+            'id',
+            'receiver_type', 'receiver_registration_num', 'receiver_name',
+            'receiver_building_num', 'receiver_room', 'receiver_floor',
+            'receiver_street', 'receiver_land_mark', 'receiver_additional_information',
+            'receiver_region_city', 'receiver_postal_code', 'receiver_country'
+
         )
 
-    # class Meta:
-    #     model = Address
-    #     # exclude = (
-    #     #     'last_updated_at', 'created_by', 'last_updated_by', 'created_at', 'id', 'issuer', 'country', 'receiver')
-    #     fields = (
-    #         'receiver', 'branch_id', 'governate', 'regionCity', 'street', 'buildingNumber',
-    #         'postalCode', 'country', 'floor', 'room', 'landmark', 'additionalInformation'
-    #     )
-    #
-    # receiver__name = fields.Field(
-    #     column_name='Receiver Name',
-    #     attribute='name',
-    #     widget=ForeignKeyWidget(Receiver, 'name')
-    # )
-    # receiver__type = fields.Field(
-    #     column_name='Receiver Type',
-    #     attribute='type',
-    #     widget=ForeignKeyWidget(Receiver, 'Type')
-    # )
-    # receiver__reg_name = fields.Field(
-    #     column_name='Registration Number',
-    #     attribute='reg_num',
-    #     widget=ForeignKeyWidget(Receiver, 'reg_num')
-    # )
-    #
-    # branch_id = fields.Field(
-    #     column_name='Branch',
-    #     attribute='branch_id'
-    # )
-    # governate = fields.Field(
-    #     column_name='Governate',
-    #     attribute='governate'
-    # )
-    # regionCity = fields.Field(
-    #     column_name='Region City',
-    #     attribute='regionCity'
-    # )
-    # street = fields.Field(
-    #     column_name='Street',
-    #     attribute='street'
-    # )
-    # buildingNumber = fields.Field(
-    #     column_name='Building Number',
-    #     attribute='buildingNumber'
-    # )
-    # postalCode = fields.Field(
-    #     column_name='Postal Code',
-    #     attribute='postalCode'
-    # )
-    # country = fields.Field(
-    #     column_name='Country Code',
-    #     attribute='country',
-    #     widget=ForeignKeyWidget(CountryCode, 'code')
-    # )
-    # floor = fields.Field(
-    #     column_name='Floor',
-    #     attribute='floor'
-    # )
-    # room = fields.Field(
-    #     column_name='Room',
-    #     attribute='room'
-    # )
-    # landmark = fields.Field(
-    #     column_name='landmark',
-    #     attribute='Landmark'
-    # )
-    # additionalInformation = fields.Field(
-    #     column_name='Additional Info',
-    #     attribute='additionalInformation'
-    # )
-    #
+    receiver_type = fields.Field(
+        column_name='receiver_type',
+        attribute='receiver_type', )
+
+    receiver_registration_num = fields.Field(
+        column_name='receiver_registration_num',
+        attribute='receiver_registration_num', )
+
+    receiver_name = fields.Field(
+        column_name='receiver_name',
+        attribute='receiver_name', )
+
+    receiver_building_num = fields.Field(
+        column_name='receiver_building_num',
+        attribute='receiver_building_num', )
+
+    receiver_room = fields.Field(
+        column_name='receiver_room',
+        attribute='receiver_room', )
+
+    receiver_floor = fields.Field(
+        column_name='receiver_floor',
+        attribute='receiver_floor', )
+
+    receiver_street = fields.Field(
+        column_name='receiver_street',
+        attribute='receiver_street', )
+
+    receiver_land_mark = fields.Field(
+        column_name='receiver_land_mark',
+        attribute='receiver_land_mark', )
+
+    receiver_additional_information = fields.Field(
+        column_name='receiver_additional_information',
+        attribute='receiver_additional_information', )
+
+    receiver_governate = fields.Field(
+        column_name='receiver_governate',
+        attribute='receiver_governate', )
+
+    receiver_region_city = fields.Field(
+        column_name='receiver_region_city',
+        attribute='receiver_region_city', )
+
+    receiver_postal_code = fields.Field(
+        column_name='receiver_postal_code',
+        attribute='receiver_postal_code', )
+
+    receiver_country = fields.Field(
+        column_name='receiver_country',
+        attribute='receiver_country', )
+
     def after_import_instance(self, instance, new, **kwargs):
-        user = kwargs['user']
-        instance.created_by = user
-        instance.issuer = user.issuer
+        instance.user = kwargs['user']

@@ -474,10 +474,9 @@ def update_receiver(request, pk):
     '''
 
     receiver = Receiver.objects.get(id=pk)
-    # by: amira --> add the conditions to handle receivers uploaded from excel without address
-    address = Address.objects.get(receiver=receiver) if Address.objects.filter(receiver=receiver).exists() else None
+    address = Address.objects.get(receiver=receiver)
     receiver_form = ReceiverForm(instance=receiver)
-    address_form = AddressForm(instance=address if address else None)
+    address_form = AddressForm(instance=address)
     if request.method == 'POST':
         receiver_form = ReceiverForm(request.POST, instance=receiver)
         address_form = AddressForm(request.POST, instance=address)
@@ -539,7 +538,7 @@ def export_receiver_template(request):
     return response
 
 
-def is_empty(xl_file):
+def is_empty(xl_file, request):
     """
     check if file is empty or not
     :param xl_file: file to be checked
@@ -550,8 +549,9 @@ def is_empty(xl_file):
     try:
         xlsx_file = pd.read_excel(xl_file, engine='openpyxl')
         empty = xlsx_file.empty  # return false if not empty
-    except Exception as e:
+    except zipfile.BadZipfile as e:
         print('exception occurredin is_empty() ', e)
+        messages.error(request, _('Please, make sure file is saved correctly'))
         empty = True  # always empty on exception
     return empty
 
@@ -567,21 +567,16 @@ def import_receiver_template(request):
         imported_file = request.FILES['import_file']
         dataset = Dataset()
         excel_data = dataset.load(imported_file.read())
-        print('excel data \n', excel_data)
-
         # check file is empty
-        if is_empty(imported_file):
+        if is_empty(imported_file, request):
             messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/issuer/list/receiver')
 
         # test dataset have errors
         result = receiver_resource.import_data(excel_data, dry_run=True, user=request.user)
-
         # write file in tmp
         tmp_storage = write_to_tmp_storage(imported_file)
         if not result.has_errors() and not result.has_validation_errors():
-            print('has errors: ', result.base_errors)
-            print('validaton errors: ', result.has_validation_errors())
             tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
             data = tmp_storage.read('rb')
             dataset = Dataset()
@@ -593,9 +588,14 @@ def import_receiver_template(request):
                                           file_name=tmp_storage.name,
                                           user=request.user)
             tmp_storage.remove()
-            messages.info(request, _('Receiver record is inserted successfully,'
-                                     ' Please click on edit to add address for receiver'))
-
+            # create receiver and his/her address
+            get_receiver_data(request.user)
+            messages.success(request, _('Receiver record is inserted successfully'))
+            # deletes record from maintable
+            success = MainTable.objects.filter(user=request.user).delete()
+            if not success:
+                messages.error(request, 'Failed to import Excel sheet')
+                return redirect('/issuer/list/receiver')
         else:
             messages.error(request, 'Invalid Excel Sheet ' +
                            str(result.base_errors))
