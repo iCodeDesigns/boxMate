@@ -1,3 +1,4 @@
+import zipfile
 from zipfile import ZipFile, BadZipfile
 
 from django.db import IntegrityError
@@ -23,6 +24,12 @@ from django.utils.translation import ugettext_lazy as _
 from .resources import ReceiverResource
 from django.http import HttpResponse
 from tablib import Dataset
+import pandas as pd
+from taxManagement.views import write_to_tmp_storage
+from taxManagement.tmp_storage import TempFolderStorage
+
+TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
+                            TempFolderStorage)
 
 """
 def get_issuer_data(user):
@@ -467,9 +474,10 @@ def update_receiver(request, pk):
     '''
 
     receiver = Receiver.objects.get(id=pk)
-    address = Address.objects.get(receiver=receiver)
+    # by: amira --> add the conditions to handle receivers uploaded from excel without address
+    address = Address.objects.get(receiver=receiver) if Address.objects.filter(receiver=receiver).exists() else None
     receiver_form = ReceiverForm(instance=receiver)
-    address_form = AddressForm(instance=address)
+    address_form = AddressForm(instance=address if address else None)
     if request.method == 'POST':
         receiver_form = ReceiverForm(request.POST, instance=receiver)
         address_form = AddressForm(request.POST, instance=address)
@@ -527,7 +535,26 @@ def export_receiver_template(request):
     dataset = receiver_resource.export(queryset=Receiver.objects.none())
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
+    print(response)
     return response
+
+
+def is_empty(xl_file):
+    """
+    check if file is empty or not
+    :param xl_file: file to be checked
+    :return: true file is empty / false
+    By: amira
+    Date: 21/03/2021
+    """
+    try:
+        xlsx_file = pd.read_excel(xl_file, engine='openpyxl')
+        empty = xlsx_file.empty  # return false if not empty
+    except Exception as e:
+        print('exception occurredin is_empty() ', e)
+        empty = True  # always empty on exception
+    return empty
+
 
 def import_receiver_template(request):
     """
@@ -535,16 +562,47 @@ def import_receiver_template(request):
     :param request:
     :return:
     """
-    receiver_resource = ReceiverResource()
-    imported_file = request.FILES['import_file']
-    dataset = Dataset()
-    # try:
-    #     with ZipFile(imported_file) as zf:
-    #         excel_data = dataset.load(imported_file.read(), format='xlsx')
-    # except BadZipfile:
-    #     print("Does not work ")
-    #     excel_data = None
-    excel_data = dataset.load(imported_file.read(), format='xlsx')
-    print(imported_file, ' @@@@')
-    print(excel_data)
+    try:
+        receiver_resource = ReceiverResource()
+        imported_file = request.FILES['import_file']
+        dataset = Dataset()
+        excel_data = dataset.load(imported_file.read())
+        print('excel data \n', excel_data)
+
+        # check file is empty
+        if is_empty(imported_file):
+            messages.error(request, _('Please, make sure file is filled with data'))
+            return redirect('/issuer/list/receiver')
+
+        # test dataset have errors
+        result = receiver_resource.import_data(excel_data, dry_run=True, user=request.user)
+
+        # write file in tmp
+        tmp_storage = write_to_tmp_storage(imported_file)
+        if not result.has_errors() and not result.has_validation_errors():
+            print('has errors: ', result.base_errors)
+            print('validaton errors: ', result.has_validation_errors())
+            tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
+            data = tmp_storage.read('rb')
+            dataset = Dataset()
+            imported_data = dataset.load(data)
+
+            receiver_resource.import_data(imported_data,
+                                          dry_run=False,
+                                          raise_errors=True,
+                                          file_name=tmp_storage.name,
+                                          user=request.user)
+            tmp_storage.remove()
+            messages.info(request, _('Receiver record is inserted successfully,'
+                                     ' Please click on edit to add address for receiver'))
+
+        else:
+            messages.error(request, 'Invalid Excel Sheet ' +
+                           str(result.base_errors))
+            return redirect('/issuer/list/receiver')
+
+    except zipfile.BadZipfile as e:
+        print('Exception occurred while uploading a file --> ', e)
+        messages.error(request, _('Please, make sure file is saved correctly'))
+
     return redirect('/issuer/list/receiver')
