@@ -18,7 +18,8 @@ from pprint import pprint
 from decimal import Decimal
 from django.http import HttpResponse, HttpResponseRedirect
 from taxManagement.resources import MainTableResource
-from taxManagement.models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal
+from taxManagement.models import MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, \
+    HeaderTaxTotal
 from taxManagement.tmp_storage import TempFolderStorage
 from taxManagement.db_connection import OracleConnection
 from taxManagement.tax_calculator import InoviceTaxLineCalculator
@@ -33,6 +34,7 @@ from issuer.decorators import is_issuer
 from currencies.models import Currency
 import zipfile
 from django.utils.translation import ugettext_lazy as _
+
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
 
@@ -183,62 +185,61 @@ def import_data_to_invoice(user):
 
 @login_required(login_url='home:user-login')
 def upload_excel_sheet(request):
-    main_table_resource = MainTableResource()
-    import_file = request.FILES['import_file']
-    print('import file: ', import_file)
-    dataset = Dataset()
     # try to handle uploading our template with no data
     try:
+        main_table_resource = MainTableResource()
+        import_file = request.FILES['import_file']
+        print('import file: ', import_file)
+        dataset = Dataset()
         # # unhash the following line in case of csv file
         # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
         # this line in case of excel file
         imported_data = dataset.load(import_file.read(), format='xlsx')
         #
         # handle case uploading empty excel sheet
-        if imported_data:
-            result = main_table_resource.import_data(
-                imported_data, dry_run=True, user=request.user)  # Test the data import
-            print('result: ', result)
-            tmp_storage = write_to_tmp_storage(import_file)
-            if not result.has_errors() and not result.has_validation_errors():
-                tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
-                data = tmp_storage.read('rb')
-                # Uncomment the following line in case of 'csv' file
-                # data = force_str(data, "utf-8")
-                dataset = Dataset()
-                # Enter format = 'csv' for csv file
-                # TODO delete only the data of the issuer
-                success = MainTable.objects.filter(user=request.user).delete()
-                if not success:
-                    messages.error(request, 'Failed to import Excel sheet')
-                    return redirect('/tax/list/uploaded-invoices')
-
-                imported_data = dataset.load(data, format='xlsx')
-
-                main_table_resource.import_data(imported_data,
-                                                dry_run=False,
-                                                raise_errors=True,
-                                                file_name=tmp_storage.name, user=request.user)
-                tmp_storage.remove()
-
-            else:
-                messages.error(request, 'Invalid Excel Sheet ' +
-                               str(result.base_errors))
-                return redirect('/tax/list/uploaded-invoices')
-        else:
-            messages.error(request, 'Empty Excel File')
+        # check file is empty
+        if issuer_views.is_empty(import_file, request):
+            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/tax/list/uploaded-invoices')
-    # todo: test uploading our template with correct data
+
+        result = main_table_resource.import_data(imported_data, dry_run=True, user=request.user)  # Test the data import
+        print('result: ', result)
+        tmp_storage = write_to_tmp_storage(import_file)
+        if not result.has_errors() and not result.has_validation_errors():
+            tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
+            data = tmp_storage.read('rb')
+            # Uncomment the following line in case of 'csv' file
+            # data = force_str(data, "utf-8")
+            dataset = Dataset()
+            # Enter format = 'csv' for csv file
+            # TODO delete only the data of the issuer
+            success = MainTable.objects.filter(user=request.user).delete()
+            if not success:
+                messages.error(request, 'Failed to import Excel sheet')
+                return redirect('/tax/list/uploaded-invoices')
+
+            imported_data = dataset.load(data, format='xlsx')
+
+            main_table_resource.import_data(imported_data,
+                                            dry_run=False,
+                                            raise_errors=True,
+                                            file_name=tmp_storage.name, user=request.user)
+            tmp_storage.remove()
+            # issuer_views.get_issuer_data(request.user)
+            issuer_views.get_receiver_data(request.user)
+            import_data_to_invoice(request.user)
+            messages.success(request, 'Data is imported Successfully')
+            return redirect('/tax/list/uploaded-invoices')
+
+        else:
+            messages.error(request, 'Invalid Excel Sheet ' +
+                           str(result.base_errors))
+            return redirect('/tax/list/uploaded-invoices')
     except zipfile.BadZipfile as e:
         # e is ---> File is not a zip file
         print('Exception occurred while uplaoding a file --> ', e)
-        messages.error(request, 'Please fill Excel Sheet with data')
+        messages.error(request, 'Please, make sure file is saved correctly.')
         return redirect('/tax/list/uploaded-invoices')
-    # issuer_views.get_issuer_data(request.user)
-    issuer_views.get_receiver_data(request.user)
-    import_data_to_invoice(request.user)
-    messages.success(request, 'Data is imported Successfully')
-    return redirect('/tax/list/uploaded-invoices')
 
 
 def get_submission_response(submission_id):
@@ -330,12 +331,13 @@ def submit_invoice(request, invoice_id):
     :param invoice_id: the id of the invoice to be submitted (database id)
     :return: redirects to the page that lists all invoices
     '''
-    generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
-    invoice_as_str = simplejson.dumps(generated_invoice)      # by:ahd hozayen, we used simplejson to decode Decimal fields
-    jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")      # send invoice_as_str to jar file to sign it.
+    generated_invoice = Invoicegeneration(
+        invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
+    invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
+    jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
     from_bytes_to_good_str = jar.decode("utf-8")
     from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
-    
+
     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
@@ -390,7 +392,7 @@ def get_decument_detail_after_submit(request, internal_id):
     submission = Submission.objects.get(invoice__id=internal_id)
     if submission.subm_uuid is not None:
         url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/' + \
-            submission.subm_uuid + '/details'
+              submission.subm_uuid + '/details'
         response = requests.get(url, verify=False,
                                 headers={
                                     'Authorization': 'Bearer ' + auth_token, }
@@ -465,7 +467,7 @@ def calculate_line_total(invoice_line_id, tax_calculator):
     t2_amount = tax_calculator.t2
     total_non_taxable_fees = tax_calculator.total_non_taxable_fees
     line_total = invoice_line.netTotal + invoice_line.totalTaxableFees + total_non_taxable_fees + \
-        t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
+                 t1_amount + t2_amount + t3_amount - t4_amounts - invoice_line.itemsDiscount
     invoice_line.total = line_total
     invoice_line.save()
 
@@ -592,6 +594,7 @@ def view_invoice(request, invoice_id):
     }
     return render(request, 'view-invoice.html', context)
 
+
 @is_issuer
 def create_new_invoice_header(request):
     ''' 
@@ -608,17 +611,18 @@ def create_new_invoice_header(request):
             header_obj.created_by = request.user
             header_obj.save()
             print(header_obj.id)
-            return redirect('taxManagement:create-invoice-line',invoice_id=header_obj.id)
+            return redirect('taxManagement:create-invoice-line', invoice_id=header_obj.id)
 
     context = {
-        'header_form':header_form,
+        'header_form': header_form,
         "page_title": _("Create Invoice Header"),
     }
 
-    return render(request , 'create-invoice-header.html' , context)
-    
+    return render(request, 'create-invoice-header.html', context)
+
+
 @is_issuer
-def create_new_invoice_line(request,invoice_id):
+def create_new_invoice_line(request, invoice_id):
     ''' 
         date : 10/03/2021
         author : Mamdouh
@@ -626,7 +630,7 @@ def create_new_invoice_line(request,invoice_id):
     '''
     line_form = InvoiceLineForm()
     tax_line_form = TaxLineInlineForm()
-    header = InvoiceHeader.objects.get(id = invoice_id)
+    header = InvoiceHeader.objects.get(id=invoice_id)
 
     if request.method == 'POST':
         line_form = InvoiceLineForm(request.POST)
@@ -638,28 +642,27 @@ def create_new_invoice_line(request,invoice_id):
             line_obj.save()
             if tax_line_form.is_valid():
                 for form in tax_line_form:
-                    tax_line_obj = form.save(commit = False)
+                    tax_line_obj = form.save(commit=False)
                     tax_line_obj.invoice_line = line_obj
                     tax_line_obj.created_by = request.user
                     tax_line_obj.save()
                     calculate_all_invoice_lines(header)
                     header_totals(header)
                     if 'Save And Exit' in request.POST:
-                        return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
+                        return redirect('taxManagement:view-invoice', invoice_id=invoice_id)
                     elif 'Save And Add' in request.POST:
-                        return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
+                        return redirect('taxManagement:create-invoice-line', invoice_id=invoice_id)
 
-
-    context={
-        'line_form' : line_form,
-        'tax_line_form' : tax_line_form,
+    context = {
+        'line_form': line_form,
+        'tax_line_form': tax_line_form,
         "page_title": _("Create Invoice Line")
     }
 
-    return render(request , 'create-invoice-line.html' , context)
+    return render(request, 'create-invoice-line.html', context)
 
 
-def refresh_submission_status(request , submission_id):
+def refresh_submission_status(request, submission_id):
     submission = get_submission_response(submission_id)
     print(submission)
     return redirect('taxManagement:get-all-invoice-headers')
@@ -692,4 +695,3 @@ def export_empty_invoice_temp(request):
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
     return response
-
