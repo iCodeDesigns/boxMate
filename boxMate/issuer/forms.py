@@ -58,9 +58,7 @@ class AddressForm(forms.ModelForm):
         self.fields['country'].widget.attrs.update(width=200)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
-
-
-
+modelformset_factory
 class IssuerOracleDBForm(forms.ModelForm):
     class Meta:
         model = IssuerOracleDB
@@ -80,4 +78,4 @@ class ReceiverForm(forms.ModelForm):
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
 
-AddressInlineForm = formset_factory(form=AddressForm, extra=1)
+AddressInlineForm = modelformset_factory(Address, form=AddressForm, extra=1)

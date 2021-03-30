@@ -46,12 +46,19 @@
                                                 <td style="text-align: center;">{{ receiver.reg_num }}</td>
                                                 <td style="text-align: center;">{{ receiver.get_type_display }}</td>
                                                 <td style="display: flex; justify-content: space-around;">
+                                                    <a href="{% url 'issuer:view-receiver' receiver.id %}"
+                                                        data-toggle="tooltip" title="{% trans 'View Receiver' %}">
+                                                        <span class="glyphicon glyphicon-zoom-in"></span>
+                                                    </a>
 
-                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}" data-toggle="tooltip" title="{% trans 'Edit' %}">
+                                                    <a href="{% url 'issuer:update-receiver' receiver.id %}"
+                                                        data-toggle="tooltip" title="{% trans 'Edit' %}">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
 
-                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}" data-toggle="tooltip" title="{% trans 'Delete' %}" onclick="return confirm('Are you sure?')">
+                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}"
+                                                        data-toggle="tooltip" title="{% trans 'Delete' %}"
+                                                        onclick="return confirm('Are you sure?')">
                                                         <span class="glyphicon glyphicon-trash"></span>
                                                     </a>
                                                 </td>
