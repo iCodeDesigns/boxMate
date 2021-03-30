@@ -1,3 +1,6 @@
+import zipfile
+from zipfile import ZipFile, BadZipfile
+
 from django.db import IntegrityError
 from issuer.models import *
 from issuer.api.serializers import IssuerSerializer
@@ -18,6 +21,15 @@ from custom_user.models import User
 from django.contrib import messages
 from .decorators import is_issuer
 from django.utils.translation import ugettext_lazy as _
+from .resources import ReceiverResource
+from django.http import HttpResponse
+from tablib import Dataset
+import pandas as pd
+from taxManagement.views import write_to_tmp_storage
+from taxManagement.tmp_storage import TempFolderStorage
+
+TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
+                            TempFolderStorage)
 
 """
 def get_issuer_data(user):
@@ -92,7 +104,6 @@ def get_issuer_data(user):
 """
 
 
-
 def get_receiver_data(user):
     print('*************', user)
     user_id = User.objects.get(id=user.id)
@@ -142,10 +153,10 @@ def get_receiver_data(user):
                 type=data['receiver_type'],
                 reg_num=data['receiver_registration_num'],
                 name=data['receiver_name'],
-                issuer = issuer
+                issuer=issuer
             )
             receiver_obj.save()
-            print('after save ',receiver_obj)
+            print('after save ', receiver_obj)
             receiver_id = receiver_obj
             country_code = data['receiver_country']
             code_obj = CountryCode.objects.get(pk=country_code)
@@ -221,10 +232,10 @@ def create_issuer_tax(request):
 
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
-    issuer_form = IssuerForm(update = False)
+    issuer_form = IssuerForm(update=False)
     address_form = AddressForm()
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST, update = False)
+        issuer_form = IssuerForm(request.POST, update=False)
         address_form = AddressForm(request.POST)
         if issuer_form.is_valid() and address_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -257,12 +268,11 @@ def create_issuer(request):
             'address_form': address_form, })
 
 
-
-def update_issuer(request , issuer_id):
-    issuer_instance = Issuer.objects.get(id = issuer_id)
-    issuer_form = IssuerForm(instance = issuer_instance , update = True)
+def update_issuer(request, issuer_id):
+    issuer_instance = Issuer.objects.get(id=issuer_id)
+    issuer_form = IssuerForm(instance=issuer_instance, update=True)
     if request.method == 'POST':
-        issuer_form = IssuerForm(request.POST , instance=issuer_instance,update = True )
+        issuer_form = IssuerForm(request.POST, instance=issuer_instance, update=True)
         issuer_obj = issuer_form.save(commit=False)
         if issuer_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
@@ -273,7 +283,8 @@ def update_issuer(request , issuer_id):
 
     return render(request, 'create-issuer.html', {
         'issuer_form': issuer_form,
-        'update':True,})
+        'update': True, })
+
 
 def create_issuer_address(request):
     address_formset = AddressInlineForm()
@@ -286,24 +297,26 @@ def create_issuer_address(request):
                 address_obj.created_by = request.user
                 address_obj.created_at = datetime.now()
                 address_obj.save()
-            return redirect('issuer:create-tax',request.user.issuer.id)
+            return redirect('issuer:create-tax', request.user.issuer.id)
     context = {
         'address_formset': address_formset
     }
-    return render(request , 'create_issuer_address.html' , context)
+    return render(request, 'create_issuer_address.html', context)
+
 
 def list_issuer_address(request):
     addresses = Address.objects.filter(issuer=request.user.issuer)
     context = {
-        'addresses':addresses
+        'addresses': addresses
     }
-    return render(request , 'list-issuer-addresses.html',context)
+    return render(request, 'list-issuer-addresses.html', context)
 
-def update_issuer_address(request , id):
-    address = Address.objects.get(id = id)
-    address_form = AddressForm(instance = address)
+
+def update_issuer_address(request, id):
+    address = Address.objects.get(id=id)
+    address_form = AddressForm(instance=address)
     if request.method == 'POST':
-        address_form = AddressForm(request.POST , instance = address)
+        address_form = AddressForm(request.POST, instance=address)
         if address_form.is_valid():
             address_obj = address_form.save(commit=False)
             address_obj.issuer = request.user.issuer
@@ -312,15 +325,15 @@ def update_issuer_address(request , id):
             address_obj.save()
             return redirect('issuer:list-issuer-address')
     context = {
-        'address_form':address_form
+        'address_form': address_form
     }
-    return render(request , 'update-issuer-address.html' , context)
+    return render(request, 'update-issuer-address.html', context)
 
-def delete_issuer_address(request , id):
-    address = Address.objects.get(id = id)
+
+def delete_issuer_address(request, id):
+    address = Address.objects.get(id=id)
     address.delete()
     return redirect('issuer:list-issuer-address')
-
 
 
 @is_issuer
@@ -509,6 +522,91 @@ def delete_receiver(request, pk):
     receiver.delete()
     return redirect('issuer:list-receiver')
 
+def export_receiver_template(request):
+    """
+    export a template to fill receiver info
+    :param request:
+    :return:
+    By: amira
+    Date: 18-03-2021
+    """
+    receiver_resource = ReceiverResource()
+    dataset = receiver_resource.export(queryset=Receiver.objects.none())
+    response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
+    print(response)
+    return response
+
+
+def is_empty(xl_file, request):
+    """
+    check if file is empty or not
+    :param xl_file: file to be checked
+    :return: true file is empty / false
+    By: amira
+    Date: 21/03/2021
+    """
+    try:
+        xlsx_file = pd.read_excel(xl_file, engine='openpyxl')
+        empty = xlsx_file.empty  # return false if not empty
+    except zipfile.BadZipfile as e:
+        print('exception occurredin is_empty() ', e)
+        messages.error(request, _('Please, make sure file is saved correctly'))
+        empty = True  # always empty on exception
+    return empty
+
+
+def import_receiver_template(request):
+    """
+    import data from excel sheet
+    :param request:
+    :return:
+    """
+    try:
+        receiver_resource = ReceiverResource()
+        imported_file = request.FILES['import_file']
+        dataset = Dataset()
+        excel_data = dataset.load(imported_file.read())
+        # check file is empty
+        if is_empty(imported_file, request):
+            messages.error(request, _('Please, make sure file is filled with data'))
+            return redirect('/issuer/list/receiver')
+
+        # test dataset have errors
+        result = receiver_resource.import_data(excel_data, dry_run=True, user=request.user)
+        # write file in tmp
+        tmp_storage = write_to_tmp_storage(imported_file)
+        if not result.has_errors() and not result.has_validation_errors():
+            tmp_storage = TMP_STORAGE_CLASS(name=tmp_storage.name)
+            data = tmp_storage.read('rb')
+            dataset = Dataset()
+            imported_data = dataset.load(data)
+
+            receiver_resource.import_data(imported_data,
+                                          dry_run=False,
+                                          raise_errors=True,
+                                          file_name=tmp_storage.name,
+                                          user=request.user)
+            tmp_storage.remove()
+            # create receiver and his/her address
+            get_receiver_data(request.user)
+            messages.success(request, _('Receiver record is inserted successfully'))
+            # deletes record from maintable
+            success = MainTable.objects.filter(user=request.user).delete()
+            if not success:
+                messages.error(request, 'Failed to import Excel sheet')
+                return redirect('/issuer/list/receiver')
+        else:
+            messages.error(request, 'Invalid Excel Sheet ' +
+                           str(result.base_errors))
+            return redirect('/issuer/list/receiver')
+
+    except zipfile.BadZipfile as e:
+        print('Exception occurred while uploading a file --> ', e)
+        messages.error(request, _('Please, make sure file is saved correctly'))
+
+    return redirect('/issuer/list/receiver')
+
 @is_issuer
 def view_receiver(request , pk):
     '''
@@ -523,3 +621,4 @@ def view_receiver(request , pk):
         'addresses' : receiver_addresses,
     }
     return render(request , 'view-receiver.html' , context)
+
