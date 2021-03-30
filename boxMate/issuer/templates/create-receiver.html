@@ -11,8 +11,8 @@
             {{page_title}}
             <!-- <small>Optional description</small> -->
             <a href="{% url 'issuer:list-receiver' %}" data-toggle="tooltip"
-               title="{% trans 'Back to Receivers List' %}" class="pull-right btn btn-warning"
-               style="margin-right: 2px;">
+                title="{% trans 'Back to Receivers List' %}" class="pull-right btn btn-warning"
+                style="margin-right: 2px;">
                 {% trans 'Back to Receivers List' %}
             </a>
         </h1>
@@ -64,99 +64,204 @@
 
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-12">
-                            <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+
+
+                    {{ address_formset.management_form }}
+                    {% for address_form in address_formset %}
+                    <div id="address_form">
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class=" form-group col-md-12">
+                                <h2>{% trans 'Address' %}</h2>
+                            </div>
+                            <div class="form-group col-md-4">
+
+                                <label for="inputCity">{% trans 'Branch' %}</label>
+                                <br>
+                                {{ address_form.branch_id}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Governate' %}</label>
+                                <br>
+                                {{ address_form.governate}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Region City' %}</label>
+                                <br>
+                                {{ address_form.regionCity}}
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Street' %}</label>
+                                <br>
+                                {{ address_form.street}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Building Number' %}</label>
+                                <br>
+                                {{ address_form.buildingNumber}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Postal Code' %}</label>
+                                <br>
+                                {{ address_form.postalCode}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Country' %}</label>
+                                <br>
+                                {{ address_form.country}}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Floor' %}</label>
+                                <br>
+                                {{ address_form.floor}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Room' %}</label>
+                                <br>
+                                {{ address_form.room}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Landmark' %}</label>
+                                <br>
+                                {{ address_form.landmark}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Additional Information' %}</label>
+                                <br>
+                                {{ address_form.additionalInformation}}
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+
+
+                    <div id="empty_form" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <h2>{% trans 'Address' %}</h2>
+                            </div>
+                            <div class="form-group col-md-4">
+
+                                <label for="inputCity">{% trans 'Branch' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.branch_id}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Governate' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.governate}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Region City' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.regionCity}}
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Street' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.street}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Building Number' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.buildingNumber}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Postal Code' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.postalCode}}
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Country' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.country}}
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Floor' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.floor}}
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Room' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.room}}
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Landmark' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.landmark}}
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">{% trans 'Additional Information' %}</label>
+                                <br>
+                                {{ address_formset.empty_form.additionalInformation}}
+                            </div>
+
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <h2>{% trans 'Address' %}</h2>
-                        <div class="form-group col-md-4">
-
-                            <label for="inputCity">{% trans 'Branch' %}</label>
-                            <br>
-                            {{ address_form.branch_id}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Governate' %}</label>
-                            <br>
-                            {{ address_form.governate}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Region City' %}</label>
-                            <br>
-                            {{ address_form.regionCity}}
-                        </div>
-
+                    <div class="form-group col-md-4">
+                        <button type="button" id="add_line" onclick="add_address_func()"
+                            class="btn cur-p btn-success pull-right">{% trans 'Add Address' %}
+                        </button>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Street' %}</label>
-                            <br>
-                            {{ address_form.street}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Building Number' %}</label>
-                            <br>
-                            {{ address_form.buildingNumber}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Postal Code' %}</label>
-                            <br>
-                            {{ address_form.postalCode}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Country' %}</label>
-                            <br>
-                            {{ address_form.country}}
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Floor' %}</label>
-                            <br>
-                            {{ address_form.floor}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Room' %}</label>
-                            <br>
-                            {{ address_form.room}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Landmark' %}</label>
-                            <br>
-                            {{ address_form.landmark}}
-                        </div>
-
-                        <div class="form-group col-md-4">
-                            <label for="inputCity">{% trans 'Additional Information' %}</label>
-                            <br>
-                            {{ address_form.additionalInformation}}
-                        </div>
-
-
-                    </div>
-
-
-                    <br>
                     <div class="form-group col-md-12">
                         <button type="submit" class="btn btn-primary pull-right">{% trans 'Save' %}</button>
                     </div>
                 </form>
             </div>
-
         </div>
-    </section>
+
+</div>
+</section>
 </div>
 
 {% endblock body %}
+
+{% block js %}
+<script>
+
+    function add_address_func() {
+        var form_idx = $('#id_form-TOTAL_FORMS').val();
+        $('#address_form').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+    };
+
+</script>
+{% endblock js %}

@@ -9,40 +9,45 @@
   <!-- Content Header (Page header) -->
   <section class="content-header">
     <h1>
-            {{page_title}}
-            <!-- <small>Optional description</small> -->
-            <a href="{% url 'taxManagement:get-all-invoice-headers' %}" data-toggle="tooltip"
-               title="{% trans 'Back to Invoices List' %}" class="pull-right btn btn-warning"
-               style="margin-right: 2px;">
-                {% trans 'Back to Invoices List' %}
-            </a>
-        </h1>
+      {{page_title}}
+      <!-- <small>Optional description</small> -->
+      <a href="{% url 'taxManagement:get-all-invoice-headers' %}" data-toggle="tooltip"
+        title="{% trans 'Back to Invoices List' %}" class="pull-right btn btn-warning" style="margin-right: 2px;">
+        {% trans 'Back to Invoices List' %}
+      </a>
+    </h1>
   </section>
   <!-- Main content -->
   <section class="content">
     <div class="form-row">
       <div class="box">
         <div class="box-header">
-          <h2 class="box-title" style="font-weight: bolder; font-size: 24px;">Invoice #{{ invoice_header.internal_id }}</h2>
+          <h2 class="box-title" style="font-weight: bolder; font-size: 24px;">Invoice #{{ invoice_header.internal_id }}
+          </h2>
           <div class="margin pull-right col-med-4">
-             <div class="btn-group">
-               {% if invoice_header.invoice_status == 'verified'%}
-                 <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id %}">
-                   <button class="btn btn-primary">{% trans 'Submit Invoice' %} &nbsp;<span class="glyphicon glyphicon-cloud-upload"></span></button>
-                 </a>
-               {% endif %}
-               {% if invoice_header.invoice_status != 'cancel'%}
-                {% if invoice_header.invoice_status != 'verified' %}
-                   <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='verified' %}">
+            <div class="btn-group">
+              {% if invoice_header.invoice_status == 'verified'%}
+              <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id version=0.9 %}">
+                <button class="btn btn-secondary">{% trans 'Submit Invoice V0.9' %} &nbsp;<span
+                    class="glyphicon glyphicon-cloud-upload"></span></button>
+              </a>
+              <a href="{% url 'taxManagement:submit-invoice' invoice_id=invoice_header.id version=1.0 %}">
+                <button class="btn btn-primary">{% trans 'Submit Invoice V1.0' %} &nbsp;<span
+                    class="glyphicon glyphicon-cloud-upload"></span></button>
+              </a>
+              {% endif %}
+              {% if invoice_header.invoice_status != 'cancel'%}
+              {% if invoice_header.invoice_status != 'verified' %}
+              <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='verified' %}">
 
-                     <button class="btn btn-success">{% trans 'Verified' %}</button>
-                   </a>
-                {% endif %}
-                 <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='cancel' %}">
+                <button class="btn btn-success">{% trans 'Verified' %}</button>
+              </a>
+              {% endif %}
+              <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='cancel' %}">
 
-                   <button class="btn btn-danger">{% trans 'Cancel' %}</button>
-                 </a>
-               {% endif %}
+                <button class="btn btn-danger">{% trans 'Cancel' %}</button>
+              </a>
+              {% endif %}
             </div>
 
           </div>
@@ -182,4 +187,3 @@
 </div>
 
 {% endblock body %}
-

@@ -415,23 +415,23 @@ def create_receiver(request):
     '''
 
     receiver_form = ReceiverForm()
-    address_form = AddressForm()
+    address_formset = AddressInlineForm(queryset=Address.objects.none())
     if request.method == 'POST':
         receiver_form = ReceiverForm(request.POST)
-        address_form = AddressForm(request.POST)
-        if receiver_form.is_valid() and address_form.is_valid():
+        address_formset = AddressInlineForm(request.POST)
+        if receiver_form.is_valid() and address_formset.is_valid():
             receiver_obj = receiver_form.save(commit=False)
             receiver_obj.issuer = request.user.issuer
             receiver_obj.created_by = request.user
             receiver_obj.created_at = date.today()
             receiver_obj.save()
 
-            address_obj = address_form.save(commit=False)
-            address_obj.receiver = receiver_obj
-            address_obj.created_by = request.user
-            address_obj.created_at = date.today()
-            address_obj.save()
-
+            for address in address_formset:
+                address_obj = address.save(commit=False)
+                address_obj.receiver = receiver_obj
+                address_obj.created_by = request.user
+                address_obj.created_at = datetime.now()
+                address_obj.save()
             return redirect('issuer:list-receiver')
 
         else:
@@ -439,14 +439,14 @@ def create_receiver(request):
             print(address_form.errors)
             return render(request, 'create-receiver.html', {
                 'receiver_form': receiver_form,
-                'address_form': address_form,
+                'address_form': address_formset,
                 "page_title": _("Create Receiver"),
             })
 
     else:
         return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form,
+            'address_formset': address_formset,
             "page_title": _("Create Receiver"),
         })
 
@@ -474,9 +474,10 @@ def update_receiver(request, pk):
     '''
 
     receiver = Receiver.objects.get(id=pk)
-    address = Address.objects.get(receiver=receiver)
+    address = Address.objects.filter(receiver=receiver)
     receiver_form = ReceiverForm(instance=receiver)
-    address_form = AddressForm(instance=address)
+    address_formset = AddressInlineForm(queryset=address)
+    # address_form = AddressInlineForm(queryset=address)
     if request.method == 'POST':
         receiver_form = ReceiverForm(request.POST, instance=receiver)
         address_form = AddressForm(request.POST, instance=address)
@@ -505,7 +506,7 @@ def update_receiver(request, pk):
     else:
         return render(request, 'create-receiver.html', {
             'receiver_form': receiver_form,
-            'address_form': address_form,
+            'address_formset': address_formset,
             "page_title": _("Update Receiver"),
         })
 
@@ -520,7 +521,6 @@ def delete_receiver(request, pk):
     receiver = Receiver.objects.get(id=pk)
     receiver.delete()
     return redirect('issuer:list-receiver')
-
 
 def export_receiver_template(request):
     """
@@ -606,3 +606,19 @@ def import_receiver_template(request):
         messages.error(request, _('Please, make sure file is saved correctly'))
 
     return redirect('/issuer/list/receiver')
+
+@is_issuer
+def view_receiver(request , pk):
+    '''
+        created_at:21/03/2021
+        author: Mamadouh
+        purpose:view reciever details
+    '''
+    receiver = Receiver.objects.get(id=pk)
+    receiver_addresses = Address.objects.filter(receiver=receiver)
+    context = {
+        'receiver' : receiver,
+        'addresses' : receiver_addresses,
+    }
+    return render(request , 'view-receiver.html' , context)
+
