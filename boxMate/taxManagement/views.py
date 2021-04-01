@@ -322,7 +322,7 @@ def save_submission_response(invoice_id, submission_id, status):
 
 @login_required(login_url='home:user-login')
 @is_issuer
-def submit_invoice(request, invoice_id):
+def submit_invoice(request, invoice_id ,version):
     '''
     This function is used to submit an invoice to the governmental api, it calls another function to
     save the submission response
@@ -337,8 +337,12 @@ def submit_invoice(request, invoice_id):
     jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
     from_bytes_to_good_str = jar.decode("utf-8")
     from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
-
-    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
+    if version == '1.0':
+        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
+    elif version == '0.9':
+        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v0.9/documentsubmissions'
+    else:
+        print("#### Wrong Version ####")
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + auth_token},
@@ -602,9 +606,9 @@ def create_new_invoice_header(request):
         author : Mamdouh
         purpose : create new invoice and save it to database
     '''
-    header_form = InvoiceHeaderForm()
+    header_form = InvoiceHeaderForm(issuer=request.user.issuer)
     if request.method == 'POST':
-        header_form = InvoiceHeaderForm(request.POST)
+        header_form = InvoiceHeaderForm(issuer=request.user.issuer ,data=request.POST)
         if header_form.is_valid():
             header_obj = header_form.save(commit=False)
             header_obj.issuer = request.user.issuer
@@ -618,7 +622,16 @@ def create_new_invoice_header(request):
         "page_title": _("Create Invoice Header"),
     }
 
-    return render(request, 'create-invoice-header.html', context)
+    return render(request , 'create-invoice-header.html' , context)
+
+def load_receiver_addresses(request):
+    receiver_id = request.GET.get('receiver')
+    addresses = Address.objects.filter(receiver=receiver_id)
+    return render(request, 'receiver-addresses-dropdown.html', {'addresses': addresses})
+
+def load_issuer_addresses(request):
+    addresses = Address.objects.filter(issuer=request.user.issuer)
+    return render(request, 'issuer-addresses-dropdown.html', {'addresses': addresses})
 
 
 @is_issuer
@@ -640,18 +653,19 @@ def create_new_invoice_line(request, invoice_id):
             line_obj.invoice_header = header
             line_obj.created_by = request.user
             line_obj.save()
+            tax_line_form = TaxLineInlineForm(request.POST, instance=line_obj)
+            
             if tax_line_form.is_valid():
-                for form in tax_line_form:
-                    tax_line_obj = form.save(commit=False)
-                    tax_line_obj.invoice_line = line_obj
-                    tax_line_obj.created_by = request.user
-                    tax_line_obj.save()
+                tax_line_obj = tax_line_form.save(commit = False)
+                for obj in tax_line_obj:
+                    obj.created_by = request.user
+                    obj.save()
                     calculate_all_invoice_lines(header)
                     header_totals(header)
-                    if 'Save And Exit' in request.POST:
-                        return redirect('taxManagement:view-invoice', invoice_id=invoice_id)
-                    elif 'Save And Add' in request.POST:
-                        return redirect('taxManagement:create-invoice-line', invoice_id=invoice_id)
+                if 'Save And Exit' in request.POST:
+                    return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
+                elif 'Save And Add' in request.POST:
+                    return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
 
     context = {
         'line_form': line_form,

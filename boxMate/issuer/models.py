@@ -63,7 +63,9 @@ class Address(models.Model):
                                    related_name="address_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
-
+    def __str__(self):
+        return self.branch_id
+    
 
 
 class IssuerTax(models.Model):

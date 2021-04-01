@@ -10,7 +10,7 @@ urlpatterns = [
 
     # path('invoice-headers/' , views.get_all_invoice_headers , name='get-all-invoice-headers')
     path('list/eta-invoice/', views.list_eta_invoice, name='list-eta-invoice'),
-    path('submit-invoice/<slug:invoice_id>', views.submit_invoice , name='submit-invoice'),
+    path('submit-invoice/<slug:invoice_id>/<str:version>', views.submit_invoice , name='submit-invoice'),
     path('document-detail/<slug:internal_id>/', views.get_decument_detail_after_submit , name='dec-detail'),
     path('upload-excel-sheet/' , views.upload_excel_sheet, name='upload-excel-sheet'),
     path('resubmit-invoice/<slug:invoice_id>', views.resubmit, name='resubmit-invoice'),
@@ -21,7 +21,9 @@ urlpatterns = [
 
     path('tax/change-invoice-status/<int:invoice_id>/<slug:status>', views.update_invoice_status, name="update-invoice-status"),
 
-    path('export/invoice-template', views.export_empty_invoice_temp, name="export_excel_template")
+    path('export/invoice-template', views.export_empty_invoice_temp, name="export_excel_template"),
+
+    path('ajax/load-addresses/', views.load_receiver_addresses, name='ajax_load_addresses'),
 
 
 ]
