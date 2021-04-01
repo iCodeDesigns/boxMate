@@ -199,7 +199,6 @@ def upload_excel_sheet(request):
         # handle case uploading empty excel sheet
         # check file is empty
         if issuer_views.is_empty(import_file, request):
-            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/tax/list/uploaded-invoices')
 
         result = main_table_resource.import_data(imported_data, dry_run=True, user=request.user)  # Test the data import
