@@ -194,12 +194,11 @@ def upload_excel_sheet(request):
         # # unhash the following line in case of csv file
         # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
         # this line in case of excel file
-        imported_data = dataset.load(import_file.read(), format='xlsx')
+        imported_data = dataset.load(import_file.read(), format='xls')
         #
         # handle case uploading empty excel sheet
         # check file is empty
         if issuer_views.is_empty(import_file, request):
-            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/tax/list/uploaded-invoices')
 
         result = main_table_resource.import_data(imported_data, dry_run=True, user=request.user)  # Test the data import
@@ -218,7 +217,7 @@ def upload_excel_sheet(request):
                 messages.error(request, 'Failed to import Excel sheet')
                 return redirect('/tax/list/uploaded-invoices')
 
-            imported_data = dataset.load(data, format='xlsx')
+            imported_data = dataset.load(data, format='xls')
 
             main_table_resource.import_data(imported_data,
                                             dry_run=False,
@@ -707,5 +706,5 @@ def export_empty_invoice_temp(request):
     invoice_resource = MainTableResource()
     dataset = invoice_resource.export(queryset=MainTable.objects.none())
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="invoice_template.xls"'
     return response

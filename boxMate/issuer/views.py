@@ -533,7 +533,7 @@ def export_receiver_template(request):
     receiver_resource = ReceiverResource()
     dataset = receiver_resource.export(queryset=Receiver.objects.none())
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="receiver_template.xls"'
     print(response)
     return response
 
@@ -547,11 +547,15 @@ def is_empty(xl_file, request):
     Date: 21/03/2021
     """
     try:
-        xlsx_file = pd.read_excel(xl_file, engine='openpyxl')
-        empty = xlsx_file.empty  # return false if not empty
+        xls_file = pd.read_excel(xl_file, engine='openpyxl')
+        empty = xls_file.empty  # return false if not empty
     except zipfile.BadZipfile as e:
-        print('exception occurredin is_empty() ', e)
+        print('exception occurred in is_empty() ', e)
         messages.error(request, _('Please, make sure file is saved correctly'))
+        empty = True  # always empty on exception
+    except OSError as e:
+        print('exception occurred in is_empty() ', e)
+        messages.error(request, _('Please, make sure file is filled with data'))
         empty = True  # always empty on exception
     return empty
 
@@ -569,7 +573,6 @@ def import_receiver_template(request):
         excel_data = dataset.load(imported_file.read())
         # check file is empty
         if is_empty(imported_file, request):
-            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/issuer/list/receiver')
 
         # test dataset have errors
