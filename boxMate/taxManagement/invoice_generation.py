@@ -1,8 +1,10 @@
 from decimal import Decimal
-from taxManagement.models import (MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission, HeaderTaxTotal)
+from taxManagement.models import (MainTable, InvoiceHeader, InvoiceLine, TaxTypes, TaxLine, Signature, Submission,
+                                  HeaderTaxTotal)
 from issuer.models import (Issuer, Receiver, Address)
 from codes.models import (ActivityType, TaxSubtypes, TaxTypes, CountryCode)
 from issuer import views as issuer_views
+
 
 class Invoicegeneration:
     """
@@ -11,9 +13,9 @@ class Invoicegeneration:
     date : 7-Mar-2021
     purpose : this class used to organize the way of generating Invoice JSON file.
     """
+
     def __init__(self, invoice_id):
         self.invoice_id = invoice_id
-
 
     def get_issuer_address(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
@@ -47,7 +49,6 @@ class Invoicegeneration:
             "additionalInformation": additionalInformation
         }
 
-
     def get_issuer_body(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
         issuer_id = invoice.issuer
@@ -60,17 +61,16 @@ class Invoicegeneration:
         address = self.get_issuer_address()
 
         return {
+            "address": address,
             "type": type,
             "id": reg_num,
             "name": name,
-            "address": address,
         }
-
 
     def get_receiver_address(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
         address_id = invoice.receiver_address
-        print("###" , address_id)
+        print("###", address_id)
         address = Address.objects.filter(id=address_id.id)[0]
         #
         country_id = address.country
@@ -101,7 +101,6 @@ class Invoicegeneration:
 
         }
 
-
     def get_receiver_body(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
         receiver_id = invoice.receiver
@@ -114,12 +113,11 @@ class Invoicegeneration:
         address = self.get_receiver_address()
 
         return {
+            "address": address,
             "type": type,
             "id": reg_num,
             "name": name,
-            "address": address,
         }
-
 
     def get_invoice_header(self):
         invoice_header = InvoiceHeader.objects.get(id=self.invoice_id)
@@ -140,10 +138,13 @@ class Invoicegeneration:
             }
             signature_list.append(signature_obj)
 
+        # amira test
+        invoice_lines = self.get_invoice_lines()
+
         data = {
             "documentType": invoice_header.document_type,
             "documentTypeVersion": invoice_header.document_type_version,
-            "dateTimeIssued": "2021-03-06T15:37:51Z",
+            "dateTimeIssued": "2021-04-07T15:37:51Z",
             # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",     # commented by ahd due to server errors with dat format.
             "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
             "internalID": invoice_header.internal_id,
@@ -152,28 +153,38 @@ class Invoicegeneration:
             "salesOrderReference": invoice_header.sales_order_description,
             "salesOrderDescription": invoice_header.sales_order_description,
             "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
+            # payment
+            "payment": {
+                "bankName": "",
+                "bankAddress": "",
+                "bankAccountNo": "",
+                "bankAccountIBAN": "",
+                "swiftCode": "",
+                "terms": ""
+            },
+            #invoicelines
+            "invoiceLines": invoice_lines,
             "totalDiscountAmount": Decimal(format(invoice_header.total_discount_amount, '.5f')),
             "totalSalesAmount": Decimal(format(invoice_header.total_sales_amount, '.5f')),
             "netAmount": Decimal(format(invoice_header.net_amount, '.5f')),
             "taxTotals": tax_total_list,
             "totalAmount": Decimal(format(invoice_header.total_amount, '.5f')),
             "extraDiscountAmount": Decimal(format(invoice_header.extra_discount_amount, '.5f')),
-            "totalItemsDiscountAmount": Decimal(format(invoice_header.total_items_discount_amount, '.5f'))
-            # "signatures": signature_list
+            "totalItemsDiscountAmount": Decimal(format(invoice_header.total_items_discount_amount, '.5f')),
+            "signatures": signature_list
         }
+        print('signature: ', data)
         return data
-
 
     def get_taxable_lines(self, invoice_line_id):
         tax_lines = TaxLine.objects.filter(invoice_line__id=invoice_line_id)
         tax_lines_list = []
-        if len(tax_lines)!=0:
+        if len(tax_lines) != 0:
             for line in tax_lines:
                 tax_line = {"taxType": line.taxType.code, "amount": Decimal(format(line.amount, '.5f')),
-                            "subType": line.subType.code, "rate":  Decimal(format(line.rate, '.2f'))}
+                            "subType": line.subType.code, "rate": Decimal(format(line.rate, '.2f'))}
                 tax_lines_list.append(tax_line)
         return tax_lines_list
-
 
     def get_invoice_lines(self):
         invoice_lines = InvoiceLine.objects.filter(
@@ -181,13 +192,13 @@ class Invoicegeneration:
         invoice_lines_list = []
         for line in invoice_lines:
             if line.amountSold:
-                amountSold =  Decimal(format(line.amountSold, '.5f'))
+                amountSold = Decimal(format(line.amountSold, '.5f'))
             else:
-                amountSold =  Decimal(format(0 , '.5f'))
+                amountSold = Decimal(format(0, '.5f'))
             if line.currencyExchangeRate:
                 currencyExchangeRate = Decimal(format(line.currencyExchangeRate, '.5f'))
             else:
-                currencyExchangeRate = Decimal(format(0 , '.5f'))
+                currencyExchangeRate = Decimal(format(0, '.5f'))
             invoice_line = {
                 "description": line.description,
                 "itemType": line.itemType,
@@ -214,20 +225,23 @@ class Invoicegeneration:
             taxable_lines = self.get_taxable_lines(line.id)
             invoice_line.update({"taxableItems": taxable_lines})
             invoice_lines_list.append(invoice_line)
+        print('lines: ', invoice_lines_list)
         return invoice_lines_list
-
 
     def get_one_invoice(self):
         issuer_body = self.get_issuer_body()
         receiver_body = self.get_receiver_body()
         invoice_header = self.get_invoice_header()
-        invoice_lines = self.get_invoice_lines()
+        # invoice_lines = self.get_invoice_lines()
+
         invoice = {
+
             "issuer": issuer_body,
             "receiver": receiver_body,
 
         }
+        # invoice.update({"invoiceLines": invoice_lines})
         invoice.update(invoice_header)
-        invoice.update({"invoiceLines": invoice_lines})
 
+        print('invoice: ', type(invoice))
         return invoice

@@ -367,12 +367,12 @@ def submit_invoice(request, invoice_id, version):
     :return: redirects to the page that lists all invoices
     """
     update_invoice_doc_version(invoice_id=invoice_id, version=version)
-    generated_invoice = Invoicegeneration(
-        invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
-
+    generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
+    print('#####??', generated_invoice)
+    invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
+    print('generated data: \n', invoice_as_str)
     if version == '1.0':
-        invoice_as_str = simplejson.dumps(
-            generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
+
         jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
         from_bytes_to_good_str = jar.decode("utf-8")
         from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
@@ -380,7 +380,7 @@ def submit_invoice(request, invoice_id, version):
         response = send_data_by_version(data=from_str_to_json)
     elif version == '0.9':
         # url = 'https://api.preprod.invoicing.eta.gov.eg/api/v0.9/documentsubmissions'
-        response = send_data_by_version(data=generated_invoice)
+        response = send_data_by_version(data=invoice_as_str)
     else:
         response = ''
         print("#### Wrong Version ####")
