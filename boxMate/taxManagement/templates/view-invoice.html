@@ -36,17 +36,38 @@
                     class="glyphicon glyphicon-cloud-upload"></span></button>
               </a>
               {% endif %}
+
               {% if invoice_header.invoice_status != 'cancel'%}
-              {% if invoice_header.invoice_status != 'verified' %}
-              <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='verified' %}">
-
-                <button class="btn btn-success">{% trans 'Verified' %}</button>
-              </a>
-              {% endif %}
-              <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='cancel' %}">
-
-                <button class="btn btn-danger">{% trans 'Cancel' %}</button>
-              </a>
+              <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#actionModal">
+              {% trans 'Actions' %}
+            </button>
+              <!-- Modal -->
+              <div class="modal fade" id="actionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">{% trans 'Invoice Actions' %}</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      {% trans 'What do you want to do with this invoice?' %}
+                    </div>
+                    <div class="modal-footer">
+                      {% if invoice_header.invoice_status != 'verified' %}
+                      <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='verified' %}">
+                        <button class="btn btn-success">{% trans 'Verify Invoice' %}</button>
+                      </a>
+                      {%endif%}
+                      <a href="{% url 'taxManagement:update-invoice-status' invoice_id=invoice_header.id status='cancel' %}">
+                        <button class="btn btn-danger">{% trans 'Refuse Invoice' %}</button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
               {% endif %}
             </div>
 

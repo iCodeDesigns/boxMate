@@ -137,6 +137,7 @@ def import_data_to_invoice(user):
                                                                                    'discount_amount',
                                                                                    'internal_code').annotate(
             Count('item_code'))
+        print(lines)
         for line in lines:
             currency_sold = Currency.objects.get(code=line['currency_sold'])
             line_obj = InvoiceLine(
@@ -194,7 +195,7 @@ def upload_excel_sheet(request):
         # # unhash the following line in case of csv file
         # # imported_data = dataset.uplload(import_file.read().decode(), format='csv')
         # this line in case of excel file
-        imported_data = dataset.load(import_file.read(), format='xls')
+        imported_data = dataset.load(import_file.read(), format='xlsx')
         #
         # handle case uploading empty excel sheet
         # check file is empty
@@ -217,7 +218,7 @@ def upload_excel_sheet(request):
                 messages.error(request, 'Failed to import Excel sheet')
                 return redirect('/tax/list/uploaded-invoices')
 
-            imported_data = dataset.load(data, format='xls')
+            imported_data = dataset.load(data, format='xlsx')
 
             main_table_resource.import_data(imported_data,
                                             dry_run=False,
@@ -319,43 +320,85 @@ def save_submission_response(invoice_id, submission_id, status):
         get_submission_response(submission_id)
 
 
-@login_required(login_url='home:user-login')
-@is_issuer
-def submit_invoice(request, invoice_id ,version):
-    '''
-    This function is used to submit an invoice to the governmental api, it calls another function to
-    save the submission response
+def update_invoice_doc_version(invoice_id, version):
+    """
+    update invoice document version to user choice
+    :param invoice_id: to get the certain invoice
+    :param version: to know whether to update or no
+    :return:
+    """
+    invoice_header = InvoiceHeader.objects.get(id=invoice_id)
+    if invoice_header.document_type_version != version:
+        invoice_header.document_type_version=version
+        invoice_header.save()
 
-    :param request: the request from the user
-    :param invoice_id: the id of the invoice to be submitted (database id)
-    :return: redirects to the page that lists all invoices
-    '''
-    generated_invoice = Invoicegeneration(
-        invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
-    invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
-    jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
-    from_bytes_to_good_str = jar.decode("utf-8")
-    from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
-    if version == '1.0':
-        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
-    elif version == '0.9':
-        url = 'https://api.preprod.invoicing.eta.gov.eg/api/v0.9/documentsubmissions'
-    else:
-        print("#### Wrong Version ####")
+
+def send_data_by_version(data):
+    """
+    send data to portal according to document version id
+    :param data: data required
+    :return: response
+    by: amira
+    date: 8/4/2021
+    """
+    url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
     response = requests.post(url, verify=False,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + auth_token},
-                             data=from_str_to_json)
-    print(response)
-    # if token is expired
-    # TODO need to save the token in a session
+                             data=data)
     if response.status_code == status.HTTP_401_UNAUTHORIZED:
         get_token()
         response = requests.post(url, verify=False,
                                  headers={'Content-Type': 'application/json',
                                           'Authorization': 'Bearer ' + auth_token},
-                                 data=from_str_to_json)
-        print(response)
+                                 data=data)
+    return response
+
+
+@login_required(login_url='home:user-login')
+@is_issuer
+def submit_invoice(request, invoice_id, version):
+    """
+    This function is used to submit an invoice to the governmental api, it calls another function to
+    save the submission response
+    :param version:
+    :param request: the request from the user
+    :param invoice_id: the id of the invoice to be submitted (database id)
+    :return: redirects to the page that lists all invoices
+    """
+    update_invoice_doc_version(invoice_id=invoice_id, version=version)
+    generated_invoice = Invoicegeneration(
+        invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
+
+    if version == '1.0':
+        invoice_as_str = simplejson.dumps(
+            generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
+        jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
+        from_bytes_to_good_str = jar.decode("utf-8")
+        from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
+        # url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
+        response = send_data_by_version(data=from_str_to_json)
+    elif version == '0.9':
+        # url = 'https://api.preprod.invoicing.eta.gov.eg/api/v0.9/documentsubmissions'
+        response = send_data_by_version(data=generated_invoice)
+    else:
+        response = ''
+        print("#### Wrong Version ####")
+    # response = requests.post(url, verify=False,
+    #                          headers={'Content-Type': 'application/json',
+    #                                   'Authorization': 'Bearer ' + auth_token},
+    #                          data=from_str_to_json)
+    print(response)
+    # if token is expired
+    # TODO need to save the token in a session
+    # if response.status_code == status.HTTP_401_UNAUTHORIZED:
+    #     get_token()
+    #     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
+    #     response = requests.post(url, verify=False,
+    #                              headers={'Content-Type': 'application/json',
+    #                                       'Authorization': 'Bearer ' + auth_token},
+    #                              data=from_str_to_json)
+    print(response)
     over_all_status = None
     # in case of network error
     if response is None:
@@ -364,6 +407,8 @@ def submit_invoice(request, invoice_id ,version):
 
     else:
         response_json = response.json()
+        print('#####')
+        print(response_json)
         submissionId = response_json['submissionId']
 
     # case of invalid invoice with submission id is null
@@ -518,7 +563,7 @@ def import_data_from_db(request):
             receiver=receiver,
             receiver_address=receiver_add,
             document_type=invoice['INVOICE_TYPE'],
-            document_type_version="1.0",
+            document_type_version="0.9",
             taxpayer_activity_code=taxpayer_activity_code,
             internal_id=invoice["INTERNAL_ID"],
             purchase_order_reference=invoice['PURCHASE_ORDER'],
@@ -607,7 +652,7 @@ def create_new_invoice_header(request):
     '''
     header_form = InvoiceHeaderForm(issuer=request.user.issuer)
     if request.method == 'POST':
-        header_form = InvoiceHeaderForm(issuer=request.user.issuer ,data=request.POST)
+        header_form = InvoiceHeaderForm(issuer=request.user.issuer, data=request.POST)
         if header_form.is_valid():
             header_obj = header_form.save(commit=False)
             header_obj.issuer = request.user.issuer
@@ -621,12 +666,14 @@ def create_new_invoice_header(request):
         "page_title": _("Create Invoice Header"),
     }
 
-    return render(request , 'create-invoice-header.html' , context)
+    return render(request, 'create-invoice-header.html', context)
+
 
 def load_receiver_addresses(request):
     receiver_id = request.GET.get('receiver')
     addresses = Address.objects.filter(receiver=receiver_id)
     return render(request, 'receiver-addresses-dropdown.html', {'addresses': addresses})
+
 
 def load_issuer_addresses(request):
     addresses = Address.objects.filter(issuer=request.user.issuer)
@@ -653,18 +700,18 @@ def create_new_invoice_line(request, invoice_id):
             line_obj.created_by = request.user
             line_obj.save()
             tax_line_form = TaxLineInlineForm(request.POST, instance=line_obj)
-            
+
             if tax_line_form.is_valid():
-                tax_line_obj = tax_line_form.save(commit = False)
+                tax_line_obj = tax_line_form.save(commit=False)
                 for obj in tax_line_obj:
                     obj.created_by = request.user
                     obj.save()
                     calculate_all_invoice_lines(header)
                     header_totals(header)
                 if 'Save And Exit' in request.POST:
-                    return redirect('taxManagement:view-invoice',invoice_id = invoice_id)
+                    return redirect('taxManagement:view-invoice', invoice_id=invoice_id)
                 elif 'Save And Add' in request.POST:
-                    return redirect('taxManagement:create-invoice-line',invoice_id=invoice_id)
+                    return redirect('taxManagement:create-invoice-line', invoice_id=invoice_id)
 
     context = {
         'line_form': line_form,
@@ -706,5 +753,5 @@ def export_empty_invoice_temp(request):
     invoice_resource = MainTableResource()
     dataset = invoice_resource.export(queryset=MainTable.objects.none())
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="invoice_template.xls"'
+    response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
     return response
