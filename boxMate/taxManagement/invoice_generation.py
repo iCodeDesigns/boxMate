@@ -240,8 +240,12 @@ class Invoicegeneration:
             "receiver": receiver_body,
 
         }
+        doc = {
+            "documents": []
+        }
         # invoice.update({"invoiceLines": invoice_lines})
         invoice.update(invoice_header)
+        doc["documents"] = [invoice]
 
         print('invoice: ', type(invoice))
-        return invoice
+        return doc
