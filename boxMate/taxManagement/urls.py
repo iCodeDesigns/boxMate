@@ -25,5 +25,7 @@ urlpatterns = [
 
     path('ajax/load-addresses/', views.load_receiver_addresses, name='ajax_load_addresses'),
 
+    path('cancel-invoice/<slug:doc_uuid>/', views.cancel_document_form, name="cancel_doc_form"),
+
 
 ]

@@ -743,3 +743,24 @@ def export_empty_invoice_temp(request):
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
     return response
+
+
+def cancel_document_form(request, doc_uuid):
+    """
+    cancel document and specifying cancellation reason
+    :param request:
+    :param doc_uuid: uuid of document
+    :return:
+    by: amira
+    date: 11/4/2021
+    """
+    if request.method == 'POST':
+        print(request.POST['cancel_reason'])
+        cancel_reason = request.POST['cancel_reason']
+        cancel_body = {
+
+        }
+    context = {
+        'uuid': doc_uuid
+    }
+    return render(request, 'cancel_document_form.html', context)
