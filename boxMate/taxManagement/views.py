@@ -329,7 +329,7 @@ def update_invoice_doc_version(invoice_id, version):
     """
     invoice_header = InvoiceHeader.objects.get(id=invoice_id)
     if invoice_header.document_type_version != version:
-        invoice_header.document_type_version=version
+        invoice_header.document_type_version = version
         invoice_header.save()
 
 
@@ -357,7 +357,7 @@ def send_data_by_version(data):
 
 @login_required(login_url='home:user-login')
 @is_issuer
-def submit_invoice(request, invoice_id, version):
+def submit_invoice(request, invoice_id, version=None):
     """
     This function is used to submit an invoice to the governmental api, it calls another function to
     save the submission response
@@ -366,38 +366,27 @@ def submit_invoice(request, invoice_id, version):
     :param invoice_id: the id of the invoice to be submitted (database id)
     :return: redirects to the page that lists all invoices
     """
-    update_invoice_doc_version(invoice_id=invoice_id, version=version)
-    generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()  # function that gets the invoice data in JSON format
-    print('#####??', generated_invoice)
+    if version:
+        update_invoice_doc_version(invoice_id=invoice_id, version=version)
+    else:
+        version = InvoiceHeader.objects.get(id=invoice_id).document_type_version
+    # function that gets the invoice data in JSON format
+    generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()
     invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
-    print('generated data: \n', invoice_as_str)
-    if version == '1.0':
 
+    if version == '1.0':
         jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
         from_bytes_to_good_str = jar.decode("utf-8")
         from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
-        # url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
         response = send_data_by_version(data=from_str_to_json)
     elif version == '0.9':
-        # url = 'https://api.preprod.invoicing.eta.gov.eg/api/v0.9/documentsubmissions'
         response = send_data_by_version(data=invoice_as_str)
     else:
         response = ''
         print("#### Wrong Version ####")
-    # response = requests.post(url, verify=False,
-    #                          headers={'Content-Type': 'application/json',
-    #                                   'Authorization': 'Bearer ' + auth_token},
-    #                          data=from_str_to_json)
-    print(response)
     # if token is expired
     # TODO need to save the token in a session
-    # if response.status_code == status.HTTP_401_UNAUTHORIZED:
-    #     get_token()
-    #     url = 'https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions'
-    #     response = requests.post(url, verify=False,
-    #                              headers={'Content-Type': 'application/json',
-    #                                       'Authorization': 'Bearer ' + auth_token},
-    #                              data=from_str_to_json)
+
     print(response)
     over_all_status = None
     # in case of network error
@@ -407,8 +396,7 @@ def submit_invoice(request, invoice_id, version):
 
     else:
         response_json = response.json()
-        print('#####')
-        print(response_json)
+        print('response json: ', response_json)
         submissionId = response_json['submissionId']
 
     # case of invalid invoice with submission id is null

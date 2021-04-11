@@ -153,15 +153,15 @@ class Invoicegeneration:
             "salesOrderReference": invoice_header.sales_order_description,
             "salesOrderDescription": invoice_header.sales_order_description,
             "proformaInvoiceNumber": invoice_header.proforma_invoice_number,
-            # payment
-            "payment": {
-                "bankName": "",
-                "bankAddress": "",
-                "bankAccountNo": "",
-                "bankAccountIBAN": "",
-                "swiftCode": "",
-                "terms": ""
-            },
+            # payment (not mandatory)
+            # "payment": {
+            #     "bankName": "",
+            #     "bankAddress": "",
+            #     "bankAccountNo": "",
+            #     "bankAccountIBAN": "",
+            #     "swiftCode": "",
+            #     "terms": ""
+            # },
             #invoicelines
             "invoiceLines": invoice_lines,
             "totalDiscountAmount": Decimal(format(invoice_header.total_discount_amount, '.5f')),
@@ -232,7 +232,6 @@ class Invoicegeneration:
         issuer_body = self.get_issuer_body()
         receiver_body = self.get_receiver_body()
         invoice_header = self.get_invoice_header()
-        # invoice_lines = self.get_invoice_lines()
 
         invoice = {
 
@@ -243,9 +242,7 @@ class Invoicegeneration:
         doc = {
             "documents": []
         }
-        # invoice.update({"invoiceLines": invoice_lines})
         invoice.update(invoice_header)
         doc["documents"] = [invoice]
 
-        print('invoice: ', type(invoice))
         return doc

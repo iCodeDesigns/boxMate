@@ -1,0 +1,110 @@
+{
+    "documents": [
+{
+            "issuer": {
+                "address": {
+                    "branchID": "0",
+                    "country": "EG",
+                    "governate": "Alexandria",
+                    "regionCity": "Alexandria",
+                    "street": "Borg Alarab - Secondary Insutrial Zone",
+                    "buildingNumber": "Block1",
+                    "postalCode": "8030",
+                    "floor": "",
+                    "room": "",
+                    "landmark": "",
+                    "additionalInformation": "Borg Alarab - Secondary Insutrial Zone"
+                },
+                "type": "B",
+                "id": "100324932",
+                "name": "شركه دريــم"
+            },
+            "receiver": {
+                "address": {
+                    "country": "EG",
+                    "governate": "Alexandria",
+                    "regionCity": "Alexandria",
+                    "street": "Borg Alarab - Secondary Insutrial Zone",
+                    "buildingNumber": "Block1",
+                    "postalCode": "",
+                    "floor": "",
+                    "room": "",
+                    "landmark": "",
+                    "additionalInformation": "Borg Alarab - Secondary Insutrial Zone"
+                },
+                "type": "B",
+                "id": "432993045",
+                "name": "Dreem Mashreq Foods"
+            },
+            "documentType": "I",
+            "documentTypeVersion": "1.0",
+            "dateTimeIssued": "2021-03-10T02:02:45Z",
+            "taxpayerActivityCode": "1079",
+            "internalID":"19257" ,
+            "purchaseOrderReference": "",
+            "purchaseOrderDescription": "",
+            "salesOrderReference": "17739",
+            "salesOrderDescription": "",
+            "proformaInvoiceNumber": "",
+            "payment": {
+                "bankName": "",
+                "bankAddress": "",
+                "bankAccountNo": "",
+                "bankAccountIBAN": "",
+                "swiftCode": "",
+                "terms": ""
+            },
+            "invoiceLines": [
+                {
+                    "description": "Factory Rent",
+                    "itemType": "GS1",
+                    "itemCode": "10007584",
+                    "unitType": "EA",
+                    "quantity": 1.00000,
+                    "internalCode": "FRENT01",
+                    "salesTotal": 220500.00000,
+                    "total": 251370.00000,
+                    "valueDifference": 0.00000,
+                    "totalTaxableFees": 0.00000,
+                    "netTotal": 220500.00000,
+                    "itemsDiscount": 0.00000,
+                    "unitValue": {
+                        "currencySold": "EGP",
+                        "amountEGP": 220500.00000
+                        
+                    },
+                    "discount": {
+                        "rate": 0,
+                        "amount": 0.00000
+                    },
+                    "taxableItems": [
+                        {
+                            "taxType": "T1",
+                            "amount": 30870.00000,
+                            "subType": "V009",
+                            "rate": 14.00
+                        }
+                     ]
+                }
+            ],
+            "totalDiscountAmount":0.00000,
+            "totalSalesAmount": 220500.00000,
+            "netAmount": 220500.00000,
+            "taxTotals": [
+                {
+                    "taxType": "T1",
+                    "amount":30870.00000
+                }
+            ],
+            "totalAmount":251370.00000,
+            "extraDiscountAmount": 0.00000,
+            "totalItemsDiscountAmount": 0.00000
+,
+            "signatures": [
+                {
+                    "signatureType": "I","value":"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hkiG9w0BBwUxggalBIIGoSJJU1NVRVIiIkFERFJFU1MiIkJSQU5DSElEIiIwIiJDT1VOVFJZIiJFRyIiR09WRVJOQVRFIiJBbGV4YW5kcmlhIiJSRUdJT05DSVRZIiJBbGV4YW5kcmlhIiJTVFJFRVQiIkJvcmcgQWxhcmFiIC0gU2Vjb25kYXJ5IEluc3V0cmlhbCBab25lIiJCVUlMRElOR05VTUJFUiIiQmxvY2sxIiJQT1NUQUxDT0RFIiI4MDMwIiJGTE9PUiIiIiJST09NIiIiIkxBTkRNQVJLIiIiIkFERElUSU9OQUxJTkZPUk1BVElPTiIiQm9yZyBBbGFyYWIgLSBTZWNvbmRhcnkgSW5zdXRyaWFsIFpvbmUiIlRZUEUiIkIiIklEIiIxMDAzMjQ5MzIiIk5BTUUiIti02LHZg9mHINiv2LHZitmA2YDZhSIiUkVDRUlWRVIiIkFERFJFU1MiIkNPVU5UUlkiIkVHIiJHT1ZFUk5BVEUiIkFsZXhhbmRyaWEiIlJFR0lPTkNJVFkiIkFsZXhhbmRyaWEiIlNUUkVFVCIiQm9yZyBBbGFyYWIgLSBTZWNvbmRhcnkgSW5zdXRyaWFsIFpvbmUiIkJVSUxESU5HTlVNQkVSIiJCbG9jazEiIlBPU1RBTENPREUiIiIiRkxPT1IiIiIiUk9PTSIiIiJMQU5ETUFSSyIiIiJBRERJVElPTkFMSU5GT1JNQVRJT04iIkJvcmcgQWxhcmFiIC0gU2Vjb25kYXJ5IEluc3V0cmlhbCBab25lIiJUWVBFIiJCIiJJRCIiNDMyOTkzMDQ1IiJOQU1FIiJEcmVlbSBNYXNocmVxIEZvb2RzIiJET0NVTUVOVFRZUEUiIkkiIkRPQ1VNRU5UVFlQRVZFUlNJT04iIjEuMCIiREFURVRJTUVJU1NVRUQiIjIwMjEtMDMtMTBUMDI6MDI6NDVaIiJUQVhQQVlFUkFDVElWSVRZQ09ERSIiMTA3OSIiSU5URVJOQUxJRCIiMTkyNTciIlBVUkNIQVNFT1JERVJSRUZFUkVOQ0UiIiIiUFVSQ0hBU0VPUkRFUkRFU0NSSVBUSU9OIiIiIlNBTEVTT1JERVJSRUZFUkVOQ0UiIjE3NzM5IiJTQUxFU09SREVSREVTQ1JJUFRJT04iIiIiUFJPRk9STUFJTlZPSUNFTlVNQkVSIiIiIlBBWU1FTlQiIkJBTktOQU1FIiIiIkJBTktBRERSRVNTIiIiIkJBTktBQ0NPVU5UTk8iIiIiQkFOS0FDQ09VTlRJQkFOIiIiIlNXSUZUQ09ERSIiIiJURVJNUyIiIiJJTlZPSUNFTElORVMiIklOVk9JQ0VMSU5FUyIiREVTQ1JJUFRJT04iIkZhY3RvcnkgUmVudCIiSVRFTVRZUEUiIkdTMSIiSVRFTUNPREUiIjEwMDA3NTg0IiJVTklUVFlQRSIiRUEiIlFVQU5USVRZIiIxLjAwMDAwIiJJTlRFUk5BTENPREUiIkZSRU5UMDEiIlNBTEVTVE9UQUwiIjIyMDUwMC4wMDAwMCIiVE9UQUwiIjI1MTM3MC4wMDAwMCIiVkFMVUVESUZGRVJFTkNFIiIwLjAwMDAwIiJUT1RBTFRBWEFCTEVGRUVTIiIwLjAwMDAwIiJORVRUT1RBTCIiMjIwNTAwLjAwMDAwIiJJVEVNU0RJU0NPVU5UIiIwLjAwMDAwIiJVTklUVkFMVUUiIkNVUlJFTkNZU09MRCIiRUdQIiJBTU9VTlRFR1AiIjIyMDUwMC4wMDAwMCIiRElTQ09VTlQiIlJBVEUiIjAiIkFNT1VOVCIiMC4wMDAwMCIiVEFYQUJMRUlURU1TIiJUQVhBQkxFSVRFTVMiIlRBWFRZUEUiIlQxIiJBTU9VTlQiIjMwODcwLjAwMDAwIiJTVUJUWVBFIiJWMDA5IiJSQVRFIiIxNC4wMCIiVE9UQUxESVNDT1VOVEFNT1VOVCIiMC4wMDAwMCIiVE9UQUxTQUxFU0FNT1VOVCIiMjIwNTAwLjAwMDAwIiJORVRBTU9VTlQiIjIyMDUwMC4wMDAwMCIiVEFYVE9UQUxTIiJUQVhUT1RBTFMiIlRBWFRZUEUiIlQxIiJBTU9VTlQiIjMwODcwLjAwMDAwIiJUT1RBTEFNT1VOVCIiMjUxMzcwLjAwMDAwIiJFWFRSQURJU0NPVU5UQU1PVU5UIiIwLjAwMDAwIiJUT1RBTElURU1TRElTQ09VTlRBTU9VTlQiIjAuMDAwMDAiMA0GCSqGSIb3DQEBAQUABIIBACn3FMdRVlJHvc0IQuWNsqb6moJJDHR2bAlYvI9EWB7siI8J/dy06I6vHhx93OpIydNnPI274o20apCxQzl5rJqkTEnc0O6tud5nSgsKPnpetq7JeM0S1aX0sE0NbunmC4K7jHDYhpqazn42EEOVyo5oTNCC/lJjw2s1KCxHUYqV8epV4OlR8EdjcTgkxxc7iG3he4a4ox7EXi4RUU4XPt9lOU37gy42Nh8Edaq5RZ3Ous1x16NFqSGcuP4FzYydxo98BFlP8T6oD3W2J7JzV6sLoOBMbYoxnlWvRN7k+yUM92ZSY/hT7Wg+3Sy1nkrLCPd95AWrdwiIjorktRDQIaQAAAAAAAA="
+                }
+            ]
+        }
+    ]	
+}
