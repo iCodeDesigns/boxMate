@@ -755,8 +755,6 @@ def cancel_document_form(request, doc_uuid):
     date: 11/4/2021
     """
     if request.method == 'POST':
-        print(request.POST['cancel_reason'])
-        print('uuid ', doc_uuid)
         cancel_reason = request.POST['cancel_reason']
         cancel_body = {
             "status": "cancelled",
