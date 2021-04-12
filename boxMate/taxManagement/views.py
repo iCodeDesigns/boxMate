@@ -754,9 +754,6 @@ def cancel_document_form(request, doc_uuid):
     by: amira
     date: 11/4/2021
     """
-    submission = Submission.objects.get(subm_uuid=doc_uuid)
-    invoice = InvoiceHeader.objects.get(id=submission.invoice_id)
-    print(invoice)
     if request.method == 'POST':
         print(request.POST['cancel_reason'])
         print('uuid ', doc_uuid)
@@ -766,25 +763,51 @@ def cancel_document_form(request, doc_uuid):
             "reason": cancel_reason
         }
         cancel_body_json = json.dumps(cancel_body)
-        print('json: ',cancel_body_json)
-        url = f'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/state/{doc_uuid}/state'
-        get_token()
-        response = requests.put(url, verify=False,
-                                headers={'Content-Type': 'application/json',
-                                         'Authorization': 'Bearer ' + auth_token},
-                                data=cancel_body_json)
+        response = send_cancellation_request(doc_uuid=doc_uuid, data=cancel_body_json)
         if response.status_code == 200:
-            # when invoiced is cancelled from portal the invoice is cancelled locally
-            submission.status = 'cancel'
-            submission.save()
-            invoice.invoice_status = 'cancel'
-            invoice.save()
+            update_submission_and_invoice_status(doc_uuid=doc_uuid)
             messages.success(request, _('Your invoice is cancelled successfully.'))
             return redirect('taxManagement:list-eta-invoice')
         else:
             messages.error(request, _('Something went wrong'))
             return redirect('taxManagement:list-eta-invoice')
+
     context = {
         'uuid': doc_uuid,
     }
     return render(request, 'cancel_document_form.html', context)
+
+
+def send_cancellation_request(doc_uuid, data):
+    """
+    send cancellation data to portal
+    :param doc_uuid: needed in the url
+    :param data: needed for the request data
+    :return:
+    by: amira
+    date: 12/4/2021
+    """
+    url = f'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/state/{doc_uuid}/state'
+    get_token()
+    response = requests.put(url, verify=False,
+                            headers={'Content-Type': 'application/json',
+                                     'Authorization': 'Bearer ' + auth_token},
+                            data=data)
+    return response
+
+
+def update_submission_and_invoice_status(doc_uuid):
+    """
+    update status value in submission model and invoice_status in invoiceHeader model
+    :param doc_uuid:
+    :return:
+    by: amira
+    date: 12/4/2021
+    """
+    submission = Submission.objects.get(subm_uuid=doc_uuid)
+    invoice = InvoiceHeader.objects.get(id=submission.invoice_id)
+    # when invoiced is cancelled from portal the invoice is cancelled locally
+    submission.status = 'cancel'
+    submission.save()
+    invoice.invoice_status = 'cancel'
+    invoice.save()
