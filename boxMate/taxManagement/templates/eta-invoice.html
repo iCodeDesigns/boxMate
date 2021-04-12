@@ -95,12 +95,16 @@
                                              <td>{{ invoice.subm_uuid }}</td>
                                              <td><a href="{% url 'taxManagement:dec-detail' invoice.invoice.id%}"><i class="fa fa-fw fa-mail-forward"></i></a></td>
                                              {% if invoice.status != 'cancel' %}
+                                             {% if invoice.over_all_status != 'Invalid'  %}
                                              <td><a href="{% url 'taxManagement:cancel_doc_form' doc_uuid=invoice.subm_uuid %}">{% trans 'Cancel' %}</a> </td>
+                                             {% else %}
+                                             <td></td>
+                                             {% endif %} <!--   invalid over all status -->
                                              <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
                                              {% if invoice.over_all_status == 'InProgress'  %}
                                              <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.subm_id %}"><span class="	glyphicon glyphicon-refresh"></span></a></td>
-                                             {% endif %}
-                                             {% endif %}
+                                             {% endif %}<!--   invoice is in progress -->
+                                             {% endif %}<!--   invoiced is cancelled -->
                                           </tr>
                                            {% endfor %}
                                        </tbody>

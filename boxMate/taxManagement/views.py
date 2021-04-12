@@ -755,6 +755,8 @@ def cancel_document_form(request, doc_uuid):
     date: 11/4/2021
     """
     submission = Submission.objects.get(subm_uuid=doc_uuid)
+    invoice = InvoiceHeader.objects.get(id=submission.invoice_id)
+    print(invoice)
     if request.method == 'POST':
         print(request.POST['cancel_reason'])
         print('uuid ', doc_uuid)
@@ -772,16 +774,16 @@ def cancel_document_form(request, doc_uuid):
                                          'Authorization': 'Bearer ' + auth_token},
                                 data=cancel_body_json)
         if response.status_code == 200:
+            # when invoiced is cancelled from portal the invoice is cancelled locally
             submission.status = 'cancel'
             submission.save()
+            invoice.invoice_status = 'cancel'
+            invoice.save()
             messages.success(request, _('Your invoice is cancelled successfully.'))
             return redirect('taxManagement:list-eta-invoice')
         else:
             messages.error(request, _('Something went wrong'))
             return redirect('taxManagement:list-eta-invoice')
-        print(response)
-        print(response.status_code)
-        print(vars(response))
     context = {
         'uuid': doc_uuid,
     }
