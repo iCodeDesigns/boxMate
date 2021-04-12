@@ -754,13 +754,35 @@ def cancel_document_form(request, doc_uuid):
     by: amira
     date: 11/4/2021
     """
+    submission = Submission.objects.get(subm_uuid=doc_uuid)
     if request.method == 'POST':
         print(request.POST['cancel_reason'])
+        print('uuid ', doc_uuid)
         cancel_reason = request.POST['cancel_reason']
         cancel_body = {
-
+            "status": "cancelled",
+            "reason": cancel_reason
         }
+        cancel_body_json = json.dumps(cancel_body)
+        print('json: ',cancel_body_json)
+        url = f'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/state/{doc_uuid}/state'
+        get_token()
+        response = requests.put(url, verify=False,
+                                headers={'Content-Type': 'application/json',
+                                         'Authorization': 'Bearer ' + auth_token},
+                                data=cancel_body_json)
+        if response.status_code == 200:
+            submission.status = 'cancel'
+            submission.save()
+            messages.success(request, _('Your invoice is cancelled successfully.'))
+            return redirect('taxManagement:list-eta-invoice')
+        else:
+            messages.error(request, _('Something went wrong'))
+            return redirect('taxManagement:list-eta-invoice')
+        print(response)
+        print(response.status_code)
+        print(vars(response))
     context = {
-        'uuid': doc_uuid
+        'uuid': doc_uuid,
     }
     return render(request, 'cancel_document_form.html', context)
