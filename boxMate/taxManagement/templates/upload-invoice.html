@@ -73,14 +73,14 @@
                               aria-describedby="example1_info">
                               <thead>
                                  <tr role="row">
-                                    <th>{% trans 'Internal ID' %}</th>
-                                    <th>{% trans 'Purchase Order Reference' %}</th>
+                                    <th class="col-1">{% trans 'Internal ID' %}</th>
+                                    <th class="col-1">{% trans 'Purchase Order Reference' %}</th>
                                     <th>{% trans 'Sales Order Reference' %}</th>
                                     <th>{% trans 'Total Discount Amount' %}</th>
                                     <th>{% trans 'Total Sales Amount' %}</th>
                                     <th>{% trans 'Net Amount' %}</th>
                                     <th>{% trans 'Total Amount' %}</th>
-                                    <th>{% trans 'Submission ID' %}</th>
+                                    <th style="width: 40px; important!">{% trans 'Submission ID' %}</th>
                                     <th>{% trans 'Submit' %}</th>
                                     <th>{% trans 'Status' %}</th>
                                     <th>View</th>
@@ -129,7 +129,11 @@
                                     {% endif %}
                                     <!--  end if invoice status    -->
                                     {% endif %}
-                                    <td>{{header.invoice_status}}</td>
+                                    {% if header.invoice_status == 'verified' %}
+                                       <td><span class="label label-success">{% trans 'Verified' %}</span></td>
+                                    {% else %}
+                                       <td><span class="label label-danger">{% trans 'Cancelled' %}</span></td>
+                                    {% endif %}
                                     <td>
                                        <a href="{% url 'taxManagement:view-invoice' invoice_id=header.id %}">
                                           <span class="glyphicon glyphicon-pencil"></span>

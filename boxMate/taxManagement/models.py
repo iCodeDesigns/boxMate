@@ -309,6 +309,7 @@ class Submission(models.Model):
     document_count = models.IntegerField(blank=True, null=True)
     date_time_received = models.DateTimeField(blank=True, null=True)
     over_all_status = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=10, null=True, blank=True, default='')
 
 
 class HeaderTaxTotal(models.Model):
