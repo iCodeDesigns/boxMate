@@ -24,7 +24,7 @@ from taxManagement.tmp_storage import TempFolderStorage
 from taxManagement.db_connection import OracleConnection
 from taxManagement.tax_calculator import InoviceTaxLineCalculator
 from taxManagement.java import call_java
-from issuer.models import Issuer, Receiver, Address
+from issuer.models import Issuer, Receiver, Address, IssuerOracleDB
 from issuer import views as issuer_views
 from codes.models import ActivityType, TaxSubtypes, TaxTypes
 from ast import literal_eval
@@ -200,6 +200,7 @@ def upload_excel_sheet(request):
         # handle case uploading empty excel sheet
         # check file is empty
         if issuer_views.is_empty(import_file, request):
+            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/tax/list/uploaded-invoices')
 
         result = main_table_resource.import_data(imported_data, dry_run=True, user=request.user)  # Test the data import

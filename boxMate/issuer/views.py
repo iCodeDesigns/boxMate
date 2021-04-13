@@ -533,7 +533,7 @@ def export_receiver_template(request):
     receiver_resource = ReceiverResource()
     dataset = receiver_resource.export(queryset=Receiver.objects.none())
     response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="receiver_template.xls"'
+    response['Content-Disposition'] = 'attachment; filename="receiver_template.xlsx"'
     print(response)
     return response
 
@@ -573,6 +573,7 @@ def import_receiver_template(request):
         excel_data = dataset.load(imported_file.read())
         # check file is empty
         if is_empty(imported_file, request):
+            messages.error(request, _('Please, make sure file is filled with data'))
             return redirect('/issuer/list/receiver')
 
         # test dataset have errors
