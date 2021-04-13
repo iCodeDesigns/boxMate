@@ -128,3 +128,26 @@ def get_document_details(submission_uuid):
                                     'Authorization': 'Bearer ' + auth_token, }
                                 )
     return response
+
+
+def get_document_printout(doc_uuid):
+    """
+    send get request to portal to get pdf
+    :param doc_uuid:
+    :return:
+    by: amira
+    date: 13/4/2021
+    """
+    get_token()
+    url = f'https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/{doc_uuid}/pdf'
+    response = requests.get(url, verify=False,
+                            headers={
+                                'Authorization': 'Bearer ' + auth_token, }
+                            )
+    if response.status_code == status.HTTP_401_UNAUTHORIZED:
+        get_token()
+        response = requests.get(url, verify=False,
+                                headers={
+                                    'Authorization': 'Bearer ' + auth_token, }
+                                )
+    return response

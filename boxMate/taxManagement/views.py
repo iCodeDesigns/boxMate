@@ -704,3 +704,32 @@ def update_submission_and_invoice_status(doc_uuid):
     submission.save()
     invoice.invoice_status = 'cancel'
     invoice.save()
+
+
+def list_print_invoice(request):
+    """
+    show list of submitted invoices to be print
+    :param request:
+    :return:
+    by: amira
+    date: 13/4/2021
+    """
+    invoice_list = Submission.objects.all()
+    context = {
+        "invoice_list": invoice_list,
+    }
+    return render(request, 'list_print_invoice.html', context)
+
+
+def print_invoice(request, doc_uuid):
+    """
+    get printable pdf of invoice
+    :param request:
+    :param doc_uuid:
+    :return:
+    by: amira
+    date: 13/4/2021
+    """
+    response = get_document_printout(doc_uuid)
+    response = HttpResponse(response, content_type='application/pdf')
+    return response

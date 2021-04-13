@@ -27,5 +27,8 @@ urlpatterns = [
 
     path('cancel-invoice/<slug:doc_uuid>/', views.cancel_document_form, name="cancel_doc_form"),
 
+    path('list/print-invoice/', views.list_print_invoice, name='list_print_invoice'),
+    path('print-invoice/<slug:doc_uuid>', views.print_invoice, name='print_invoice'),
+
 
 ]
