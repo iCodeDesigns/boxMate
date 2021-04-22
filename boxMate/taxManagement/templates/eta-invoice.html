@@ -65,7 +65,9 @@
                                              <th>{% trans 'view' %}</th>
                                              <th>{% trans 'Action' %}</th>
                                              <th>{% trans 'Resubmit' %}</th>
+                                             {% if invoice.over_all_status == 'InProgress'  %}
                                              <th>{% trans 'Refresh' %}</th>
+                                             {% endif %}
                                           </tr>
                                        </thead>
                                        <tbody>
