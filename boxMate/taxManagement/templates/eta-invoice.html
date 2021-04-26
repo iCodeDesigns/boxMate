@@ -81,9 +81,9 @@
                                              {% elif invoice.over_all_status == 'Invalid'  %}
                                              <td><span class="label label-danger">Invalid</span></td>
                                              {% elif invoice.over_all_status == 'InProgress'  %}
-                                             <td><span class="label label-success">In progress</span></td>
+                                             <td><span class="label label-warning">In progress</span></td>
                                              {% elif invoice.over_all_status == 'Not Submitted'  %}
-                                             <td><span class="label label-danger">Not Submitted</span></td>
+                                             <td><span class="label label-warning">Not Submitted</span></td>
                                              {% elif invoice.over_all_status == 'Partially valid'  %}
                                              <td><span class="label label-success">Partially Valid</span></td>
                                              {% elif invoice.over_all_status == 'Network Error'  %}
@@ -104,7 +104,7 @@
                                              {% endif %} <!--   invalid over all status -->
                                              <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.invoice.id %}"><span class="glyphicon glyphicon-cloud-upload"></span></a></td>
                                              {% if invoice.over_all_status == 'InProgress'  %}
-                                             <td><a href="{% url 'taxManagement:resubmit-invoice' invoice.subm_id %}"><span class="	glyphicon glyphicon-refresh"></span></a></td>
+                                             <td><a href="{% url 'taxManagement:refresh-submission-status' invoice.subm_id %}"><span class="	glyphicon glyphicon-refresh"></span></a></td>
                                              {% endif %}<!--   invoice is in progress -->
                                              {% endif %}<!--   invoiced is cancelled -->
                                           </tr>

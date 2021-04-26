@@ -308,16 +308,13 @@ def submit_invoice(request, invoice_id, version=None):
         version = InvoiceHeader.objects.get(id=invoice_id).document_type_version
     # function that gets the invoice data in JSON format
     generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()
-    print('wooooow')
     invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
-    print('invoice ', invoice_as_str)
     if version == '1.0':
         jar = call_java.java_func(invoice_as_str, "Dreem", "08268939")  # send invoice_as_str to jar file to sign it.
         from_bytes_to_good_str = jar.decode("utf-8")
         from_str_to_json = json.loads(json.dumps(from_bytes_to_good_str))
         response = send_data_by_version(data=from_str_to_json)
     elif version == '0.9':
-        print('version: ', version)
         response = send_data_by_version(data=invoice_as_str)
     else:
         response = ''
@@ -404,6 +401,7 @@ def list_eta_invoice(request):
 
 
 def resubmit(request, invoice_id):
+    print('inside resubmit id= ', invoice_id)
     submit_invoice(request, invoice_id)
     return redirect("taxManagement:list-eta-invoice")
 
@@ -546,7 +544,7 @@ def view_invoice(request, invoice_id):
 
 @is_issuer
 def create_new_invoice_header(request):
-    ''' 
+    '''
         date : 10/03/2021
         author : Mamdouh
         purpose : create new invoice and save it to database
@@ -583,7 +581,7 @@ def load_issuer_addresses(request):
 
 @is_issuer
 def create_new_invoice_line(request, invoice_id):
-    ''' 
+    '''
         date : 10/03/2021
         author : Mamdouh
         purpose : create new invoice and save it to database
@@ -625,8 +623,7 @@ def create_new_invoice_line(request, invoice_id):
 
 def refresh_submission_status(request, submission_id):
     submission = get_submission_response(submission_id)
-    print(submission)
-    return redirect('taxManagement:get-all-invoice-headers')
+    return redirect('taxManagement:list-eta-invoice')
 
 
 def update_invoice_status(request, invoice_id, status):
@@ -653,7 +650,7 @@ def export_empty_invoice_temp(request):
     """
     invoice_resource = MainTableResource()
     dataset = invoice_resource.export(queryset=MainTable.objects.none())
-    response = HttpResponse(dataset.xls, content_type='application/vnd.ms-excel')
+    response = HttpResponse(dataset.xlsx, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = 'attachment; filename="invoice_template.xlsx"'
     return response
 

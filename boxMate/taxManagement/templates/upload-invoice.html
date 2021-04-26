@@ -131,8 +131,10 @@
                                     {% endif %}
                                     {% if header.invoice_status == 'verified' %}
                                        <td><span class="label label-success">{% trans 'Verified' %}</span></td>
-                                    {% else %}
+                                    {% elif header.invoice_status == 'cancel' %}
                                        <td><span class="label label-danger">{% trans 'Cancelled' %}</span></td>
+                                    {% else %}
+                                      <td><span class="label label-info">{% trans 'Draft' %}</span></td>
                                     {% endif %}
                                     <td>
                                        <a href="{% url 'taxManagement:view-invoice' invoice_id=header.id %}">

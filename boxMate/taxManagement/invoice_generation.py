@@ -4,6 +4,7 @@ from taxManagement.models import (MainTable, InvoiceHeader, InvoiceLine, TaxType
 from issuer.models import (Issuer, Receiver, Address)
 from codes.models import (ActivityType, TaxSubtypes, TaxTypes, CountryCode)
 from issuer import views as issuer_views
+from datetime import datetime, timedelta
 
 
 class Invoicegeneration:
@@ -16,6 +17,18 @@ class Invoicegeneration:
 
     def __init__(self, invoice_id):
         self.invoice_id = invoice_id
+
+    def datetime_format(self):
+        """
+        subtract 2 hours from datetime.now to be accepted by portal_api
+        return str representation of date
+        by: amira
+        date: 26/4/2021
+        """
+        HOURS_SUBTRACTION = 2
+        datetime_sub = datetime.now() - timedelta(hours = HOURS_SUBTRACTION)
+        str_datetime = datetime_sub.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+        return str_datetime
 
     def get_issuer_address(self):
         invoice = InvoiceHeader.objects.get(id=self.invoice_id)
@@ -140,11 +153,13 @@ class Invoicegeneration:
 
         # amira test
         invoice_lines = self.get_invoice_lines()
+        date_time_issued = self.datetime_format()
+
 
         data = {
             "documentType": invoice_header.document_type,
             "documentTypeVersion": invoice_header.document_type_version,
-            "dateTimeIssued": "2021-04-07T15:37:51Z",
+            "dateTimeIssued": date_time_issued,
             # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",     # commented by ahd due to server errors with dat format.
             "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
             "internalID": invoice_header.internal_id,
