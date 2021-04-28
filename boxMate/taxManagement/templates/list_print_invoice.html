@@ -86,7 +86,11 @@
                                              {% endif %}
                                              <td>{{ invoice.date_time_received }}</td>
                                              <td>{{ invoice.subm_uuid }}</td>
-                                             <td><a href="{% url 'taxManagement:print_invoice' doc_uuid=invoice.subm_uuid%}"><i class="fa fa-print"></i></a> </td>
+                                             {% if invoice.over_all_status == 'Valid' and invoice.status != 'cancel' %}
+                                              <td><a href="{% url 'taxManagement:print_invoice' doc_uuid=invoice.subm_uuid%}"><i class="fa fa-print"></i></a> </td>
+                                              {%else%}
+                                              <td></td>
+                                             {% endif %}
                                           </tr>
                                            {% endfor %}
                                        </tbody>
