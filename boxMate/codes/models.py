@@ -12,8 +12,8 @@ class ActivityType(models.Model):
 
     def __str__(self):
         if get_language() == 'en-us':  # BY: amira/ to return language according to current language
-            return self.desc_en
-        return self.desc_ar
+            return self.code + ' - ' + self.desc_en
+        return self.code + ' - ' + self.desc_ar
 
 
 class CountryCode(models.Model):
@@ -46,8 +46,8 @@ class TaxTypes(models.Model):
 
     def __str__(self):
         if get_language() == 'en-us':  # By: amira/ to return language according to current language
-            return self.desc_en
-        return self.desc_ar
+            return self.code + ' - ' + self.desc_en
+        return self.code + ' - ' + self.desc_ar
 
 
 class TaxSubtypes(models.Model):
