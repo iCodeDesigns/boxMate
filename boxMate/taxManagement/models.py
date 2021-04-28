@@ -123,7 +123,7 @@ class InvoiceHeader(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True)
     issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                        related_name="issuer_address")
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE, related_name="receiver_val")
     receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                          related_name="receiver_address")
     document_type = models.CharField(max_length=2,
