@@ -29,6 +29,6 @@ urlpatterns = [
 
     path('list/print-invoice/', views.list_print_invoice, name='list_print_invoice'),
     path('print-invoice/<slug:doc_uuid>', views.print_invoice, name='print_invoice'),
-
+    path('ajax/load-subtasks/', views.load_subtasks, name='ajax_load_subtasks'),
 
 ]

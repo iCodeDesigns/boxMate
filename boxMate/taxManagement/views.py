@@ -730,3 +730,9 @@ def print_invoice(request, doc_uuid):
     response = get_document_printout(doc_uuid)
     response = HttpResponse(response, content_type='application/pdf')
     return response
+
+# Filter subtasks based on the selected task
+def load_subtasks(request):
+    task_id = request.GET.get('task_id')
+    subtasks = TaxSubtypes.objects.filter(taxtype_reference_id=task_id)
+    return render(request, 'subtask_dropdown_list_options.html', {'subtasks': subtasks})

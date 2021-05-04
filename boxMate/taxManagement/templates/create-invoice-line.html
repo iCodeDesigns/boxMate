@@ -17,7 +17,7 @@
 
     </section>
     <section class="content-fluid">
-        <form method="POST" id="myform">
+        <form method="POST" id="myform" data-subtasks-url="{% url 'taxManagement:ajax_load_subtasks' %}">
             {% csrf_token %}
 
             <div class="form-row">
@@ -193,4 +193,23 @@
         });
     });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+    $("#id_tax_lines-0-taxType").change(function () {
+      var url = $("#myform").attr("data-subtasks-url");  // get the url of the `load_subtasks` view
+      var task_id = $(this).val();  // get the selected task ID from the HTML input
+
+      $.ajax({                       // initialize an AJAX request
+        url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-subtasks/)
+        data: {
+          'task_id': task_id       // add the task id to the GET parameters
+        },
+        success: function (data) {   // `data` is the return of the `load_subtasks` view function
+          $("#id_tax_lines-0-subType").html(data);  // replace the contents of the subtask input with the data that came from the server
+        }
+      });
+
+    });
+  </script>
 {% endblock js %}
