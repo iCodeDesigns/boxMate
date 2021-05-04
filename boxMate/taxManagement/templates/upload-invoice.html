@@ -109,19 +109,9 @@
                                     {% if header.invoice_status == 'verified' %}
                                     <td>
                                        <div class="btn-group">
-                                          <button type="button" class="btn btn-primary btn-sm dropdown-toggle"
-                                             data-toggle="dropdown" >
-                                             Submit
-                                          </button>
-                                          <div class="dropdown-menu">
-                                             <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id version=1.0 %}"
-                                                class="dropdown-item">
-                                                <span class="glyphicon glyphicon-cloud-upload"> V1.0</span></a>
-                                             <div class="dropdown-divider"></div>
-                                             <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id version=0.9 %}"
-                                                class="dropdown-item">
-                                                <span class="glyphicon glyphicon-cloud-upload"> V0.9</span></a>
-                                          </div>
+                                         <a href="{% url 'taxManagement:submit-invoice' invoice_id=header.id %}">
+                                           <button class="btn btn-primary btn-sm dropdown-toggle">Submit</button>
+                                         </a>
                                        </div>
                                     </td>
                                     {% else %}

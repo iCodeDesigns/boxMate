@@ -293,7 +293,7 @@ def update_invoice_doc_version(invoice_id, version):
 
 @login_required(login_url='home:user-login')
 @is_issuer
-def submit_invoice(request, invoice_id, version=None):
+def submit_invoice(request, invoice_id):
     """
     This function is used to submit an invoice to the governmental api, it calls another function to
     save the submission response
@@ -302,10 +302,11 @@ def submit_invoice(request, invoice_id, version=None):
     :param invoice_id: the id of the invoice to be submitted (database id)
     :return: redirects to the page that lists all invoices
     """
-    if version:
-        update_invoice_doc_version(invoice_id=invoice_id, version=version)
-    else:
-        version = InvoiceHeader.objects.get(id=invoice_id).document_type_version
+    # if version:
+    #     update_invoice_doc_version(invoice_id=invoice_id, version=version)
+    # else:
+    # Use invoice version instead of giving the user the option
+    version = InvoiceHeader.objects.get(id=invoice_id).document_type_version
     # function that gets the invoice data in JSON format
     generated_invoice = Invoicegeneration(invoice_id=invoice_id).get_one_invoice()
     invoice_as_str = simplejson.dumps(generated_invoice)  # by:ahd hozayen, we used simplejson to decode Decimal fields
