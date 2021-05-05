@@ -39,11 +39,12 @@ class TaxLineForm(forms.ModelForm):
         exclude = ('invoice_line',)
     def __init__(self, *args, **kwargs):
             super(TaxLineForm, self).__init__(*args, **kwargs)
+            self.fields['taxType'].widget.attrs['onchange'] = 'select_subtask(this)'
             # Override the subtask queryset to not getting any objects by default until the user select a task then return the appropriate subtasks
             # self.fields['subType'].queryset = TaxSubtypes.objects.none()
-            # if 'taxType' in self.data:
+            # if 'tax_lines-0-taxType' in self.data:
             #     try:
-            #         taxType = int(self.data.get('taxType'))
+            #         taxType = int(self.data.get('tax_lines-0-taxType'))
             #         self.fields['subType'].queryset = TaxSubtypes.objects.filter(taxtype_reference=taxType)
             #     except (ValueError, TypeError):
             #         pass  # invalid input from the client; ignore and fallback to empty Subtask queryset

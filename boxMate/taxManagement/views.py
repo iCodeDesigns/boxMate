@@ -611,7 +611,10 @@ def create_new_invoice_line(request, invoice_id):
                     return redirect('taxManagement:view-invoice', invoice_id=invoice_id)
                 elif 'Save And Add' in request.POST:
                     return redirect('taxManagement:create-invoice-line', invoice_id=invoice_id)
-
+            else:
+                print(tax_line_form.errors)
+        else:
+            print(line_form.errors)
     context = {
         'line_form': line_form,
         'tax_line_form': tax_line_form,

@@ -194,22 +194,40 @@
     });
 </script>
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script>
-    $("#id_tax_lines-0-taxType").change(function () {
-      var url = $("#myform").attr("data-subtasks-url");  // get the url of the `load_subtasks` view
-      var task_id = $(this).val();  // get the selected task ID from the HTML input
-
-      $.ajax({                       // initialize an AJAX request
-        url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-subtasks/)
-        data: {
-          'task_id': task_id       // add the task id to the GET parameters
-        },
-        success: function (data) {   // `data` is the return of the `load_subtasks` view function
-          $("#id_tax_lines-0-subType").html(data);  // replace the contents of the subtask input with the data that came from the server
+  <script type="text/javascript">
+    // load subtasks ajax
+    function select_subtask(object){
+        var url = $('#myform').attr('data-subtasks-url'); // get the url of the `load_subtasks` view
+        var task_id = object.value;  // get the item db ID
+        var counter = slice_counter(object.id) // Slice the counter from the html id
+        if(task_id){
+            send_ajax_get_employees(url, task_id, counter)
         }
-      });
+    };
 
-    });
+    // slice id sequence number
+    function slice_counter(element_id){
+        counter_start = element_id.indexOf('-') + 1;
+        counter_end = element_id.lastIndexOf('-');
+        counter = element_id.slice(counter_start, counter_end);
+        return counter;
+    }
+
+    //send ajax to get subtasks
+    function send_ajax_get_employees(url, task_id, counter){
+        $.ajax({ // initialize an AJAX request
+            url: url, // set the url of the request (= localhost:8000/hr/ajax/load-subtasks/)
+            data: {
+                'task_id': task_id // add the task id to the GET parameters
+            },
+            success: function(result){ // `result` is the return of the `load_subtasks` view function
+                $(`#id_tax_lines-${counter}-subType`).html(result); // replace the contents of the subtask input with the result that came from the server
+            },
+            error: function(result){
+                console.log('error occurred')
+            }
+        });
+
+    }
   </script>
 {% endblock js %}
