@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from issuer.models import Issuer, Receiver, Address
-from codes.models import ActivityType
+from codes.models import ActivityType, UnitType
 from codes.models import TaxSubtypes, TaxTypes
 from datetime import datetime
 from django.conf import settings
@@ -123,7 +123,7 @@ class InvoiceHeader(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True)
     issuer_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                        related_name="issuer_address")
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE, related_name="receiver_val")
     receiver_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True,
                                          related_name="receiver_address")
     document_type = models.CharField(max_length=2,
@@ -209,9 +209,9 @@ class Signature(models.Model):
 class InvoiceLine(models.Model):
     invoice_header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, related_name="lines")
     description = models.CharField(max_length=250)
-    itemType = models.CharField(max_length=50, help_text='Must be of GPC format')
+    itemType = models.CharField(max_length=50, choices=[('GS1', 'GS1'), ('GPS', 'GPS'), ('EGS', 'EGS')])
     itemCode = models.CharField(max_length=50, help_text='Must be of GS1 code')
-    unitType = models.CharField(max_length=50, help_text='A code from unitype table')
+    unitType = models.ForeignKey(UnitType, on_delete=models.CASCADE, related_name="units")
     quantity = models.DecimalField(max_digits=20, decimal_places=5)
     currencySold = models.ForeignKey(Currency,on_delete=models.CASCADE)
     amountEGP = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)

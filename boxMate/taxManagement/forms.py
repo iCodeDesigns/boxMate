@@ -9,7 +9,7 @@ from codes.models import TaxSubtypes
 class InvoiceHeaderForm(forms.ModelForm):
     class Meta:
         model = InvoiceHeader
-        exclude = ('issuer' ,  'date_time_issued','invoice_status',)
+        exclude = ('date_time_issued','invoice_status',)
     def __init__(self, issuer,*args, **kwargs):
             super(InvoiceHeaderForm, self).__init__(*args, **kwargs)
             for field in self.fields:

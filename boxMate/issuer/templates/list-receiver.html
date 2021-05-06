@@ -65,12 +65,19 @@
                                                         data-toggle="tooltip" title="{% trans 'Edit' %}">
                                                         <span class="glyphicon glyphicon-pencil"></span>
                                                     </a>
-
-                                                    <a href="{% url 'issuer:delete-receiver' receiver.id %}"
-                                                        data-toggle="tooltip" title="{% trans 'Delete' %}"
-                                                        onclick="return confirm('Are you sure?')">
-                                                        <span class="glyphicon glyphicon-trash"></span>
-                                                    </a>
+                                                    {% if receiver.receiver_val.count > 0 %}
+                                                      <a href="#"
+                                                          data-toggle="tooltip" title="{% trans 'Delete' %}"
+                                                          onclick="delete_alert()">
+                                                          <span class="glyphicon glyphicon-trash"></span>
+                                                      </a>
+                                                    {% else %}
+                                                      <a href="{% url 'issuer:delete-receiver' receiver.id %}"
+                                                          data-toggle="tooltip" title="{% trans 'Delete' %}"
+                                                          onclick="return confirm('Are you sure?')">
+                                                          <span class="glyphicon glyphicon-trash"></span>
+                                                      </a>
+                                                    {% endif%}
                                                 </td>
 
                                             </tr>
@@ -120,3 +127,11 @@
 
 
 {% endblock body %}
+
+{% block js %}
+<script type="text/javascript">
+  function delete_alert(){
+    alert("Can't delete this receiver as he has invoices");
+  }
+</script>
+{% endblock js %}

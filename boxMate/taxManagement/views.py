@@ -616,6 +616,7 @@ def create_new_invoice_line(request, invoice_id):
         else:
             print(line_form.errors)
     context = {
+        'issuer': header.issuer,
         'line_form': line_form,
         'tax_line_form': tax_line_form,
         "page_title": _("Create Invoice Line")
