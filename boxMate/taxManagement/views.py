@@ -550,17 +550,19 @@ def create_new_invoice_header(request):
         purpose : create new invoice and save it to database
     '''
     header_form = InvoiceHeaderForm(issuer=request.user.issuer)
+    issuer = request.user.issuer
     if request.method == 'POST':
         header_form = InvoiceHeaderForm(issuer=request.user.issuer, data=request.POST)
         if header_form.is_valid():
             header_obj = header_form.save(commit=False)
-            header_obj.issuer = request.user.issuer
+            header_obj.issuer = issuer
             header_obj.created_by = request.user
             header_obj.save()
             print(header_obj.id)
             return redirect('taxManagement:create-invoice-line', invoice_id=header_obj.id)
 
     context = {
+    'issuer': issuer,
         'header_form': header_form,
         "page_title": _("Create Invoice Header"),
     }
