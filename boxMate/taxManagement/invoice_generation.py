@@ -218,7 +218,7 @@ class Invoicegeneration:
                 "description": line.description,
                 "itemType": line.itemType,
                 "itemCode": line.itemCode,
-                "unitType": line.unitType,
+                "unitType": line.unitType.code,
                 "quantity": Decimal(line.quantity),
                 "internalCode": line.internalCode,
                 "salesTotal": Decimal(format(line.salesTotal, '.5f')),

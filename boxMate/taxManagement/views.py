@@ -26,7 +26,7 @@ from taxManagement.tax_calculator import InoviceTaxLineCalculator
 from taxManagement.java import call_java
 from issuer.models import Issuer, Receiver, Address, IssuerOracleDB
 from issuer import views as issuer_views
-from codes.models import ActivityType, TaxSubtypes, TaxTypes
+from codes.models import ActivityType, TaxSubtypes, TaxTypes, UnitType
 from ast import literal_eval
 from taxManagement.invoice_generation import Invoicegeneration
 from .forms import *
@@ -141,12 +141,13 @@ def import_data_to_invoice(user):
         print(lines)
         for line in lines:
             currency_sold = Currency.objects.get(code=line['currency_sold'])
+            unit_type = UnitType.objects.get(code=line['unit_type'])
             line_obj = InvoiceLine(
                 invoice_header=header_obj,
                 description=line['description'],
                 itemType=line['item_type'],
                 itemCode=line['item_code'],
-                unitType=line['unit_type'],
+                unitType=unit_type,
                 quantity=line['quantity'],
                 currencySold=currency_sold,
                 amountEGP=line['amount_egp'],
@@ -393,7 +394,7 @@ def get_decument_detail_after_submit(request, internal_id):
 
 @is_issuer
 def list_eta_invoice(request):
-    eta_invoice_list = Submission.objects.all()
+    eta_invoice_list = Submission.objects.filter(subm_uuid__isnull=False)
     eta_context = {
         "eta_invoice_list": eta_invoice_list,
     }
