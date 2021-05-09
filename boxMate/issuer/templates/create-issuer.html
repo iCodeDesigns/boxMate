@@ -81,12 +81,6 @@
                                 {{ issuer_form.type}}
                             </div>
 
-                            <div class="form-group col-md-4">
-                                <label for="inputEmail4">{% trans 'Activity Code' %}</label>
-                                <br>
-                                {{ issuer_form.activity_code}}
-                            </div>
-
 
                         </div>
                         <div class="form-row">
@@ -94,7 +88,35 @@
                                 <hr style="height:2px;border-width:0;color:gray;background-color:gray">
                             </div>
                         </div>
+                        <div id="activity_code_set">
+                            <div class="form-row">
+                                <h2 class="form-group col-md-12">{% trans ' Activity Code' %}</h2>
+                            </div>
+                            {{activity_code_form.management_form}}
+                            {% for form in activity_code_form %}
+                            <div class="form-group col-md-12" style="display:none;">
+                                {{ form.id}}
+                            </div>
+                            <div class="form-group col-md-12">
+                                {{ form.activity_code}}
+                            </div>
+                            {% endfor %}
+                        </div>
 
+                        <div id="activity_code_empty_form" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    {{ activity_code_form.empty_form.activity_code}}
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="separator mb-5"></div>
+                        <br>
+                        <div class="col-md-12">
+                            <button type="button" id="add_activity" onclick="add_activity_func()"
+                                class="btn cur-p btn-success pull-right">{% trans 'Add Activity Code' %}</button>
+                        </div>
 
 
                         <br>
@@ -115,3 +137,15 @@
 </div>
 
 {% endblock body %}
+{% block js %}
+<script>
+
+    function add_activity_func() {
+        var form_idx = $('#id_issueractivitycode_set-TOTAL_FORMS').val();
+        $('#activity_code_set').append($('#activity_code_empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_issueractivitycode_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+    };
+</script>
+{% endblock js %}

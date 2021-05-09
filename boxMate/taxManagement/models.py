@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import Sum
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from issuer.models import Issuer, Receiver, Address
+from issuer.models import Issuer, Receiver, Address, IssuerActivityCode
 from codes.models import ActivityType, UnitType
 from codes.models import TaxSubtypes, TaxTypes
 from datetime import datetime
@@ -132,7 +132,7 @@ class InvoiceHeader(models.Model):
                                              choices=[('1.0', '1.0'), ('0.9', '0.9')], default='1.0')
 
     date_time_issued = models.DateTimeField(default=datetime.now())
-    taxpayer_activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE)
+    taxpayer_activity_code = models.ForeignKey(IssuerActivityCode, on_delete=models.CASCADE)
     internal_id = models.CharField(max_length=50)
     purchase_order_reference = models.CharField(max_length=50, null=True, blank=True)
     purchase_order_description = models.CharField(max_length=100, null=True, blank=True)

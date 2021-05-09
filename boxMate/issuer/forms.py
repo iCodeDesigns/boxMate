@@ -1,10 +1,10 @@
 from django import forms
-from issuer.models import Issuer ,IssuerTax, Address , IssuerOracleDB , Receiver
+from issuer.models import Issuer ,IssuerTax, Address , IssuerOracleDB , Receiver, IssuerActivityCode
 from datetime import date
-from django.forms import modelformset_factory , formset_factory
+from django.forms import modelformset_factory , formset_factory, inlineformset_factory
 
 
-def clean_unique(form, field, exclude_initial=True, 
+def clean_unique(form, field, exclude_initial=True,
                  format="The %(field)s %(value)s has already been taken."):
     value = form.cleaned_data.get(field)
     if value:
@@ -29,7 +29,7 @@ class IssuerForm(forms.ModelForm):
             self.fields['reg_num'].widget.attrs['readonly'] = True
             self.fields['client_id'].widget.attrs['readonly'] = True
             self.fields['activity_code'].widget.attrs['readonly'] = True
-            self.fields['type'].widget.attrs['readonly'] = True
+            self.fields['type'].widget.attrs['disabled'] = True
 
 
 
@@ -79,3 +79,14 @@ class ReceiverForm(forms.ModelForm):
             self.fields[field].widget.attrs['class'] = 'form-control'
 
 AddressInlineForm = modelformset_factory(Address, form=AddressForm, extra=1)
+
+class ActivityCodeForm(forms.ModelForm):
+    class Meta:
+        model = IssuerActivityCode
+        fields = '__all__'
+    def __init__(self, *args, **kwargs):
+            super(ActivityCodeForm, self).__init__(*args, **kwargs)
+            for field in self.fields:
+                self.fields[field].widget.attrs['class'] = 'form-control'
+
+ActivityCodeInlineForm = inlineformset_factory(Issuer,IssuerActivityCode ,form=ActivityCodeForm, extra=0)

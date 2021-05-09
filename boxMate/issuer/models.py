@@ -65,7 +65,7 @@ class Address(models.Model):
 
     def __str__(self):
         return self.branch_id
-    
+
 
 
 class IssuerTax(models.Model):
@@ -101,3 +101,11 @@ class IssuerOracleDB(models.Model):
             IssuerOracleDB.objects.filter(
                 is_active=True , issuer=self.issuer).update(is_active=False)
             return super(IssuerOracleDB, self).save(*args, **kwargs)
+
+
+class IssuerActivityCode(models.Model):
+    issuer = models.ForeignKey(Issuer,on_delete=models.CASCADE)
+    activity_code = models.ForeignKey(ActivityType, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.issuer.name + ' - ' + self.activity_code.code

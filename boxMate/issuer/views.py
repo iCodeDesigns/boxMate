@@ -233,27 +233,38 @@ def create_issuer_tax(request):
 ############################################## Issuer Section ###########################################
 def create_issuer(request):
     issuer_form = IssuerForm(update=False)
+    activity_code_form = ActivityCodeInlineForm()
     address_form = AddressForm()
     if request.method == 'POST':
         issuer_form = IssuerForm(request.POST, update=False)
+        activity_code_form = ActivityCodeInlineForm(request.POST)
         address_form = AddressForm(request.POST)
-        if issuer_form.is_valid() and address_form.is_valid():
+        if issuer_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
             issuer_obj.created_at = date.today()
             issuer_obj.created_by = request.user
             issuer_obj.save()
 
-            address_obj = address_form.save(commit=False)
-            address_obj.issuer = issuer_obj
-            address_obj.created_at = date.today()
-            address_obj.created_by = request.user
-            address_obj.save()
+            # address_obj = address_form.save(commit=False)
+            # address_obj.issuer = issuer_obj
+            # address_obj.created_at = date.today()
+            # address_obj.created_by = request.user
+            # address_obj.save()
 
             user = User.objects.get(id=request.user.id)
             user.issuer = issuer_obj
             user.save()
-            return redirect('issuer:create-tax',
-                            issuer_id=issuer_obj.id)
+
+            activity_code_form = ActivityCodeInlineForm(request.POST, instance=issuer_obj)
+            if activity_code_form.is_valid():
+                activity_code_obj = activity_code_form.save(commit=False)
+                for obj in activity_code_obj:
+                    obj.save()
+                return redirect('issuer:create-issuer-address')
+                # return redirect('issuer:create-tax',
+                #                 issuer_id=issuer_obj.id)
+            else:
+                print(activity_code_form.errors)
 
         else:
             print(issuer_form.errors)
@@ -264,6 +275,7 @@ def create_issuer(request):
 
     else:
         return render(request, 'create-issuer.html', {
+            'activity_code_form': activity_code_form,
             'issuer_form': issuer_form,
             'address_form': address_form, })
 
@@ -271,6 +283,7 @@ def create_issuer(request):
 def update_issuer(request, issuer_id):
     issuer_instance = Issuer.objects.get(id=issuer_id)
     issuer_form = IssuerForm(instance=issuer_instance, update=True)
+    activity_code_form = ActivityCodeInlineForm(instance=issuer_instance)
     if request.method == 'POST':
         issuer_form = IssuerForm(request.POST, instance=issuer_instance, update=True)
         issuer_obj = issuer_form.save(commit=False)
@@ -279,9 +292,21 @@ def update_issuer(request, issuer_id):
             issuer_obj.last_updated_by = request.user
             issuer_obj.last_updated_at = date.today()
             issuer_obj.save()
-            return redirect('issuer:list-issuer')
+            activity_code_form = ActivityCodeInlineForm(request.POST, instance=issuer_obj)
+
+            if activity_code_form.is_valid():
+                activity_code_obj = activity_code_form.save(commit=False)
+                for obj in activity_code_obj:
+                    obj.save()
+                return redirect('issuer:list-issuer')
+            else:
+                print(activity_code_form.errors)
+        else:
+            print(issuer_form.errors)
+
 
     return render(request, 'create-issuer.html', {
+        'activity_code_form': activity_code_form,
         'issuer_form': issuer_form,
         'update': True, })
 
