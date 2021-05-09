@@ -30,6 +30,7 @@ class IssuerForm(forms.ModelForm):
             self.fields['client_id'].widget.attrs['readonly'] = True
             self.fields['activity_code'].widget.attrs['readonly'] = True
             self.fields['type'].widget.attrs['disabled'] = True
+            self.fields['type'].required = False
 
 
 

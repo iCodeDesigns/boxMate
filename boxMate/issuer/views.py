@@ -286,7 +286,7 @@ def update_issuer(request, issuer_id):
     activity_code_form = ActivityCodeInlineForm(instance=issuer_instance)
     if request.method == 'POST':
         issuer_form = IssuerForm(request.POST, instance=issuer_instance, update=True)
-        issuer_obj = issuer_form.save(commit=False)
+        # issuer_obj = issuer_form.save(commit=False)
         if issuer_form.is_valid():
             issuer_obj = issuer_form.save(commit=False)
             issuer_obj.last_updated_by = request.user
@@ -300,8 +300,10 @@ def update_issuer(request, issuer_id):
                     obj.save()
                 return redirect('issuer:list-issuer')
             else:
+                print('In activity')
                 print(activity_code_form.errors)
         else:
+            print('In issuer')
             print(issuer_form.errors)
 
 
