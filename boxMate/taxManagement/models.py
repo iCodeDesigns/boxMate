@@ -316,3 +316,22 @@ class HeaderTaxTotal(models.Model):
     header = models.ForeignKey(InvoiceHeader, on_delete=models.CASCADE, null=True, blank=True)
     tax = models.ForeignKey(TaxTypes, on_delete=models.CASCADE, null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
+
+class InvoiceImport(models.Model):
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=True, blank=True)
+    document_type = models.CharField(max_length=2,
+                                     choices=[('I', 'Invoice'),('C','Credit Memo'),('D','Debit Memo')], default='I')
+    document_type_version = models.CharField(max_length=8,
+                                             choices=[('1.0', '1.0'), ('0.9', '0.9')], default='1.0')
+
+    date_time_issued = models.DateTimeField(default=datetime.now())
+    internal_id = models.CharField(max_length=50)
+    purchase_order_reference = models.CharField(max_length=50, null=True, blank=True)
+    purchase_order_description = models.CharField(max_length=100, null=True, blank=True)
+    sales_order_reference = models.CharField(max_length=50, null=True, blank=True)
+    sales_order_description = models.CharField(max_length=100, null=True, blank=True)
+    proforma_invoice_number = models.CharField(max_length=50, null=True, blank=True)
+    net_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
+    total_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True, default=0.0)
+    total_items_discount_amount = models.DecimalField(decimal_places=5, max_digits=20, null=True, blank=True,
+                                                          default=0.0)

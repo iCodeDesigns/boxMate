@@ -12,7 +12,7 @@ from .resources import *
 
 
 class InvoiceInline(admin.TabularInline):
-    model = InvoiceLine 
+    model = InvoiceLine
 
 
 @admin.register(InvoiceHeader)
@@ -31,3 +31,4 @@ class MainTableAdmin(ImportExportModelAdmin):
 
 
 site.register(Submission)
+site.register(InvoiceImport)
