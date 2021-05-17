@@ -17,6 +17,13 @@
         <div class="row">
             <div class="col-xs-12">
                 <div class="box">
+                  <!-- Error messaging -->
+                  {% if errors %}
+                  <div class="alert alert-danger">
+                    {{errors}}
+                  </div>
+                  {% endif %}
+                  <!-- /Error messaging -->
                     <div class="box-header">
                         <h3 class="box-title">{{issuer.name}}</h3>
                     </div>
@@ -26,7 +33,7 @@
                             <div class="col-sm-6">
                                 <button type="button" class="btn btn-primary margin-bottom" data-toggle="modal"
                                         data-target="#exampleModal">
-                                    {% trans 'Import From Oracle ERP' %}
+                                    {% trans 'New Connection' %}
                                 </button>
                             </div>
                             <div class="row">
@@ -79,6 +86,69 @@
 
                                     </table>
                                 </div>
+                                <div class="col-sm-12"  style="margin-top:20px;">
+                                  <form  method="post">
+                                    {% csrf_token %}
+                                    <textarea id="id-query" name="query" rows="6" cols="120" class="form-control" placeholder="Select Statement"></textarea>
+                                    <button type="submit" class="btn btn-success" data-toggle="tooltip" title="{% trans 'Run' %}"
+                                       style="margin-left: 20px;">
+                                       <i class="glyphicon glyphicon-play"></i>
+                                    </button>
+                                  </form>
+
+                                </div>
+                                <div class="col-sm-6" style="margin-top:20px;">
+                                  <a class="btn btn-primary"
+                                     href="{% url 'issuer:list-issuer-db-import' %}">
+                                      <span>{% trans 'Import Data' %}</span>
+                                  </a>
+                                  <a class="btn btn-primary"
+                                     href="{% url 'issuer:list-issuer-db-cancel' %}">
+                                      <span>{% trans 'Cancel Import' %}</span>
+                                  </a>
+                                </div>
+                                <div class="col-sm-12">
+                                    <table id="example1" class="table table-bordered table-striped dataTable"
+                                           role="grid" aria-describedby="example1_info">
+                                        <thead>
+                                        <tr role="row">
+                                            <th>#</th>
+                                            <th>{% trans 'Document Type' %}</th>
+                                            <th>{% trans 'Document Type Version' %}</th>
+                                            <th>{% trans 'Date Time Issued' %}</th>
+                                            <th>{% trans 'Internal ID' %}</th>
+                                            <th>{% trans 'Purchase Order Reference' %}</th>
+                                            <th>{% trans 'Purchase Order Description' %}</th>
+                                            <th>{% trans 'Sales Order Reference' %}</th>
+                                            <th>{% trans 'Sales Order Description' %}</th>
+                                            <th>{% trans 'Proforma Invoice Number' %}</th>
+                                            <th>{% trans 'Net Amount' %}</th>
+                                            <th>{% trans 'Total Amount' %}</th>
+                                            <th>{% trans 'Total Items Discount Amount' %}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for row in import_data %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ row.document_type }}</td>
+                                            <td>{{ row.document_type_version }}</td>
+                                            <td>{{ row.date_time_issued }}</td>
+                                            <td>{{ row.internal_id }}</td>
+                                            <td>{{ row.purchase_order_reference }}</td>
+                                            <td>{{ row.purchase_order_description }}</td>
+                                            <td>{{ row.sales_order_reference }}</td>
+                                            <td>{{ row.sales_order_description }}</td>
+                                            <td>{{ row.proforma_invoice_number }}</td>
+                                            <td>{{ row.net_amount }}</td>
+                                            <td>{{ row.total_amount }}</td>
+                                            <td>{{ row.total_items_discount_amount }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -106,7 +176,7 @@
             </div>
 
             <div class="modal-body">
-                <form method="POST" id="myform" action="{% url 'issuer:create-issuer-db-connection' %}">
+                <form method="POST" id="myform">
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="form-group">

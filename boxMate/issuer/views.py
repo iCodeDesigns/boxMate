@@ -27,6 +27,8 @@ from tablib import Dataset
 import pandas as pd
 from taxManagement.views import write_to_tmp_storage
 from taxManagement.tmp_storage import TempFolderStorage
+from taxManagement.db_connection import OracleConnection
+import cx_Oracle
 
 TMP_STORAGE_CLASS = getattr(settings, 'IMPORT_EXPORT_TMP_STORAGE_CLASS',
                             TempFolderStorage)
@@ -370,6 +372,18 @@ def issuer_oracle_DB_create(request):
     if request.method == 'POST':
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST)
         if issuer_oracle_DB_form.is_valid():
+            form_data = issuer_oracle_DB_form.cleaned_data
+            if form_data['is_active']:
+                connection_class = OracleConnection(
+                    form_data['ip_address'],
+                    form_data['port_number'],
+                    form_data['service_number'],
+                    form_data['username'],
+                    form_data['password'])
+                connection = connection_class.init_db_connection()
+                if not isinstance(connection, cx_Oracle.Connection):
+                    return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, connection))
+
             db_obj = issuer_oracle_DB_form.save(commit=False)
             db_obj.issuer = issuer
             db_obj.save()
@@ -382,17 +396,41 @@ def issuer_oracle_DB_create(request):
 
 @is_issuer
 def issuer_oracle_DB_list(request):
-    issuer_oracle_DB_form = IssuerOracleDBForm()
-    issuer = Issuer.objects.get(id=request.user.issuer.id)
-    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer=issuer)
-    print(oracle_DB_connections)
-    context = {
-        'issuer': issuer,
-        'connections': oracle_DB_connections,
-        'db_form': issuer_oracle_DB_form,
-    }
-    return render(request, "list-issuer-oracle-db.html", context)
+    if request.method == 'POST':
+        select_statement = request.POST.get('query')
+        data = run_db_query(request, select_statement)
+        for invoice in data:
+            temp_invoice = InvoiceImport(issuer=request.user.issuer)
+            for column in invoice:
+                setattr(temp_invoice, column.lower(), invoice[column])
+            temp_invoice.save()
+            print(temp_invoice)
+        if not isinstance(data, list):
+            return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, data))
+    return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, False, None))
 
+@is_issuer
+def issuer_oracle_DB_import(request):
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    import_data = InvoiceImport.objects.filter(issuer=issuer)
+    columns = InvoiceImport._meta.get_fields()
+
+    for invoice in import_data:
+        new_invoice = InvoiceHeader(issuer=request.user.issuer, receiver=Receiver.objects.first(), taxpayer_activity_code=IssuerActivityCode.objects.first())
+        print('EEEEEEEEEEEEE')
+        for col in columns:
+            if col.name != 'id':
+                setattr(new_invoice, col.name, getattr(invoice, col.name))
+        new_invoice.save()
+    return redirect('issuer:list-issuer-db-cancel')
+
+@is_issuer
+def issuer_oracle_DB_cancel(request):
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    import_data = InvoiceImport.objects.filter(issuer=issuer)
+    for invoice in import_data:
+        invoice.delete()
+    return redirect('issuer:list-issuer-db-connection')
 
 @is_issuer
 def issuer_oracle_DB_update(request, id):
@@ -401,6 +439,18 @@ def issuer_oracle_DB_update(request, id):
     if request.method == 'POST':
         issuer_oracle_DB_form = IssuerOracleDBForm(request.POST, instance=oracle_DB_connection)
         if issuer_oracle_DB_form.is_valid():
+            form_data = issuer_oracle_DB_form.cleaned_data
+            if form_data['is_active']:
+                connection_class = OracleConnection(
+                    form_data['ip_address'],
+                    form_data['port_number'],
+                    form_data['service_number'],
+                    form_data['username'],
+                    form_data['password'])
+                connection = connection_class.init_db_connection()
+                if not isinstance(connection, cx_Oracle.Connection):
+                    return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, connection))
+
             db_obj = issuer_oracle_DB_form.save()
             return redirect('issuer:list-issuer-db-connection')
     context = {
@@ -428,10 +478,32 @@ def list_issuer(request):
 
 def activate_database(request, id):
     oracle_DB_connection = IssuerOracleDB.objects.get(id=id)
+    connection_class = OracleConnection(
+        oracle_DB_connection.ip_address,
+        oracle_DB_connection.port_number,
+        oracle_DB_connection.service_number,
+        oracle_DB_connection.username,
+        oracle_DB_connection.password)
+    connection = connection_class.init_db_connection()
+    if not isinstance(connection, cx_Oracle.Connection):
+        return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, connection))
+
     oracle_DB_connection.is_active = True
     oracle_DB_connection.save()
     return redirect('issuer:list-issuer-db-connection')
 
+def run_db_query(request, query):
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    db_credintials = IssuerOracleDB.objects.get(issuer=issuer, is_active=True)
+    address = db_credintials.ip_address
+    port = db_credintials.port_number
+    service_nm = db_credintials.service_number
+    username = db_credintials.username
+    password = db_credintials.password
+    connection_class = OracleConnection(
+        address, port, service_nm, username, password)
+    data = connection_class.get_data_from_db(query)
+    return data
 
 @is_issuer
 def create_receiver(request):
@@ -652,3 +724,20 @@ def view_receiver(request , pk):
         'addresses' : receiver_addresses,
     }
     return render(request , 'view-receiver.html' , context)
+
+def get_db_list_context(request, has_errors, conn):
+    issuer_oracle_DB_form = IssuerOracleDBForm()
+    issuer = Issuer.objects.get(id=request.user.issuer.id)
+    oracle_DB_connections = IssuerOracleDB.objects.filter(issuer=issuer)
+    import_data = InvoiceImport.objects.filter(issuer=issuer)
+    context = {
+        'issuer': issuer,
+        'connections': oracle_DB_connections,
+        'db_form': issuer_oracle_DB_form,
+        'import_data': import_data
+    }
+    if has_errors:
+        context['errors'] = conn
+    print('__________')
+    print(context)
+    return context
