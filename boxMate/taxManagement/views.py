@@ -24,7 +24,7 @@ from taxManagement.tmp_storage import TempFolderStorage
 from taxManagement.db_connection import OracleConnection
 from taxManagement.tax_calculator import InoviceTaxLineCalculator
 from taxManagement.java import call_java
-from issuer.models import Issuer, Receiver, Address, IssuerOracleDB
+from issuer.models import Issuer, Receiver, Address, IssuerOracleDB, IssuerActivityCode
 from issuer import views as issuer_views
 from codes.models import ActivityType, TaxSubtypes, TaxTypes, UnitType
 from ast import literal_eval
@@ -91,8 +91,10 @@ def import_data_to_invoice(user):
             reg_num=header['receiver_registration_num'])
         receiver_address = Address.objects.get(receiver=receiver.id, buildingNumber=header['receiver_building_num'],
                                                floor=header['receiver_floor'], room=header['receiver_room'])
-        taxpayer_activity_code = ActivityType.objects.get(
+        activity_code = ActivityType.objects.get(
             code=header['taxpayer_activity_code'])
+        # Create a taxpayer_activity_code line
+        taxpayer_activity_code = IssuerActivityCode.objects.create(issuer=issuer, activity_code=activity_code)
         header_obj = InvoiceHeader(
             issuer=issuer,
             issuer_address=issuer_address,

@@ -316,7 +316,7 @@ def update_issuer(request, issuer_id):
 
 
 def create_issuer_address(request):
-    address_formset = AddressInlineForm()
+    address_formset = AddressInlineForm(Address.objects.none())
     if request.method == 'POST':
         address_formset = AddressInlineForm(request.POST)
         if address_formset.is_valid():
