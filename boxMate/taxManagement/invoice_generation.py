@@ -155,13 +155,14 @@ class Invoicegeneration:
         invoice_lines = self.get_invoice_lines()
         date_time_issued = self.datetime_format()
 
-
+        print('____________')
+        print(invoice_header.taxpayer_activity_code.activity_code.code)
         data = {
             "documentType": invoice_header.document_type,
             "documentTypeVersion": invoice_header.document_type_version,
             "dateTimeIssued": date_time_issued,
             # "dateTimeIssued": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "Z",     # commented by ahd due to server errors with dat format.
-            "taxpayerActivityCode": invoice_header.taxpayer_activity_code.code,
+            "taxpayerActivityCode": invoice_header.taxpayer_activity_code.activity_code.code,
             "internalID": invoice_header.internal_id,
             "purchaseOrderReference": invoice_header.purchase_order_reference,
             "purchaseOrderDescription": invoice_header.purchase_order_description,
