@@ -399,14 +399,14 @@ def issuer_oracle_DB_list(request):
     if request.method == 'POST':
         select_statement = request.POST.get('query')
         data = run_db_query(request, select_statement)
+        if not isinstance(data, list):
+            return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, data))
         for invoice in data:
             temp_invoice = InvoiceImport(issuer=request.user.issuer)
             for column in invoice:
                 setattr(temp_invoice, column.lower(), invoice[column])
             temp_invoice.save()
             print(temp_invoice)
-        if not isinstance(data, list):
-            return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, True, data))
     return render(request, "list-issuer-oracle-db.html", get_db_list_context(request, False, None))
 
 @is_issuer
